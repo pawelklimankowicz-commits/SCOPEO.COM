@@ -62,10 +62,22 @@ export default function SiteFooter() {
           <h4>Prawne</h4>
           <ul>
             <li>
-              <Link href="/polityka-prywatnosci">Polityka prywatności</Link>
+              <Link href="/prawne">Dokumenty prawne</Link>
             </li>
             <li>
               <Link href="/regulamin">Regulamin</Link>
+            </li>
+            <li>
+              <Link href="/polityka-prywatnosci">Polityka prywatności</Link>
+            </li>
+            <li>
+              <Link href="/cookies">Polityka cookies</Link>
+            </li>
+            <li>
+              <Link href="/dpa">DPA (powierzenie)</Link>
+            </li>
+            <li>
+              <Link href="/kontakt-prawny">Kontakt prawny</Link>
             </li>
           </ul>
         </div>

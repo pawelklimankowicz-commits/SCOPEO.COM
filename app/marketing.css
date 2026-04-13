@@ -1027,6 +1027,139 @@
   padding-left: 1.2em;
 }
 
+.mkt-prose h3 {
+  margin: 28px 0 10px;
+  font-size: 1.0625rem;
+  color: var(--mkt-headline);
+}
+
+.mkt-section--dark .mkt-prose h2,
+.mkt-section--dark .mkt-prose h3 {
+  color: #f1f5f9;
+}
+
+.mkt-section--dark .mkt-prose p,
+.mkt-section--dark .mkt-prose li {
+  color: #cbd5e1;
+}
+
+.mkt-section--dark .mkt-prose strong {
+  color: #f8fafc;
+}
+
+.mkt-section--dark .mkt-link {
+  color: var(--mkt-lime-bright);
+}
+
+.mkt-section--dark .mkt-link:hover {
+  color: #bbf7d0;
+}
+
+.mkt-legal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin: 24px 0;
+}
+
+@media (max-width: 720px) {
+  .mkt-legal-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mkt-legal-card {
+  background: var(--mkt-dark-elevated);
+  border: 1px solid var(--mkt-dark-border);
+  border-radius: var(--mkt-radius-lg);
+  padding: 20px;
+}
+
+.mkt-legal-card h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  color: #f8fafc;
+}
+
+.mkt-legal-card p {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+
+.mkt-doc-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--mkt-dark-border);
+  border-radius: var(--mkt-radius-lg);
+  padding: 22px;
+  margin: 20px 0;
+}
+
+.mkt-doc-box h3 {
+  margin: 0 0 12px;
+  font-size: 1.0625rem;
+  color: #f8fafc;
+}
+
+.mkt-doc-box ul {
+  margin: 0;
+  padding-left: 1.2em;
+  color: #cbd5e1;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+
+.mkt-doc-box li {
+  margin-bottom: 8px;
+}
+
+.mkt-legal-notice {
+  background: rgba(244, 114, 182, 0.08);
+  border: 1px solid rgba(244, 114, 182, 0.28);
+  color: #fce7f3;
+  border-radius: var(--mkt-radius-lg);
+  padding: 16px 18px;
+  margin: 20px 0;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+
+.mkt-legal-hub-grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.mkt-legal-hub-grid a {
+  display: block;
+  padding: 18px 20px;
+  border-radius: var(--mkt-radius-lg);
+  border: 1px solid var(--mkt-dark-border);
+  background: var(--mkt-dark-elevated);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.mkt-legal-hub-grid a:hover {
+  border-color: rgba(134, 239, 172, 0.45);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.mkt-legal-hub-grid strong {
+  display: block;
+  color: #f8fafc;
+  margin-bottom: 6px;
+  font-size: 1rem;
+}
+
+.mkt-legal-hub-grid span {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
 .mkt-link {
   color: var(--mkt-accent);
   font-weight: 600;
