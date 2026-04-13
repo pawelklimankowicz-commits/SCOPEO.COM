@@ -51,6 +51,9 @@ export default function SiteFooter() {
               <Link href="/faq">FAQ</Link>
             </li>
             <li>
+              <Link href="/wiedza/rynek-i-metodyka">Rynek i metodyka</Link>
+            </li>
+            <li>
               <Link href="/kontakt">Kontakt</Link>
             </li>
           </ul>

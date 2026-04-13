@@ -86,6 +86,14 @@ export default function MarketingHomePage() {
               </p>
             </div>
           </div>
+          <p style={{ marginTop: 28, marginBottom: 0, fontSize: '0.9375rem', color: '#64748b', lineHeight: 1.6 }}>
+            Na rynku popularne są też szkolenia, przewodniki i proste kalkulatory — dobry start merytoryczny.
+            Scopeo jest następnym krokiem:{' '}
+            <strong>operacyjny system</strong> z KSeF i audytowalnym procesem, gdy Excel przestaje wystarczać.{' '}
+            <Link href="/wiedza/rynek-i-metodyka" className="mkt-link">
+              Rynek i metodyka →
+            </Link>
+          </p>
         </div>
       </section>
 

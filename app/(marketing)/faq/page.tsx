@@ -48,6 +48,14 @@ const items = [
     q: 'Jak wygląda bezpieczeństwo danych?',
     a: 'Dostęp po uwierzytelnieniu, segmentacja danych per organizacja, szyfrowanie transmisji (HTTPS), polityki backupów zależne od środowiska hostingu — do potwierdzenia w umowie DPA przy wdrożeniu.',
   },
+  {
+    q: 'Mamy przeszkolenie zespołu z GHG / Scope 1–3 — czy Scopeo to zastępuje?',
+    a: 'Nie. Szkolenia budują kompetencje metodyczne; Scopeo jest warstwą operacyjną: import danych z KSeF, mapowanie, review i historia zmian. Oba elementy się uzupełniają.',
+  },
+  {
+    q: 'Używamy Excela lub prostego kalkulatora — po co nam system?',
+    a: 'Arkusze sprawdzają się w pilotażu lub małej skali. Przy większym wolumenie faktur i wymogu audytowalności rośnie koszt błędów, kopiowania i braku jednej historii decyzji — tam Scopeo zastępuje rozproszone pliki jednym workflow.',
+  },
 ];
 
 export default function FaqPage() {

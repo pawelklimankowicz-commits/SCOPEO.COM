@@ -45,6 +45,20 @@ export default function ONasPage() {
             Scopeo nie jest zabawką edukacyjną ani zbiorem ogólnych porad ESG. To oprogramowanie B2B dla firm,
             które mają faktury i muszą z nich zrobić uporządkowany wynik emisyjny.
           </p>
+          <h2>Kontekst rynku: szkolenia, przewodniki, Excel</h2>
+          <p>
+            Wiele organizacji zaczyna od <strong>szkoleń</strong>, <strong>przewodników</strong> po śladzie
+            węglowym, prostych <strong>kalkulatorów</strong> lub arkuszy — to dobry fundament merytoryczny
+            (GHG Protocol, Scope 1–3). Przy rosnącej liczbie faktur i potrzebie powtarzalnego procesu
+            pojawia się jednak różnica: <strong>kompetencje zespołu</strong> i <strong>narzędzie
+            operacyjne</strong> to dwie warstwy. Scopeo adresuje tę drugą — import z KSeF, workflow review i
+            audit trail zamiast rozproszonego Excela.
+          </p>
+          <p style={{ marginTop: 12 }}>
+            <Link href="/wiedza/rynek-i-metodyka" className="mkt-link">
+              Rynek i metodyka — definicje, Scope 1–3, typowe modele wsparcia →
+            </Link>
+          </p>
           <div style={{ marginTop: 8 }}>
             <Link href="/kontakt#demo" className="mkt-btn mkt-btn--primary">
               Umów demo
