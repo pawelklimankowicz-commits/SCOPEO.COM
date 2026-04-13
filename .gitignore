@@ -1,5 +1,9 @@
+# Zduplikowany katalog z Pulpitu — nie kompiluj w tym repo
+scopeo.com/
+
 node_modules
 .next
 .env
 .env*.local
 *.log
+.DS_Store

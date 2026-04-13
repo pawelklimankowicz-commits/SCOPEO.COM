@@ -128,7 +128,8 @@ DATABASE_URL="postgresql://USER:HASLO@HOST/BAZA?sslmode=require" npx prisma db p
 
 | Skrypt        | Opis                    |
 |---------------|-------------------------|
-| `npm run dev` | Serwer deweloperski     |
+| `npm run dev` | Serwer dev (Turbopack)  |
+| `npm run dev:webpack` | Serwer dev (webpack) |
 | `npm run build` / `start` | Build i produkcja |
 | `npm test`    | Testy jednostkowe       |
 
@@ -138,5 +139,11 @@ DATABASE_URL="postgresql://USER:HASLO@HOST/BAZA?sslmode=require" npx prisma db p
 - `lib/` — logika emisji, importu faktorów, workflow review, parser XML
 - `prisma/schema.prisma` — model danych (organizacje, faktury, linie, review, importy)
 
-Dokumentacja produktowa i landing (HTML) znajdują się w katalogu nadrzędnym `scopeo.com` (np. `cursor_handoff_and_landing.html`).
-# SCOPEO.COM
+Dokumentacja produktowa i landing (HTML) może być poza tym repozytorium (np. osobny folder `scopeo.com` na Pulpicie — **nie wklejaj go do środka `scopeo-saas`**, bo zepsuje build).
+
+## Gdy „strona nie działa” / błędy dev
+
+1. **Wyczyść cache i zależności:** `rm -rf .next node_modules && npm install`
+2. **Dev domyślnie używa Turbopack** (`npm run dev`) — omija typowe błędy webpack / DevTools. Przy problemach: `npm run dev:webpack`.
+3. **Port:** jeśli 3000 jest zajęty, Next uruchomi **3001** — sprawdź adres w terminalu.
+4. **Nie umieszczaj kopii całego `scopeo.com` ani `v10.2 2` wewnątrz folderu projektu** — TypeScript wtedy kompiluje zduplikowany kod i pojawiają się błędy typów.
