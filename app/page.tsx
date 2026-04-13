@@ -20,10 +20,10 @@ export default function HomePage() {
             <span className="landing-search-caret" aria-hidden />
           </div>
           <div className="landing-header-actions">
-            <Link href="/login" className="landing-link-muted">
+            <Link href="/login" className="landing-btn-nav">
               Logowanie
             </Link>
-            <Link href="/dashboard" className="landing-link-muted">
+            <Link href="/dashboard" className="landing-btn-nav">
               Dashboard
             </Link>
             <a href="#contact" className="landing-btn landing-btn-teal">
