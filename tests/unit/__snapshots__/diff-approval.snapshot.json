@@ -1,0 +1,15 @@
+{
+  "changed": true,
+  "changes": [
+    {
+      "field": "status",
+      "before": "IN_REVIEW",
+      "after": "APPROVED"
+    },
+    {
+      "field": "comment",
+      "before": null,
+      "after": "approved by reviewer"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+export default function FieldDiffCard({ label, before, after }: { label: string; before: any; after: any }) {
+  const changed = String(before ?? '') !== String(after ?? '');
+  return <div className="card section" style={{ padding: 16, borderColor: changed ? '#6ea8ff' : '#27345f' }}><div className="small" style={{ marginBottom: 10 }}>{label}</div><div className="grid grid-2"><div><div className="small">Before</div><div style={{ marginTop: 8, padding: 12, borderRadius: 12, background: '#0b1122', border: '1px solid #27345f', minHeight: 48 }}>{String(before ?? '—')}</div></div><div><div className="small">After</div><div style={{ marginTop: 8, padding: 12, borderRadius: 12, background: changed ? 'rgba(110,168,255,.12)' : '#0b1122', border: changed ? '1px solid #6ea8ff' : '1px solid #27345f', minHeight: 48 }}>{String(after ?? '—')}</div></div></div></div>;
+}

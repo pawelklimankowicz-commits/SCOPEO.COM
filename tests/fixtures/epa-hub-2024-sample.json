@@ -1,0 +1,11 @@
+[
+  ["", "Table 2"],
+  ["", "", "Fuel Type", "kg CO2", "unit"],
+  ["", "", "Gasoline", 8.78, "gallon"],
+  ["", "Table 6"],
+  ["", "", "eGRID Subregion Acronym", "Subregion Name", "CO2"],
+  ["", "", "RFCW", "RFC West", 1188],
+  ["", "Table 10"],
+  ["", "", "Vehicle Type", "kg CO2", "", "", "unit"],
+  ["", "", "Medium-haul air", 0.16, "", "", "mile"]
+]

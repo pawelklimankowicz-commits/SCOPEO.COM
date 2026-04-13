@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: scopeo
+      POSTGRES_PASSWORD: scopeo
+      POSTGRES_DB: scopeo
+    ports:
+      - "5433:5432"
+    volumes:
+      - scopeo_pg:/var/lib/postgresql/data
+
+volumes:
+  scopeo_pg:

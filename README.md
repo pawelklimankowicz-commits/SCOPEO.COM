@@ -1,0 +1,142 @@
+# Scopeo — KSeF GHG (SaaS)
+
+Aplikacja multi-tenant do importu faktur (XML KSeF), mapowania linii do kategorii GHG (scope 1–3), workflow review z historią zmian oraz kalkulacji emisji. Stack: **Next.js 15**, **Prisma**, **NextAuth (Credentials)**, **PostgreSQL** (Docker lokalnie lub hosting w chmurze).
+
+## Wymagania
+
+- Node.js 20+
+- npm
+- Docker (do lokalnej bazy) — albo zewnętrzny `DATABASE_URL` (Neon, Supabase itd.)
+
+## Uruchomienie lokalne
+
+```bash
+cd scopeo-saas
+cp .env.example .env
+# Ustaw AUTH_SECRET (np. openssl rand -base64 32)
+
+docker compose up -d
+npm install
+npx prisma generate
+npx prisma db push
+npm run dev
+```
+
+Otwórz [http://localhost:3000](http://localhost:3000). Zarejestruj konto (tworzy organizację / tenant), przejdź przez **Onboarding**, potem **Dashboard**: import faktorów (EPA/UK + overlay PL), import przykładowego XML KSeF, **Przelicz emisje**.
+
+## Produkcja
+
+Ustaw `DATABASE_URL` i `AUTH_SECRET` w środowisku (Vercel, Railway itd.). Port **5433** w przykładzie jest tylko dla lokalnego Dockera — na produkcji użyj connection stringa od dostawcy.
+
+---
+
+## Pojedyncze komendy — lokalnie
+
+Wykonuj po kolei (w katalogu `scopeo-saas`):
+
+```bash
+cd scopeo-saas
+```
+
+```bash
+cp .env.example .env
+```
+
+```bash
+openssl rand -base64 32
+```
+
+Skopiuj wynik do `.env` jako wartość `AUTH_SECRET=...`.
+
+```bash
+docker compose up -d
+```
+
+```bash
+npm install
+```
+
+```bash
+npx prisma db push
+```
+
+```bash
+npm run dev
+```
+
+---
+
+## GitHub (nowe repo, pierwszy push)
+
+W katalogu projektu:
+
+```bash
+git init
+```
+
+```bash
+git add .
+```
+
+```bash
+git commit -m "Initial commit: Scopeo KSeF GHG"
+```
+
+Utwórz puste repo na GitHub (bez README), potem:
+
+```bash
+git remote add origin https://github.com/TWOJ_USER/TWOJ_REPO.git
+```
+
+```bash
+git branch -M main
+```
+
+```bash
+git push -u origin main
+```
+
+(Zamiast HTTPS możesz użyć SSH: `git@github.com:TWOJ_USER/TWOJ_REPO.git`.)
+
+---
+
+## Vercel
+
+1. W panelu Vercel: **Add New → Project → Import** wybrane repozytorium z GitHub.
+2. **Framework Preset:** Next.js (wykryje sam). **Build Command:** `npm run build` (domyślnie). **Install Command:** `npm install`.
+3. **Environment Variables** (Settings → Environment Variables), dla **Production** (i opcjonalnie Preview):
+
+| Nazwa | Wartość |
+|--------|---------|
+| `DATABASE_URL` | Connection string PostgreSQL (np. [Neon](https://neon.tech) lub Supabase — musi zaczynać się od `postgresql://`) |
+| `AUTH_SECRET` | Ten sam sekret co lokalnie (`openssl rand -base64 32`) |
+| `NEXTAUTH_URL` | `https://twoja-domena.vercel.app` (dokładnie URL produkcji, bez końcowego `/`) |
+
+4. **Pierwsza synchronizacja bazy** (jednorazowo, z Twojego komputera — wstaw ten sam URL co w Vercel):
+
+```bash
+DATABASE_URL="postgresql://USER:HASLO@HOST/BAZA?sslmode=require" npx prisma db push
+```
+
+(W katalogu `scopeo-saas`, po `npm install`.) Tworzy tabele w bazie produkcyjnej.
+
+5. **Deploy:** po pushu na `main` Vercel zbuduje projekt sam (`postinstall` uruchomi `prisma generate`).
+
+**Uwaga:** `.env` nie commituj — tylko `.env.example`. Na Vercel sekrety są w panelu.
+
+## Skrypty
+
+| Skrypt        | Opis                    |
+|---------------|-------------------------|
+| `npm run dev` | Serwer deweloperski     |
+| `npm run build` / `start` | Build i produkcja |
+| `npm test`    | Testy jednostkowe       |
+
+## Struktura
+
+- `app/` — App Router: `login`, `onboarding`, `dashboard`, API (`ksef/import`, `factors/import`, `emissions/calculate`, `review/update`)
+- `lib/` — logika emisji, importu faktorów, workflow review, parser XML
+- `prisma/schema.prisma` — model danych (organizacje, faktury, linie, review, importy)
+
+Dokumentacja produktowa i landing (HTML) znajdują się w katalogu nadrzędnym `scopeo.com` (np. `cursor_handoff_and_landing.html`).
+# SCOPEO.COM

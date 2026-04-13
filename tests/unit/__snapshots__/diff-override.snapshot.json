@@ -1,0 +1,20 @@
+{
+  "changed": true,
+  "changes": [
+    {
+      "field": "status",
+      "before": "IN_REVIEW",
+      "after": "OVERRIDDEN"
+    },
+    {
+      "field": "factorId",
+      "before": "F1",
+      "after": "F2"
+    },
+    {
+      "field": "comment",
+      "before": null,
+      "after": "manual correction"
+    }
+  ]
+}

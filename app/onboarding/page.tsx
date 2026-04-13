@@ -1,0 +1,4 @@
+import { requireTenantMembership } from '@/lib/tenant';
+import { prisma } from '@/lib/prisma';
+import OnboardingV6Form from '@/components/OnboardingV6Form';
+export default async function OnboardingPage() { const { organizationId, membership } = await requireTenantMembership(); const profile = await prisma.carbonProfile.findUnique({ where: { organizationId } }); return <main className="container"><span className="badge">{membership.organization.slug}</span><h1 className="title">Onboarding tenantu</h1><p className="subtitle">Profil organizacji i ustawienia raportowania.</p><OnboardingV6Form organizationId={organizationId} initial={profile ?? undefined} /></main>; }
