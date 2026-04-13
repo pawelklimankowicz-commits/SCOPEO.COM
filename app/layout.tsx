@@ -9,9 +9,12 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Scopeo · KSeF GHG',
+  title: {
+    default: 'Scopeo — ślad węglowy z danych KSeF',
+    template: '%s · Scopeo',
+  },
   description:
-    'Zarządzaj śladem węglowym firmy z dokładnością KSeF — carbon accounting, import, Scope 1–3',
+    'Carbon accounting B2B: import z KSeF, Scope 1–3, workflow review i audit trail — zamiast rozproszonego Excela.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
