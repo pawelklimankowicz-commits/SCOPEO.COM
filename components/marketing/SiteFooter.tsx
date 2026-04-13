@@ -71,8 +71,8 @@ export default function SiteFooter() {
         </div>
       </div>
       <div className="mkt-inner" style={{ marginTop: 32, paddingTop: 24, borderTop: '1px solid #e2e8f0' }}>
-        <p style={{ margin: 0, fontSize: '0.8125rem', color: '#94a3b8' }}>
-          © {y} Scopeo. Wszystkie prawa zastrzeżone.
+        <p className="mkt-footer-copy" style={{ margin: 0 }}>
+          © {y} Scopeo · KSeF · GHG · workflow — wszystkie prawa zastrzeżone.
         </p>
       </div>
     </footer>

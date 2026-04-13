@@ -17,15 +17,15 @@ export function DashboardEmissionsMock() {
       <MockChrome title="Scopeo · Dashboard emisji" />
       <div className="mkt-mock-body">
         <div className="mkt-kpi-row">
-          <div className="mkt-kpi">
+          <div className="mkt-kpi mkt-kpi--emerald">
             <label>Scope 1</label>
             <strong>48.2 t</strong>
           </div>
-          <div className="mkt-kpi">
+          <div className="mkt-kpi mkt-kpi--emerald">
             <label>Scope 2</label>
             <strong>126.7 t</strong>
           </div>
-          <div className="mkt-kpi">
+          <div className="mkt-kpi mkt-kpi--emerald">
             <label>Scope 3</label>
             <strong>412.4 t</strong>
           </div>

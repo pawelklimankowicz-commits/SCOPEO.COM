@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import LeadForm from '@/components/marketing/LeadForm';
 import {
@@ -21,7 +22,8 @@ export default function MarketingHomePage() {
       <section className="mkt-hero">
         <div className="mkt-inner mkt-hero-grid">
           <div>
-            <p className="mkt-kicker">Carbon accounting · KSeF</p>
+            <p className="mkt-hero-badge">KSeF + GHG Protocol · starter</p>
+            <p className="mkt-kicker">Ślad węglowy operacyjny</p>
             <h1 className="mkt-hero-title">Policz ślad węglowy firmy z danych z KSeF</h1>
             <p className="mkt-hero-sub">
               Automatyczny import danych z KSeF, OCR dokumentów, mapowanie do Scope 1, 2 i 3, workflow
@@ -55,8 +57,35 @@ export default function MarketingHomePage() {
               </span>
             </div>
           </div>
-          <div>
-            <DashboardEmissionsMock />
+          <div className="mkt-hero-visual">
+            <Image
+              src="/marketing/hero-scopeo-mint.png"
+              alt="Scopeo — dashboard emisji, workflow i import z KSeF"
+              width={1200}
+              height={720}
+              priority
+              sizes="(max-width: 960px) 100vw, 50vw"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="mkt-section mkt-section--dark">
+        <div className="mkt-inner">
+          <p className="mkt-kicker mkt-kicker--on-dark">Widok produktu</p>
+          <h2 className="mkt-section-title">Workflow, dashboard i import — jedna aplikacja</h2>
+          <p className="mkt-section-lead">
+            Przełączaj się między dashboardem emisji, kolejką review oraz importem z KSeF (i plików
+            pomocniczych), z pełnym audit trail.
+          </p>
+          <div className="mkt-dark-shot" style={{ marginTop: 8 }}>
+            <Image
+              src="/marketing/section-product-dark.png"
+              alt="Scopeo — widoki produktu: workflow review, dashboard emisji, audit trail"
+              width={1200}
+              height={640}
+              sizes="(max-width: 960px) 100vw, min(1120px, 100vw)"
+            />
           </div>
         </div>
       </section>

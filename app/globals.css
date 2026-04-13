@@ -17,7 +17,7 @@ body {
 }
 
 body:has(.mkt-wrap) {
-  background: #f8fafc;
+  background: #f0fdf4;
   color: #0f172a;
 }
 

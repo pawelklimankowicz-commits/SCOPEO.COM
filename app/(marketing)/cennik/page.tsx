@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import PricingTable from '@/components/marketing/PricingTable';
 
@@ -11,9 +12,9 @@ export const metadata: Metadata = {
 export default function CennikPage() {
   return (
     <>
-      <div className="mkt-page-head">
+      <div className="mkt-page-head mkt-page-head--dark">
         <div className="mkt-inner">
-          <p className="mkt-kicker">Cennik</p>
+          <p className="mkt-kicker mkt-kicker--on-dark">Cennik</p>
           <h1>Proste plany według wolumenu faktur</h1>
           <p>
             Opłata zależy od liczby faktur miesięcznie. Przełącz rozliczenie roczne, aby uzyskać 10%
@@ -22,8 +23,17 @@ export default function CennikPage() {
         </div>
       </div>
 
-      <section className="mkt-section">
+      <section className="mkt-section mkt-section--dark">
         <div className="mkt-inner">
+          <div className="mkt-dark-shot mkt-pricing-hero-shot">
+            <Image
+              src="/marketing/section-pricing-dark.png"
+              alt="Scopeo — wybór planu i cennik"
+              width={1200}
+              height={560}
+              sizes="(max-width: 960px) 100vw, min(1120px, 100vw)"
+            />
+          </div>
           <PricingTable />
         </div>
       </section>
