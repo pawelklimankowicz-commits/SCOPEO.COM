@@ -20,6 +20,10 @@ export default function LeadForm({ variant = 'default', idPrefix = 'lead' }: Pro
       company: String(fd.get('company') || ''),
       invoices: String(fd.get('invoices') || ''),
       message: String(fd.get('message') || ''),
+      phone: String(fd.get('phone') || '').trim() || undefined,
+      acceptPrivacy: fd.get('acceptPrivacy') === 'on',
+      marketingEmail: fd.get('marketingEmail') === 'on',
+      marketingPhone: fd.get('marketingPhone') === 'on',
     };
     try {
       const res = await fetch('/api/contact', {
@@ -58,6 +62,10 @@ export default function LeadForm({ variant = 'default', idPrefix = 'lead' }: Pro
         <input id={`${idPrefix}-company`} name="company" type="text" required autoComplete="organization" />
       </div>
       <div>
+        <label htmlFor={`${idPrefix}-phone`}>Telefon (opcjonalnie)</label>
+        <input id={`${idPrefix}-phone`} name="phone" type="tel" autoComplete="tel" />
+      </div>
+      <div>
         <label htmlFor={`${idPrefix}-invoices`}>Szacowana liczba faktur miesięcznie</label>
         <select id={`${idPrefix}-invoices`} name="invoices" required defaultValue="">
           <option value="" disabled>
@@ -75,6 +83,35 @@ export default function LeadForm({ variant = 'default', idPrefix = 'lead' }: Pro
         <label htmlFor={`${idPrefix}-message`}>Wiadomość (opcjonalnie)</label>
         <textarea id={`${idPrefix}-message`} name="message" rows={variant === 'compact' ? 3 : 4} />
       </div>
+      <div className="mkt-form-checkrow">
+        <input
+          id={`${idPrefix}-privacy`}
+          name="acceptPrivacy"
+          type="checkbox"
+          required
+          aria-required="true"
+        />
+        <label htmlFor={`${idPrefix}-privacy`} className="mkt-form-checklabel">
+          Oświadczam, że zapoznałem(-am) się z{' '}
+          <a href="/polityka-prywatnosci" className="mkt-link" target="_blank" rel="noopener noreferrer">
+            polityką prywatności
+          </a>{' '}
+          i akceptuję przetwarzanie moich danych w celu obsługi zapytania. *
+        </label>
+      </div>
+      <div className="mkt-form-checkrow">
+        <input id={`${idPrefix}-mkt-email`} name="marketingEmail" type="checkbox" />
+        <label htmlFor={`${idPrefix}-mkt-email`} className="mkt-form-checklabel">
+          Wyrażam zgodę na przesyłanie informacji handlowych drogą elektroniczną (e-mail) o produktach i
+          usługach Scopeo — zgodnie z polityką prywatności (opcjonalnie).
+        </label>
+      </div>
+      <div className="mkt-form-checkrow">
+        <input id={`${idPrefix}-mkt-phone`} name="marketingPhone" type="checkbox" />
+        <label htmlFor={`${idPrefix}-mkt-phone`} className="mkt-form-checklabel">
+          Wyrażam zgodę na kontakt telefoniczny w sprawach handlowych (opcjonalnie).
+        </label>
+      </div>
       <button type="submit" className="mkt-btn mkt-btn--primary" disabled={status === 'loading'}>
         {status === 'loading' ? 'Wysyłanie…' : 'Umów demo'}
       </button>
@@ -84,9 +121,9 @@ export default function LeadForm({ variant = 'default', idPrefix = 'lead' }: Pro
         </p>
       ) : null}
       <p style={{ margin: 0, fontSize: '0.75rem', color: '#94a3b8' }}>
-        Wysyłając formularz akceptujesz{' '}
-        <a href="/polityka-prywatnosci" className="mkt-link">
-          politykę prywatności
+        Szczegóły zgód i wzorce dla formularzy:{' '}
+        <a href="/klauzule-formularzy" className="mkt-link">
+          klauzule formularzy
         </a>
         .
       </p>

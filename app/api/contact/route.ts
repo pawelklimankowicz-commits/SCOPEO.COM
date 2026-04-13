@@ -7,6 +7,10 @@ const schema = z.object({
   company: z.string().min(2),
   invoices: z.string().min(1),
   message: z.string().optional(),
+  phone: z.string().optional(),
+  acceptPrivacy: z.literal(true),
+  marketingEmail: z.boolean().optional(),
+  marketingPhone: z.boolean().optional(),
 });
 
 export async function POST(req: Request) {

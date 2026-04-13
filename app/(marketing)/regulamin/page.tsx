@@ -28,6 +28,14 @@ export default function RegulaminPage() {
 
       <section className="mkt-section mkt-section--dark">
         <div className="mkt-inner mkt-prose">
+          <p style={{ margin: '0 0 24px', fontSize: '0.9375rem', color: '#94a3b8', lineHeight: 1.65 }}>
+            Wprowadzenie i założenia całego pakietu dokumentów (w tym odniesienia do UŚUDE) są zebrane na
+            stronie{' '}
+            <Link href="/prawne" className="mkt-link">
+              Dokumenty prawne
+            </Link>
+            . Poniżej — regulamin usług elektronicznych Scopeo.
+          </p>
           <div className="mkt-legal-grid">
             <div className="mkt-legal-card">
               <h3>Po co ten dokument</h3>

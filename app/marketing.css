@@ -612,12 +612,12 @@
 }
 
 /* FAQ */
-.mkt-faq-item {
+.mkt-faq-list .mkt-faq-item {
   border-bottom: 1px solid var(--mkt-border);
   padding: 18px 0;
 }
 
-.mkt-faq-item:last-child {
+.mkt-faq-list .mkt-faq-item:last-child {
   border-bottom: none;
 }
 
@@ -633,6 +633,41 @@
   font-size: 0.875rem;
   color: var(--mkt-muted);
   line-height: 1.55;
+}
+
+.mkt-faq-a strong {
+  color: var(--mkt-text);
+  font-weight: 600;
+}
+
+.mkt-faq-resources-title {
+  margin: 40px 0 12px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--mkt-text);
+}
+
+.mkt-faq-resources-lead {
+  margin: 0 0 16px;
+  font-size: 0.875rem;
+  color: var(--mkt-muted);
+  line-height: 1.6;
+}
+
+.mkt-faq-resources-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.875rem;
+  color: var(--mkt-muted);
+  line-height: 1.65;
+}
+
+.mkt-faq-resources-list li {
+  margin-bottom: 12px;
+}
+
+.mkt-faq-resources-list li:last-child {
+  margin-bottom: 0;
 }
 
 /* Forms */
@@ -677,6 +712,26 @@
   color: #065f46;
   font-size: 0.875rem;
   font-weight: 500;
+}
+
+.mkt-form-checkrow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.mkt-form-checkrow input[type='checkbox'] {
+  width: auto;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.mkt-form-checklabel {
+  margin: 0 !important;
+  font-size: 0.8125rem !important;
+  font-weight: 400 !important;
+  color: var(--mkt-muted) !important;
+  line-height: 1.5;
 }
 
 /* Pricing */
@@ -1158,6 +1213,32 @@
   font-size: 0.875rem;
   color: #94a3b8;
   line-height: 1.5;
+}
+
+.mkt-legal-block h2 {
+  margin: 32px 0 12px;
+  font-size: 1.0625rem;
+  color: #f1f5f9;
+}
+
+.mkt-legal-block:first-child h2 {
+  margin-top: 0;
+}
+
+.mkt-legal-body {
+  white-space: pre-line;
+  color: #cbd5e1;
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  margin: 0 0 8px;
+}
+
+.mkt-legal-body--intro {
+  margin-bottom: 24px;
+  padding: 20px;
+  border-radius: var(--mkt-radius-lg);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--mkt-dark-border);
 }
 
 .mkt-link {

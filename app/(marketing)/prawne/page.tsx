@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { LegalPackageIntro } from '@/components/legal/LegalSections';
 
 export const metadata: Metadata = {
   title: 'Dokumenty prawne — Scopeo',
@@ -30,6 +31,11 @@ const pages = [
     desc: 'Zasady współpracy administrator–procesor (art. 28 RODO) dla klientów biznesowych.',
   },
   {
+    href: '/klauzule-formularzy',
+    title: 'Klauzule formularzy',
+    desc: 'Wzorce informacji i zgód dla demo, rejestracji, kontaktu i materiałów marketingowych.',
+  },
+  {
     href: '/kontakt-prawny',
     title: 'Kontakt prawny i reklamacje',
     desc: 'Kanały kontaktu: sprzedaż, support, prywatność, reklamacje.',
@@ -53,6 +59,7 @@ export default function PrawneHubPage() {
 
       <section className="mkt-section mkt-section--dark">
         <div className="mkt-inner" style={{ maxWidth: 720 }}>
+          <LegalPackageIntro />
           <div className="mkt-legal-hub-grid">
             {pages.map((p) => (
               <Link key={p.href} href={p.href}>

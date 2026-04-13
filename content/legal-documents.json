@@ -1,0 +1,150 @@
+{
+  "privacy": [
+    {
+      "title": "1. Postanowienia ogólne",
+      "body": "Niniejsza Polityka prywatności określa zasady przetwarzania danych osobowych oraz wykorzystywania plików cookies i technologii podobnych w związku z korzystaniem ze strony internetowej, platformy SaaS, formularzy kontaktowych, formularzy demo, formularzy rejestracyjnych, komunikacji handlowej i pozostałych usług świadczonych przez Black Gold Sp. z o.o. z siedzibą w Poznaniu.\nPolityka prywatności ma charakter informacyjny i realizuje obowiązki informacyjne wynikające z RODO, w szczególności obowiązek przejrzystego wskazania celów, podstaw prawnych i praw osób, których dane dotyczą.\nW zakresie, w jakim korzystanie z platformy stanowi usługę świadczoną drogą elektroniczną, zasady świadczenia takich usług powinny być dodatkowo określone w odrębnym regulaminie usług elektronicznych.\nJeżeli w związku z korzystaniem z Usług dochodzi do przetwarzania danych powierzonych przez klienta biznesowego, zastosowanie mają również postanowienia umowy powierzenia przetwarzania danych osobowych zawieranej zgodnie z art. 28 RODO."
+    },
+    {
+      "title": "2. Administrator danych",
+      "body": "Administratorem danych osobowych jest Black Gold Sp. z o.o. z siedzibą w Poznaniu, dalej jako „Administrator”.\nDane identyfikacyjne Administratora, w tym dokładny adres siedziby, numer KRS, NIP, REGON, adres e-mail i dane kontaktowe do spraw ochrony danych, powinny zostać uzupełnione przed publikacją dokumentu.\nAdministrator odpowiada za zgodne z prawem, rzetelne i przejrzyste przetwarzanie danych osobowych oraz wdrożenie adekwatnych środków technicznych i organizacyjnych dla zapewnienia bezpieczeństwa danych w środowisku SaaS."
+    },
+    {
+      "title": "3. Zakres przetwarzanych danych",
+      "body": "Administrator może przetwarzać w szczególności następujące kategorie danych:\ndane identyfikacyjne użytkowników i przedstawicieli klientów, w tym imię, nazwisko, stanowisko, firma, NIP, dane rejestrowe i dane rozliczeniowe;\ndane kontaktowe, w tym adres e-mail, numer telefonu, adres korespondencyjny i dane kontaktowe osób wskazanych do obsługi konta;\ndane konta użytkownika, w tym login, identyfikator, role, historia logowań, ustawienia konta i informacje o aktywacji usług;\ndane operacyjne i techniczne, w tym adres IP, identyfikatory urządzeń, logi systemowe, znaczniki czasu, informacje o sesji, historii aktywności w aplikacji oraz działaniach podejmowanych przez użytkownika w systemie;\ndane związane z obsługą zapytań, leadów sprzedażowych, procesu onboardingu, zgłoszeń wsparcia i reklamacji;\ndane niezbędne do rozliczeń, księgowania i dochodzenia roszczeń;\ndane zawarte w dokumentach lub zbiorach wprowadzanych przez klienta do systemu, w tym potencjalnie dane osobowe znajdujące się w fakturach, załącznikach, plikach importowanych lub rekordach synchronizowanych z zewnętrznymi źródłami danych.\nZakres danych zależy od rodzaju relacji z Administratorem, sposobu korzystania z Usług oraz narzędzi i integracji aktywowanych przez klienta.\nAdministrator nie powinien przetwarzać danych nadmiarowych względem celu przetwarzania, zgodnie z zasadą minimalizacji danych wynikającą z RODO."
+    },
+    {
+      "title": "4. Cele i podstawy prawne przetwarzania",
+      "body": "Dane osobowe mogą być przetwarzane w następujących celach:\nzawarcie i wykonanie umowy o świadczenie usług, w tym utworzenie konta, zapewnienie dostępu do platformy, obsługa płatności, wdrożenie, wsparcie techniczne, utrzymanie i rozwój Usług;\npodjęcie działań na żądanie osoby, której dane dotyczą, przed zawarciem umowy, w szczególności obsługa formularza demo, kontaktu handlowego i prezentacji produktu;\nrealizacja obowiązków prawnych ciążących na Administratorze, w tym obowiązków podatkowych, rachunkowych, archiwizacyjnych i obowiązków związanych z bezpieczeństwem oraz obsługą praw osób, których dane dotyczą;\nrealizacja prawnie uzasadnionych interesów Administratora, takich jak zapewnienie bezpieczeństwa systemów, dochodzenie lub obrona przed roszczeniami, prowadzenie statystyk, audytów, pomiarów jakości usług, zapobieganie nadużyciom i administrowanie środowiskiem IT;\nmarketing bezpośredni własnych usług, w tym wysyłka informacji handlowych drogą elektroniczną i kontakt telefoniczny, o ile istnieje odpowiednia podstawa prawna, w tym zgoda, jeżeli jest wymagana przez odrębne przepisy;\nprowadzenie analiz i usprawnień produktu, o ile odbywa się to zgodnie z zasadami RODO oraz z uwzględnieniem odpowiednich zabezpieczeń.\nPodstawami prawnymi przetwarzania mogą być odpowiednio:\nart. 6 ust. 1 lit. b RODO – wykonanie umowy lub działania przed zawarciem umowy;\nart. 6 ust. 1 lit. c RODO – wypełnienie obowiązku prawnego;\nart. 6 ust. 1 lit. f RODO – prawnie uzasadniony interes Administratora;\nart. 6 ust. 1 lit. a RODO – zgoda osoby, której dane dotyczą, gdy jest wymagana.\nJeżeli w ramach usług dochodzi do przetwarzania szczególnych kategorii danych osobowych, dane takie mogą być przetwarzane wyłącznie przy istnieniu odrębnej, zgodnej z prawem podstawy prawnej i przy wdrożeniu podwyższonych zabezpieczeń."
+    },
+    {
+      "title": "5. Źródło danych",
+      "body": "Dane osobowe Administrator może pozyskiwać:\nbezpośrednio od osoby, której dane dotyczą;\nod klienta biznesowego, pracodawcy, zleceniodawcy albo innego podmiotu reprezentowanego przez użytkownika;\nz systemów informatycznych i integracji aktywowanych przez klienta;\nz publicznie dostępnych rejestrów, jeżeli jest to niezbędne do zawarcia lub wykonania umowy albo weryfikacji kontrahenta.\nW przypadku, gdy Administrator pozyskuje dane nie bezpośrednio od osoby, której dane dotyczą, realizuje obowiązki informacyjne zgodnie z art. 14 RODO, chyba że zachodzi ustawowy wyjątek."
+    },
+    {
+      "title": "6. Odbiorcy danych i podmioty przetwarzające",
+      "body": "Dane osobowe mogą być ujawniane:\nupoważnionym pracownikom i współpracownikom Administratora;\ndostawcom hostingu, infrastruktury chmurowej, narzędzi analitycznych, systemów mailingowych, wsparcia klienta, komunikacji, backupu i monitoringu;\ndostawcom usług księgowych, prawnych, audytowych i windykacyjnych;\noperatorom płatności i bankom;\npodmiotom świadczącym usługi bezpieczeństwa IT;\ninnym podmiotom przetwarzającym działającym na udokumentowane polecenie Administratora;\norganom publicznym, jeżeli obowiązek ujawnienia wynika z przepisów prawa.\nRODO wymaga, aby przetwarzanie przez podmiot przetwarzający odbywało się na podstawie umowy lub innego instrumentu prawnego określającego zakres i warunki przetwarzania.\nJeżeli Administrator korzysta z podwykonawców mających dostęp do danych osobowych, zapewnia zawarcie odpowiednich umów powierzenia i stosowanie adekwatnych zabezpieczeń."
+    },
+    {
+      "title": "7. Przekazywanie danych poza EOG",
+      "body": "Co do zasady Administrator powinien dążyć do przetwarzania danych w Europejskim Obszarze Gospodarczym.\nJeżeli jednak dochodzi do przekazywania danych poza EOG, odbywa się ono wyłącznie z zachowaniem wymogów RODO, w szczególności na podstawie decyzji stwierdzającej odpowiedni stopień ochrony, standardowych klauzul umownych albo innego zgodnego z prawem mechanizmu transferowego.\nInformacja o transferach poza EOG, jeżeli występują, powinna zostać wskazana w aktualnym wykazie podmiotów przetwarzających lub w załączniku do Polityki prywatności."
+    },
+    {
+      "title": "8. Okres przechowywania danych",
+      "body": "Dane osobowe są przechowywane nie dłużej, niż jest to niezbędne do realizacji celu, dla którego zostały zebrane.\nOkres retencji może zależeć od podstawy prawnej przetwarzania, w szczególności:\nprzez czas trwania umowy i rozliczeń po jej zakończeniu;\nprzez okres wymagany przepisami podatkowymi, rachunkowymi lub archiwizacyjnymi;\ndo czasu przedawnienia roszczeń;\ndo czasu wniesienia skutecznego sprzeciwu wobec przetwarzania opartego na prawnie uzasadnionym interesie;\ndo czasu cofnięcia zgody, jeżeli przetwarzanie opiera się na zgodzie.\nSzczegółowa tabela retencji danych powinna zostać wdrożona wewnętrznie jako dokument operacyjny Administratora."
+    },
+    {
+      "title": "9. Prawa osób, których dane dotyczą",
+      "body": "Osobie, której dane dotyczą, przysługuje prawo do:\ndostępu do danych;\nsprostowania danych;\nusunięcia danych;\nograniczenia przetwarzania;\nprzenoszenia danych;\nwniesienia sprzeciwu wobec przetwarzania danych opartego na art. 6 ust. 1 lit. f RODO;\ncofnięcia zgody w dowolnym momencie, jeśli przetwarzanie odbywa się na podstawie zgody;\nwniesienia skargi do Prezesa Urzędu Ochrony Danych Osobowych.\nWykonanie niektórych praw może podlegać ograniczeniom wynikającym z przepisów prawa lub charakteru relacji prawnej łączącej strony.\nŻądania dotyczące danych powinny być kierowane na wskazany adres kontaktowy Administratora."
+    },
+    {
+      "title": "10. Dane przetwarzane w ramach platformy SaaS",
+      "body": "W zakresie, w jakim Black Gold Sp. z o.o. przetwarza dane osobowe w imieniu klienta korzystającego z platformy, klient pozostaje administratorem danych, a Black Gold Sp. z o.o. występuje jako podmiot przetwarzający.\nW takim przypadku zasady przetwarzania danych określa odrębna umowa powierzenia przetwarzania danych osobowych.\nKlient zobowiązany jest zapewnić legalność wprowadzania danych do systemu oraz właściwe poinformowanie osób, których dane dotyczą, o przetwarzaniu danych w ramach jego własnych procesów."
+    },
+    {
+      "title": "11. Bezpieczeństwo danych",
+      "body": "Administrator wdraża środki techniczne i organizacyjne adekwatne do ryzyka naruszenia praw lub wolności osób fizycznych, w tym środki służące poufności, integralności, dostępności i odporności systemów oraz zdolności szybkiego przywrócenia dostępności danych w razie incydentu.\nŚrodki bezpieczeństwa mogą obejmować m.in. zarządzanie uprawnieniami, uwierzytelnianie, szyfrowanie transmisji, segmentację środowisk, rejestrowanie zdarzeń, monitorowanie, kopie zapasowe, testy bezpieczeństwa i polityki dostępu.\nSzczegółowy opis środków bezpieczeństwa może być ujawniany w ograniczonym zakresie, jeśli pełne ujawnienie mogłoby obniżyć poziom bezpieczeństwa systemów."
+    },
+    {
+      "title": "12. Profilowanie i zautomatyzowane podejmowanie decyzji",
+      "body": "Administrator może prowadzić analizy statystyczne, produktowe lub bezpieczeństwa z wykorzystaniem danych o aktywności użytkowników.\nJeżeli w ramach Usług dochodzi do profilowania lub zautomatyzowanego podejmowania decyzji wywołującego skutki prawne lub w podobny sposób istotnie wpływającego na osobę fizyczną, Administrator zapewni odrębne spełnienie obowiązków informacyjnych wynikających z RODO.\nNa dzień publikacji dokumentu należy wyraźnie wskazać, czy takie procesy występują, i jeżeli tak, w jakim zakresie."
+    },
+    {
+      "title": "13. Kontakt w sprawach prywatności",
+      "body": "W sprawach związanych z ochroną danych osobowych można kontaktować się z Administratorem pod adresem e-mail wskazanym przez Administratora.\nJeżeli Administrator wyznaczył inspektora ochrony danych, dane kontaktowe IOD powinny zostać wskazane w tym miejscu."
+    },
+    {
+      "title": "14. Zmiany Polityki prywatności",
+      "body": "Polityka prywatności może być zmieniana w przypadku zmian prawa, zmian funkcjonalności platformy, zmian modeli integracyjnych, zmian dostawców usług lub zmian organizacyjnych.\nAktualna wersja Polityki prywatności powinna być stale dostępna na stronie internetowej i w panelu użytkownika.\nO istotnych zmianach użytkownicy powinni być informowani w sposób adekwatny do charakteru zmian."
+    }
+  ],
+  "dpa": [
+    {
+      "title": "1. Strony i charakter umowy",
+      "body": "Niniejsza Umowa powierzenia przetwarzania danych osobowych („DPA”) zostaje zawarta pomiędzy klientem korzystającym z usług platformy Scopeo jako administratorem danych („Administrator”) a Black Gold Sp. z o.o. z siedzibą w Poznaniu jako podmiotem przetwarzającym („Procesor”).\nNiniejsza umowa stanowi umowę powierzenia przetwarzania danych osobowych, o której mowa w art. 28 ust. 3 RODO.\nZawarcie umowy głównej o świadczenie usług może stanowić udokumentowane polecenie Administratora dla Procesora w zakresie przetwarzania danych niezbędnego do wykonania usług, co znajduje odzwierciedlenie także we wzorach umów opartych o art. 28 RODO."
+    },
+    {
+      "title": "2. Definicje",
+      "body": "O ile DPA nie stanowi inaczej, pojęcia pisane wielką literą mają znaczenie nadane im w RODO lub w umowie głównej.\n„Dane osobowe” oznaczają wszelkie informacje o zidentyfikowanej lub możliwej do zidentyfikowania osobie fizycznej przetwarzane w ramach Usług.\n„Naruszenie ochrony danych osobowych” oznacza naruszenie bezpieczeństwa prowadzące do przypadkowego lub niezgodnego z prawem zniszczenia, utracenia, zmodyfikowania, nieuprawnionego ujawnienia lub nieuprawnionego dostępu do danych osobowych."
+    },
+    {
+      "title": "3. Przedmiot i czas trwania przetwarzania",
+      "body": "Administrator powierza Procesorowi przetwarzanie danych osobowych wyłącznie w zakresie niezbędnym do świadczenia usług objętych umową główną.\nPrzetwarzanie trwa przez okres obowiązywania umowy głównej oraz przez okres niezbędny do wykonania obowiązków po zakończeniu współpracy, zgodnie z udokumentowanymi instrukcjami Administratora i przepisami prawa.\nPo zakończeniu świadczenia usług związanych z przetwarzaniem Procesor usuwa lub zwraca dane osobowe Administratorowi, chyba że obowiązek dalszego przechowywania wynika z prawa Unii lub prawa polskiego."
+    },
+    {
+      "title": "4. Charakter i cel przetwarzania",
+      "body": "Przetwarzanie ma charakter zautomatyzowany i manualny, ciągły albo incydentalny, zależnie od sposobu korzystania z Usług przez Administratora.\nCelem przetwarzania jest wykonanie umowy głównej, w tym udostępnienie platformy SaaS, hostingu, przechowywania danych, przetwarzania danych wprowadzanych przez Administratora, obsługi kont użytkowników, wsparcia technicznego, monitorowania poprawności działania systemu, bezpieczeństwa i utrzymania Usług.\nW przypadku aktywacji dodatkowych modułów lub integracji cel przetwarzania obejmuje również realizację funkcji objętych tymi modułami lub integracjami."
+    },
+    {
+      "title": "5. Rodzaj danych i kategorie osób",
+      "body": "Powierzone dane mogą obejmować w szczególności:\ndane identyfikacyjne;\ndane kontaktowe;\ndane zatrudnieniowe i służbowe;\ndane księgowe, transakcyjne i dokumentowe;\ndane użytkowników końcowych, pracowników, współpracowników, kontrahentów, pełnomocników, reprezentantów i innych osób, których dane zostały wprowadzone do systemu przez Administratora.\nSzczegółowy zakres danych wynika z faktycznego sposobu korzystania z Usług przez Administratora.\nAdministrator nie powinien wprowadzać do systemu danych, których przetwarzanie nie jest niezbędne do realizacji celów biznesowych lub które nie są objęte odpowiednią podstawą prawną."
+    },
+    {
+      "title": "6. Obowiązki Procesora",
+      "body": "Procesor przetwarza dane osobowe wyłącznie na udokumentowane polecenie Administratora, chyba że obowiązek przetwarzania wynika z prawa.\nProcesor zapewnia, aby osoby upoważnione do przetwarzania danych zobowiązały się do zachowania poufności lub podlegały odpowiedniemu ustawowemu obowiązkowi poufności.\nProcesor wdraża odpowiednie środki techniczne i organizacyjne zapewniające poziom bezpieczeństwa odpowiadający ryzyku.\nProcesor pomaga Administratorowi, w miarę możliwości i z uwzględnieniem charakteru przetwarzania, wywiązać się z obowiązków odpowiadania na żądania osób, których dane dotyczą.\nProcesor pomaga Administratorowi w realizacji obowiązków dotyczących bezpieczeństwa przetwarzania, zgłaszania naruszeń, oceny skutków dla ochrony danych oraz uprzednich konsultacji, o ile jest to wymagane przez RODO.\nProcesor udostępnia Administratorowi informacje niezbędne do wykazania spełnienia obowiązków wynikających z art. 28 RODO oraz umożliwia audyty i inspekcje na rozsądnych, proporcjonalnych i uzgodnionych zasadach."
+    },
+    {
+      "title": "7. Obowiązki Administratora",
+      "body": "Administrator oświadcza, że przetwarza dane osobowe zgodnie z prawem i jest uprawniony do ich powierzenia Procesorowi.\nAdministrator odpowiada za prawidłowe spełnienie obowiązków informacyjnych wobec osób, których dane dotyczą, oraz za istnienie właściwej podstawy prawnej przetwarzania.\nAdministrator odpowiada za treść, zakres, jakość i legalność danych wprowadzanych do systemu oraz za wydawanie zgodnych z prawem instrukcji.\nAdministrator powinien korzystać z usług w sposób zgodny z umową główną, przepisami prawa i zasadami bezpieczeństwa."
+    },
+    {
+      "title": "8. Dalsze powierzenie",
+      "body": "Administrator wyraża ogólną zgodę na korzystanie przez Procesora z dalszych podmiotów przetwarzających, o ile Procesor zapewni nałożenie na nich obowiązków ochrony danych nie mniej rygorystycznych niż wynikające z niniejszej umowy.\nProcesor prowadzi aktualny wykaz subprocesorów i udostępnia go Administratorowi w sposób przyjęty w relacji kontraktowej.\nO planowanych zmianach dotyczących dodania lub zastąpienia subprocesora Procesor informuje Administratora z odpowiednim wyprzedzeniem, umożliwiając zgłoszenie uzasadnionego sprzeciwu.\nJeżeli subprocesor nie wywiąże się ze swoich obowiązków ochrony danych, Procesor ponosi wobec Administratora odpowiedzialność za wykonanie obowiązków tego subprocesora w zakresie przewidzianym prawem i umową."
+    },
+    {
+      "title": "9. Transfery międzynarodowe",
+      "body": "Procesor nie przekazuje danych osobowych poza EOG bez zapewnienia zgodnego z prawem mechanizmu transferowego i bez spełnienia obowiązków informacyjnych wobec Administratora.\nJeżeli transfer poza EOG następuje z udziałem subprocesora lub dostawcy infrastruktury, Procesor zapewnia odpowiednie zabezpieczenia wymagane przez RODO."
+    },
+    {
+      "title": "10. Naruszenia ochrony danych",
+      "body": "Procesor, bez zbędnej zwłoki, informuje Administratora o stwierdzonym naruszeniu ochrony danych osobowych dotyczącym danych powierzonych.\nZawiadomienie powinno zawierać, w miarę możliwości, opis charakteru naruszenia, kategorie i przybliżoną liczbę osób, których dane dotyczą, kategorie i przybliżoną liczbę rekordów danych, możliwe konsekwencje naruszenia oraz środki zastosowane lub proponowane w celu zaradzenia naruszeniu.\nProcesor współpracuje z Administratorem przy ocenie skutków naruszenia i realizacji obowiązków notyfikacyjnych."
+    },
+    {
+      "title": "11. Audyty",
+      "body": "Administrator ma prawo przeprowadzić audyt zgodności Procesora z niniejszą umową i art. 28 RODO w zakresie niezbędnym do weryfikacji spełnienia obowiązków wynikających z prawa.\nAudyt powinien być przeprowadzany z zachowaniem poufności informacji, bezpieczeństwa środowisk produkcyjnych i zasad minimalizacji zakłóceń po stronie Procesora.\nStrony mogą uzgodnić, że zamiast audytu onsite Procesor udostępni dokumentację, raporty bezpieczeństwa, odpowiedzi na kwestionariusze, wyniki testów lub certyfikaty, o ile będą wystarczające do wykazania zgodności."
+    },
+    {
+      "title": "12. Usunięcie lub zwrot danych",
+      "body": "Po zakończeniu świadczenia usług Procesor, zgodnie z wyborem Administratora, usuwa lub zwraca dane osobowe i usuwa istniejące kopie, chyba że dalsze przechowywanie jest wymagane przepisami prawa.\nProcesor może utrzymywać dane w kopiach zapasowych przez technicznie uzasadniony, ograniczony okres retencji backupowej, z zachowaniem odpowiednich zabezpieczeń i bez przywracania do aktywnego użycia poza przypadkami awaryjnymi."
+    },
+    {
+      "title": "13. Odpowiedzialność",
+      "body": "Każda ze stron odpowiada za naruszenie obowiązków wynikających z RODO i niniejszej umowy zgodnie z obowiązującymi przepisami prawa oraz postanowieniami umowy głównej.\nW relacjach między stronami zaleca się precyzyjne uregulowanie zasad odpowiedzialności, limitów odpowiedzialności oraz wyłączeń, z uwzględnieniem ograniczeń wynikających z bezwzględnie obowiązujących przepisów prawa."
+    },
+    {
+      "title": "14. Postanowienia końcowe",
+      "body": "W sprawach nieuregulowanych niniejszą umową zastosowanie mają postanowienia umowy głównej, RODO oraz właściwe przepisy prawa polskiego i prawa Unii Europejskiej.\nDPA wchodzi w życie z dniem zawarcia umowy głównej lub zaakceptowania niniejszego dokumentu przez strony.\nZałącznikiem do DPA powinien być aktualny wykaz subprocesorów oraz opis kategorii danych, celów i środków bezpieczeństwa."
+    }
+  ],
+  "cookies": [
+    {
+      "title": "1. Postanowienia ogólne",
+      "body": "Niniejsza Polityka cookies określa zasady wykorzystywania plików cookies, local storage, tagów, pikseli, logów serwera i technologii podobnych w związku z korzystaniem ze stron internetowych i platformy Scopeo prowadzonej przez Black Gold Sp. z o.o. z siedzibą w Poznaniu.\nW środowisku SaaS przejrzyste informowanie użytkowników o stosowanych technologiach śledzących stanowi element szerszego obowiązku transparentności wynikającego z przepisów o ochronie danych i prywatności użytkowników.\nPolityka cookies powinna być stosowana łącznie z Polityką prywatności i regulaminem świadczenia usług drogą elektroniczną."
+    },
+    {
+      "title": "2. Czym są pliki cookies",
+      "body": "Cookies to niewielkie informacje tekstowe zapisywane na urządzeniu końcowym użytkownika i odczytywane przez system teleinformatyczny podczas korzystania ze strony lub aplikacji.\nCookies mogą być własne albo pochodzić od podmiotów trzecich, a także mogą mieć charakter sesyjny albo trwały."
+    },
+    {
+      "title": "3. Cele stosowania cookies",
+      "body": "Cookies mogą być wykorzystywane w następujących celach:\nzapewnienie prawidłowego działania strony i platformy;\nutrzymanie sesji użytkownika po zalogowaniu;\nzapamiętanie preferencji użytkownika;\nzapewnienie bezpieczeństwa i zapobieganie nadużyciom;\nprowadzenie statystyk korzystania z serwisu;\npomiar skuteczności kampanii marketingowych;\npersonalizacja treści marketingowych lub funkcjonalnych, jeżeli taka funkcjonalność jest stosowana zgodnie z prawem.\nJeżeli określone cookies nie są niezbędne do świadczenia usługi, ich stosowanie powinno opierać się na odpowiedniej podstawie prawnej i mechanizmie zarządzania zgodami zgodnym z przyjętym modelem zgodności."
+    },
+    {
+      "title": "4. Rodzaje cookies",
+      "body": "W serwisie mogą być stosowane następujące kategorie cookies:\nniezbędne – umożliwiające prawidłowe działanie serwisu i funkcji bezpieczeństwa;\nfunkcjonalne – wspierające ustawienia i wygodę korzystania z serwisu;\nanalityczne – pozwalające zrozumieć sposób korzystania z serwisu;\nmarketingowe – wykorzystywane do działań reklamowych i pomiarowych.\nKonkretna lista narzędzi, dostawców i czasów przechowywania powinna zostać wskazana w tabeli cookies publikowanej przez Administratora i aktualizowanej wraz ze zmianami stosów technologicznych."
+    },
+    {
+      "title": "5. Zarządzanie zgodą",
+      "body": "Użytkownik powinien mieć możliwość zarządzania preferencjami cookies poprzez baner cookies lub centrum preferencji.\nZgoda na cookies inne niż niezbędne powinna być dobrowolna, świadoma i możliwa do wycofania w każdym czasie.\nWycofanie zgody nie wpływa na zgodność z prawem przetwarzania dokonanego przed jej wycofaniem.\nNiezależnie od ustawień banera użytkownik może również zmienić ustawienia swojej przeglądarki internetowej."
+    },
+    {
+      "title": "6. Logi serwera i dane techniczne",
+      "body": "Niezależnie od cookies Administrator może przetwarzać dane eksploatacyjne i logi serwera związane z korzystaniem z serwisu, takie jak adres IP, data i czas żądania, informacje o urządzeniu i przeglądarce, identyfikatory sesji oraz informacje o błędach.\nTakie dane są zwykle niezbędne do zapewnienia bezpieczeństwa, diagnozowania problemów, administrowania usługą oraz przeciwdziałania nadużyciom."
+    },
+    {
+      "title": "7. Zmiany Polityki cookies",
+      "body": "Polityka cookies może być zmieniana wraz ze zmianą technologii, dostawców usług, funkcjonalności serwisu albo wymogów prawnych.\nAktualna wersja powinna być stale dostępna na stronie internetowej."
+    }
+  ],
+  "packageIntro": "Komplet dokumentów prawnych dla Scopeo / Black Gold Sp. z o.o.\nZałożenia dokumentu\nNiniejszy pakiet stanowi roboczy, rozbudowany komplet dokumentów prawnych dla modelu SaaS obejmującego platformę do raportowania śladu węglowego, automatyzacji analizy danych księgowych i przetwarzania danych użytkowników w ramach usług świadczonych drogą elektroniczną przez Black Gold Sp. z o.o. z siedzibą w Poznaniu. Obowiązek przygotowania regulaminu usług elektronicznych wynika z ustawy o świadczeniu usług drogą elektroniczną, która wymaga określenia co najmniej rodzaju i zakresu usług, wymagań technicznych, zakazu dostarczania treści bezprawnych oraz zasad zawierania i rozwiązywania umów. W modelu SaaS przetwarzającym dane klientów niezbędne są również przejrzyste informacje o przetwarzaniu danych osobowych oraz odpowiednia umowa powierzenia zgodna z art. 28 RODO.\nDokument ma charakter wzorcowy i powinien zostać przed publikacją uzupełniony o finalne dane identyfikacyjne spółki, kanały kontaktowe, listę podmiotów przetwarzających, okresy retencji, opis procesów wewnętrznych, listę integracji, parametry SLA, politykę backupów, procedury bezpieczeństwa i finalny model sprzedaży. Zgodność SaaS z RODO wymaga bowiem nie tylko samego dokumentu, ale także realnych środków organizacyjnych i technicznych oraz przejrzystości wobec użytkowników.",
+  "formClauses": "Poniższe treści są wzorcowe i powinny zostać wdrożone zgodnie z rzeczywistym procesem marketingowym, konfiguracją CRM, narzędzi newsletterowych i polityką zgód.\n1. Formularz „Umów demo”\nZakres pól rekomendowany\nImię i nazwisko\nE-mail służbowy\nNumer telefonu\nNazwa firmy\nNIP\nLiczba faktur miesięcznie / skala organizacji\nWiadomość / opis potrzeb\nKlauzula informacyjna skrócona pod formularzem\n„Administratorem Twoich danych osobowych jest Black Gold Sp. z o.o. z siedzibą w Poznaniu. Twoje dane przetwarzamy w celu obsługi zapytania, umówienia prezentacji produktu oraz kontaktu związanego z ofertą usług. Więcej informacji o zasadach przetwarzania danych znajdziesz w Polityce prywatności.”\nCheckbox obowiązkowy\n[ ] „Potwierdzam, że zapoznałem(-am) się z Polityką prywatności oraz akceptuję zasady przetwarzania danych osobowych w zakresie niezbędnym do obsługi mojego zapytania.”\nCheckbox opcjonalny – e-mail marketing\n[ ] „Wyrażam zgodę na otrzymywanie od Black Gold Sp. z o.o. informacji handlowych dotyczących produktów i usług drogą elektroniczną na podany adres e-mail.”\nCheckbox opcjonalny – kontakt telefoniczny\n[ ] „Wyrażam zgodę na kontakt telefoniczny ze strony Black Gold Sp. z o.o. w celu przedstawienia oferty usług.”\n2. Formularz rejestracyjny / założenie konta\nKlauzula pod formularzem\n„Administratorem danych osobowych podanych w formularzu rejestracji jest Black Gold Sp. z o.o. z siedzibą w Poznaniu. Dane są przetwarzane w celu utworzenia i obsługi konta użytkownika, realizacji umowy o świadczenie usług drogą elektroniczną, zapewnienia bezpieczeństwa usługi oraz realizacji obowiązków prawnych związanych z prowadzeniem platformy. Szczegółowe informacje znajdują się w Polityce prywatności.”\nCheckbox obowiązkowy nr 1\n[ ] „Akceptuję Regulamin świadczenia usług drogą elektroniczną.”\nCheckbox obowiązkowy nr 2\n[ ] „Potwierdzam zapoznanie się z Polityką prywatności.”\nCheckbox opcjonalny marketingowy\n[ ] „Wyrażam zgodę na otrzymywanie informacji o nowościach produktowych, materiałach edukacyjnych i ofertach specjalnych od Black Gold Sp. z o.o. drogą elektroniczną.”\n3. Formularz kontaktowy „Napisz do nas”\nKlauzula skrócona\n„Administratorem Twoich danych jest Black Gold Sp. z o.o. z siedzibą w Poznaniu. Dane podane w formularzu będą przetwarzane w celu udzielenia odpowiedzi na wiadomość i prowadzenia dalszej korespondencji związanej z Twoim zapytaniem.”\nCheckbox obowiązkowy\n[ ] „Zapoznałem(-am) się z Polityką prywatności.”\n4. Formularz pobrania materiału / lead magnet\nKlauzula\n„Podanie danych jest dobrowolne, ale niezbędne do przesłania materiału. Administratorem danych jest Black Gold Sp. z o.o. z siedzibą w Poznaniu. Dane będą przetwarzane w celu dostarczenia materiału oraz, jeżeli wyrażono odrębną zgodę, w celach marketingowych.”\nCheckbox obowiązkowy\n[ ] „Potwierdzam zapoznanie się z Polityką prywatności.”\nCheckbox opcjonalny marketingowy\n[ ] „Wyrażam zgodę na otrzymywanie newslettera oraz informacji handlowych drogą elektroniczną.”\nC. Rekomendacje wdrożeniowe\nTreść checkboxów musi odpowiadać rzeczywistemu procesowi przetwarzania danych i nie może łączyć zgód, które powinny być rozdzielone.\nZgody marketingowe powinny być dobrowolne, rozdzielne od akceptacji regulaminu i możliwe do wycofania w każdym czasie.\nW systemie należy logować dowody udzielenia zgód, ich zakres, treść, datę, źródło i ewentualne wycofanie.\nW przypadku korzystania z zewnętrznych narzędzi CRM, e-mail marketingu, analytics lub remarketingu należy zsynchronizować dokumentację prawną z realnymi przepływami danych i listą dostawców.\nPolityka prywatności, Polityka cookies, regulamin oraz DPA powinny być spójne definicyjnie i operacyjnie.\nDalsze kroki przed publikacją\nUzupełnić pełne dane rejestrowe Black Gold Sp. z o.o., adres, e-mail prawny, e-mail privacy, support i dane do reklamacji.\nUzupełnić finalny opis usług Scopeo, zakres integracji, model rozliczeń, retencję danych, listę subprocesorów i transferów poza EOG.\nSpiąć dokumenty z finalnym regulaminem świadczenia usług drogą elektroniczną.\nPrzygotować krótsze wersje klauzul do UI, checkboxów i onboardingów.\nPoddać komplet finalnemu przeglądowi przez polskiego radcę prawnego lub adwokata wdrażającego e-commerce/SaaS/RODO."
+}

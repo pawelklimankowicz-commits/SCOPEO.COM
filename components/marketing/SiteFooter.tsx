@@ -77,6 +77,9 @@ export default function SiteFooter() {
               <Link href="/dpa">DPA (powierzenie)</Link>
             </li>
             <li>
+              <Link href="/klauzule-formularzy">Klauzule formularzy</Link>
+            </li>
+            <li>
               <Link href="/kontakt-prawny">Kontakt prawny</Link>
             </li>
           </ul>
