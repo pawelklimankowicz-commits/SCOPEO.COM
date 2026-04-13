@@ -1135,6 +1135,23 @@
   background: rgba(255, 255, 255, 0.06);
 }
 
+.mkt-video-wrap {
+  max-width: 920px;
+  margin: 0 auto;
+  border-radius: var(--mkt-radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--mkt-border);
+  background: #0b1215;
+  box-shadow: var(--mkt-shadow-md);
+}
+
+.mkt-video {
+  display: block;
+  width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
 .mkt-showcase-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

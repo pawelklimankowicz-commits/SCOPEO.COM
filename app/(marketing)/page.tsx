@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import LandingVideo from '@/components/marketing/LandingVideo';
 import LeadForm from '@/components/marketing/LeadForm';
 import {
   AuditTrailMock,
@@ -69,6 +70,8 @@ export default function MarketingHomePage() {
           </div>
         </div>
       </section>
+
+      <LandingVideo />
 
       <section className="mkt-section mkt-section--dark">
         <div className="mkt-inner">
