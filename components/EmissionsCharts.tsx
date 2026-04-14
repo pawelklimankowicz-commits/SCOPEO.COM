@@ -43,9 +43,18 @@ export function EmissionsCharts({ data }: { data: EmissionRow[] }) {
     }));
 
   return (
-    <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-      <div className="rounded-lg border bg-white p-5">
-        <h3 className="mb-4 text-sm font-semibold text-gray-700">Podzial Scope 1/2/3 (kg CO2e)</h3>
+    <div
+      style={{
+        marginTop: 24,
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+        gap: 16,
+      }}
+    >
+      <div style={{ borderRadius: 16, border: '1px solid #27345f', background: '#0b1c24', padding: 20 }}>
+        <h3 style={{ marginTop: 0, marginBottom: 14, fontSize: 14, color: '#c5d4f0' }}>
+          Podzial Scope 1/2/3 (kg CO2e)
+        </h3>
         <ResponsiveContainer width="100%" height={220}>
           <PieChart>
             <Pie data={byScope} dataKey="value" nameKey="scope" cx="50%" cy="50%" outerRadius={80} label>
@@ -59,8 +68,10 @@ export function EmissionsCharts({ data }: { data: EmissionRow[] }) {
         </ResponsiveContainer>
       </div>
 
-      <div className="rounded-lg border bg-white p-5">
-        <h3 className="mb-4 text-sm font-semibold text-gray-700">Top 10 kategorii emisji (kg CO2e)</h3>
+      <div style={{ borderRadius: 16, border: '1px solid #27345f', background: '#0b1c24', padding: 20 }}>
+        <h3 style={{ marginTop: 0, marginBottom: 14, fontSize: 14, color: '#c5d4f0' }}>
+          Top 10 kategorii emisji (kg CO2e)
+        </h3>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={top10} layout="vertical" margin={{ left: 8 }}>
             <CartesianGrid strokeDasharray="3 3" horizontal={false} />

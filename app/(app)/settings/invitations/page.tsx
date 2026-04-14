@@ -63,34 +63,30 @@ export default function InvitationsPage() {
     if (res.ok) fetchInvites();
   }
 
-  const statusColor: Record<string, string> = {
-    PENDING: 'text-yellow-600',
-    ACCEPTED: 'text-green-600',
-    EXPIRED: 'text-gray-500',
-    CANCELLED: 'text-red-500',
-  };
-
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold">Zaproszenia</h1>
+    <div style={{ maxWidth: 980, margin: '0 auto', padding: '24px 16px' }}>
+      <h1 style={{ marginBottom: 20, fontSize: 30, fontWeight: 800 }}>Zaproszenia</h1>
 
-      <form onSubmit={sendInvite} className="mb-8 space-y-4 rounded-lg border bg-white p-5">
-        <h2 className="text-lg font-semibold">Zapros uzytkownika</h2>
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        {success && <p className="text-sm text-green-600">{success}</p>}
-        <div className="flex gap-3">
+      <form
+        onSubmit={sendInvite}
+        style={{ marginBottom: 24, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 20 }}
+      >
+        <h2 style={{ marginTop: 0, fontSize: 18, fontWeight: 700 }}>Zapros uzytkownika</h2>
+        {error && <p style={{ fontSize: 13, color: '#dc2626' }}>{error}</p>}
+        {success && <p style={{ fontSize: 13, color: '#16a34a' }}>{success}</p>}
+        <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="adres@email.com"
             required
-            className="flex-1 rounded-md border px-3 py-2 text-sm"
+            style={{ flex: 1, minWidth: 240, borderRadius: 8, border: '1px solid #cbd5e1', padding: '10px 12px' }}
           />
           <select
             value={role}
             onChange={(e) => setRole(e.target.value as (typeof ROLES)[number])}
-            className="rounded-md border px-3 py-2 text-sm"
+            style={{ borderRadius: 8, border: '1px solid #cbd5e1', padding: '10px 12px', minWidth: 160 }}
           >
             {ROLES.map((r) => (
               <option key={r} value={r}>
@@ -101,52 +97,59 @@ export default function InvitationsPage() {
           <button
             type="submit"
             disabled={loading}
-            className="rounded-md bg-green-600 px-4 py-2 text-sm text-white hover:bg-green-700 disabled:opacity-50"
+            style={{
+              borderRadius: 8,
+              border: 0,
+              background: '#16a34a',
+              color: '#fff',
+              padding: '10px 14px',
+              opacity: loading ? 0.6 : 1,
+            }}
           >
             {loading ? 'Wysylam...' : 'Wyslij zaproszenie'}
           </button>
         </div>
       </form>
 
-      <div className="overflow-hidden rounded-lg border bg-white">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50">
+      <div style={{ overflow: 'hidden', borderRadius: 12, border: '1px solid #e2e8f0', background: '#fff' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+          <thead style={{ background: '#f8fafc' }}>
             <tr>
-              <th className="px-4 py-3 text-left font-medium text-gray-600">Email</th>
-              <th className="px-4 py-3 text-left font-medium text-gray-600">Rola</th>
-              <th className="px-4 py-3 text-left font-medium text-gray-600">Status</th>
-              <th className="px-4 py-3 text-left font-medium text-gray-600">Wygasa</th>
-              <th className="px-4 py-3" />
+              <th style={{ textAlign: 'left', padding: '10px 14px', color: '#475569' }}>Email</th>
+              <th style={{ textAlign: 'left', padding: '10px 14px', color: '#475569' }}>Rola</th>
+              <th style={{ textAlign: 'left', padding: '10px 14px', color: '#475569' }}>Status</th>
+              <th style={{ textAlign: 'left', padding: '10px 14px', color: '#475569' }}>Wygasa</th>
+              <th style={{ padding: '10px 14px' }} />
             </tr>
           </thead>
-          <tbody className="divide-y">
+          <tbody>
             {invites.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-gray-400">
+                <td colSpan={5} style={{ textAlign: 'center', color: '#94a3b8', padding: 20 }}>
                   Brak zaproszen
                 </td>
               </tr>
             )}
             {invites.map((inv) => (
-              <tr key={inv.id}>
-                <td className="px-4 py-3">{inv.email}</td>
-                <td className="px-4 py-3">{inv.role}</td>
-                <td className={`px-4 py-3 font-medium ${statusColor[inv.status] ?? ''}`}>{inv.status}</td>
-                <td className="px-4 py-3 text-gray-500">
+              <tr key={inv.id} style={{ borderTop: '1px solid #f1f5f9' }}>
+                <td style={{ padding: '10px 14px' }}>{inv.email}</td>
+                <td style={{ padding: '10px 14px' }}>{inv.role}</td>
+                <td style={{ padding: '10px 14px', fontWeight: 700 }}>{inv.status}</td>
+                <td style={{ padding: '10px 14px', color: '#64748b' }}>
                   {new Date(inv.expiresAt).toLocaleDateString('pl-PL')}
                 </td>
-                <td className="flex justify-end gap-2 px-4 py-3">
+                <td style={{ padding: '10px 14px', textAlign: 'right' }}>
                   {inv.status === 'PENDING' && (
                     <>
                       <button
                         onClick={() => handleAction(inv.id, 'resend')}
-                        className="text-xs text-blue-600 hover:underline"
+                        style={{ border: 0, background: 'transparent', color: '#2563eb', fontSize: 12 }}
                       >
                         Wyslij ponownie
                       </button>
                       <button
                         onClick={() => handleAction(inv.id, 'cancel')}
-                        className="text-xs text-red-500 hover:underline"
+                        style={{ border: 0, background: 'transparent', color: '#ef4444', fontSize: 12, marginLeft: 10 }}
                       >
                         Anuluj
                       </button>
@@ -155,7 +158,7 @@ export default function InvitationsPage() {
                   {inv.status === 'EXPIRED' && (
                     <button
                       onClick={() => handleAction(inv.id, 'resend')}
-                      className="text-xs text-blue-600 hover:underline"
+                      style={{ border: 0, background: 'transparent', color: '#2563eb', fontSize: 12 }}
                     >
                       Odnow
                     </button>

@@ -44,45 +44,52 @@ export default function GdprPage() {
   }
 
   return (
-    <div className="mx-auto max-w-xl px-4 py-8">
-      <h1 className="mb-2 text-2xl font-bold">Prawa RODO</h1>
-      <p className="mb-8 text-sm text-gray-600">
+    <div style={{ maxWidth: 760, margin: '0 auto', padding: '24px 16px' }}>
+      <h1 style={{ marginBottom: 6, fontSize: 30, fontWeight: 800 }}>Prawa RODO</h1>
+      <p style={{ marginBottom: 24, fontSize: 14, color: '#64748b' }}>
         Zgodnie z RODO przysluguje Ci prawo dostepu do danych oraz prawo do ich usuniecia. Wnioski sa
         rozpatrywane w ciagu 30 dni.
       </p>
 
-      <form onSubmit={submit} className="space-y-5 rounded-lg border bg-white p-6">
+      <form
+        onSubmit={submit}
+        style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 20 }}
+      >
         <div>
-          <label className="mb-2 block text-sm font-medium">Rodzaj wniosku</label>
-          <div className="space-y-2">
-            <label className="flex cursor-pointer items-start gap-3">
+          <label style={{ marginBottom: 10, display: 'block', fontSize: 14, fontWeight: 700 }}>
+            Rodzaj wniosku
+          </label>
+          <div style={{ display: 'grid', gap: 10 }}>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
               <input
                 type="radio"
                 name="type"
                 value="ACCESS"
                 checked={type === 'ACCESS'}
                 onChange={() => setType('ACCESS')}
-                className="mt-0.5"
+                style={{ marginTop: 2 }}
               />
               <div>
-                <div className="text-sm font-medium">Dostep do danych (art. 15 RODO)</div>
-                <div className="text-xs text-gray-500">
+                <div style={{ fontSize: 14, fontWeight: 600 }}>Dostep do danych (art. 15 RODO)</div>
+                <div style={{ fontSize: 12, color: '#64748b' }}>
                   Otrzymasz kopie swoich danych osobowych przetwarzanych w Scopeo.
                 </div>
               </div>
             </label>
-            <label className="flex cursor-pointer items-start gap-3">
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
               <input
                 type="radio"
                 name="type"
                 value="ERASURE"
                 checked={type === 'ERASURE'}
                 onChange={() => setType('ERASURE')}
-                className="mt-0.5"
+                style={{ marginTop: 2 }}
               />
               <div>
-                <div className="text-sm font-medium text-red-700">Usuniecie danych (art. 17 RODO)</div>
-                <div className="text-xs text-gray-500">
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#b91c1c' }}>
+                  Usuniecie danych (art. 17 RODO)
+                </div>
+                <div style={{ fontSize: 12, color: '#64748b' }}>
                   Twoje konto zostanie zanonimizowane. Operacja jest nieodwracalna.
                 </div>
               </div>
@@ -91,20 +98,26 @@ export default function GdprPage() {
         </div>
 
         {result && (
-          <div className="rounded border border-green-200 bg-green-50 p-3 text-sm text-green-800">
-            {result}
-          </div>
+          <div style={{ borderRadius: 8, border: '1px solid #bbf7d0', background: '#f0fdf4', color: '#166534', fontSize: 13, padding: 12, marginTop: 16 }}>{result}</div>
         )}
         {error && (
-          <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>
+          <div style={{ borderRadius: 8, border: '1px solid #fecaca', background: '#fef2f2', color: '#991b1b', fontSize: 13, padding: 12, marginTop: 16 }}>{error}</div>
         )}
 
         <button
           type="submit"
           disabled={loading || !!result}
-          className={`w-full rounded-md px-4 py-2 text-sm font-medium text-white disabled:opacity-50 ${
-            type === 'ERASURE' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
-          }`}
+          style={{
+            width: '100%',
+            borderRadius: 8,
+            border: 0,
+            marginTop: 16,
+            padding: '10px 12px',
+            color: '#fff',
+            fontWeight: 700,
+            background: type === 'ERASURE' ? '#dc2626' : '#2563eb',
+            opacity: loading || !!result ? 0.6 : 1,
+          }}
         >
           {loading ? 'Wysylam...' : 'Zloz wniosek'}
         </button>
