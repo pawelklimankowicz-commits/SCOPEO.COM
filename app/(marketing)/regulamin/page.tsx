@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
+const REGULATIONS_LAST_UPDATED = '2026-04-14';
+
 export default function RegulaminPage() {
   const registryDetails = LEGAL_COMPANY.registryDetails.trim();
   const registryLine = registryDetails.length > 0 ? ` ${registryDetails}` : '';
@@ -24,7 +26,7 @@ export default function RegulaminPage() {
             świadczeniu usług drogą elektroniczną.
           </p>
           <p style={{ marginTop: 12, fontSize: '0.8125rem', color: '#64748b' }}>
-            Ostatnia aktualizacja: {new Date().getFullYear()}-04-13
+            Ostatnia aktualizacja: {REGULATIONS_LAST_UPDATED}
           </p>
         </div>
       </div>
