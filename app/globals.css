@@ -12,8 +12,8 @@ body {
 
 /* ——— Aplikacja (login, dashboard, onboarding) — ciemny motyw ——— */
 body {
-  background: #0a1020;
-  color: #eef3ff;
+  background: #f0fdf4;
+  color: #0f172a;
 }
 
 body:has(.mkt-wrap) {
