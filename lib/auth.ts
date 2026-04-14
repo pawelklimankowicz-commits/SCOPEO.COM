@@ -3,6 +3,7 @@ import Credentials from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { checkRateLimit } from '@/lib/security';
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: 'jwt' },
@@ -10,8 +11,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     name: 'credentials',
     credentials: { email: {}, password: {} },
     async authorize(credentials) {
-      const email = String(credentials.email || '');
+      const email = String(credentials.email || '').trim().toLowerCase();
       const password = String(credentials.password || '');
+      const loginLimit = checkRateLimit(`login:${email}`, {
+        windowMs: 15 * 60_000,
+        max: 10,
+        blockMs: 30 * 60_000,
+      });
+      if (!loginLimit.ok) {
+        return null;
+      }
       const user = await prisma.user.findUnique({ where: { email }, include: { memberships: { include: { organization: true } } } });
       if (!user?.passwordHash) return null;
       const ok = await bcrypt.compare(password, user.passwordHash);

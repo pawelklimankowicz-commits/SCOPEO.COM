@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { checkRateLimit, getClientIp } from '@/lib/security';
 
 const schema = z.object({
   name: z.string().min(2),
@@ -18,11 +19,18 @@ const schema = z.object({
 });
 
 export async function POST(req: Request) {
+  const ip = getClientIp(req.headers);
+  const limit = checkRateLimit(`contact:${ip}`, { windowMs: 60_000, max: 8, blockMs: 10 * 60_000 });
+  if (!limit.ok) {
+    return NextResponse.json(
+      { error: 'Too many requests' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfterSec) } }
+    );
+  }
   try {
     const json = await req.json();
     const lead = schema.parse(json);
-    const forwardedFor = req.headers.get('x-forwarded-for');
-    const ipAddress = forwardedFor ? forwardedFor.split(',')[0]?.trim() : null;
+    const ipAddress = ip === 'unknown' ? null : ip;
     const userAgent = req.headers.get('user-agent');
 
     const createdLead = await prisma.$transaction(async (tx) => {

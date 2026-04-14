@@ -38,7 +38,7 @@ export default async function OnboardingPage() {
         <li>Podejście do granic — operational control / financial control / equity share.</li>
       </ol>
 
-      <OnboardingV6Form organizationId={organizationId} initial={profile ?? undefined} />
+      <OnboardingV6Form initial={profile ?? undefined} />
     </main>
   );
 }

@@ -1,13 +1,25 @@
 import { prisma } from '@/lib/prisma';
 export async function calculateOrganizationEmissions(organizationId: string) {
   const lines = await prisma.invoiceLine.findMany({ where: { invoice: { organizationId } }, include: { emissionFactor: { include: { emissionSource: true } }, mappingDecision: true, invoice: true } });
+  const overrideFactorIds = Array.from(
+    new Set(lines.map((line) => line.overrideFactorId).filter((id): id is string => Boolean(id)))
+  );
+  const overrideFactors = overrideFactorIds.length
+    ? await prisma.emissionFactor.findMany({
+        where: { id: { in: overrideFactorIds } },
+        include: { emissionSource: true },
+      })
+    : [];
+  const factorById = new Map(overrideFactors.map((factor) => [factor.id, factor]));
   let scope1 = 0, scope2 = 0, scope3 = 0;
   const byCategory: Record<string, number> = {};
   const calculations = [] as any[];
   for (const line of lines) {
     const categoryCode = line.overrideCategoryCode || line.categoryCode;
     const factorId = line.overrideFactorId || line.emissionFactorId;
-    const factor = factorId ? await prisma.emissionFactor.findUnique({ where: { id: factorId }, include: { emissionSource: true } }) : null;
+    const factor = line.overrideFactorId
+      ? factorById.get(line.overrideFactorId) ?? null
+      : line.emissionFactor;
     const factorValue = factor?.factorValue ?? 0;
     const co2eKg = line.calculationMethod === 'ACTIVITY' ? (line.activityValue ?? 0) * factorValue : line.netValue * factorValue;
     if (line.scope === 'SCOPE1') scope1 += co2eKg;

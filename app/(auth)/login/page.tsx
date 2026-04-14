@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { registerSchema } from '@/lib/schema';
 import { signIn } from '@/lib/auth';
+import { headers } from 'next/headers';
+import { checkRateLimit, getClientIp } from '@/lib/security';
 
 async function registerAction(formData: FormData) {
   'use server';
@@ -42,8 +44,21 @@ async function registerAction(formData: FormData) {
 
 async function loginAction(formData: FormData) {
   'use server';
+  const h = await headers();
+  const ip = getClientIp(h);
+  const email = String(formData.get('email') || '')
+    .trim()
+    .toLowerCase();
+  const limit = checkRateLimit(`login-action:${email}:${ip}`, {
+    windowMs: 15 * 60_000,
+    max: 8,
+    blockMs: 30 * 60_000,
+  });
+  if (!limit.ok) {
+    return;
+  }
   await signIn('credentials', {
-    email: String(formData.get('email') || ''),
+    email,
     password: String(formData.get('password') || ''),
     redirectTo: '/dashboard',
   });

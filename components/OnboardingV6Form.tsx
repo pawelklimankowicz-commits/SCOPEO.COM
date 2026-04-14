@@ -4,10 +4,8 @@ import { useState } from 'react';
 import type { CarbonProfile } from '@prisma/client';
 
 export default function OnboardingV6Form({
-  organizationId,
   initial,
 }: {
-  organizationId: string;
   initial?: CarbonProfile | null;
 }) {
   const [saving, setSaving] = useState(false);
@@ -19,7 +17,6 @@ export default function OnboardingV6Form({
     setMessage('');
     const fd = new FormData(e.currentTarget);
     const body = {
-      organizationId,
       companyName: String(fd.get('companyName') || ''),
       reportingYear: Number(fd.get('reportingYear')),
       baseYear: Number(fd.get('baseYear')),

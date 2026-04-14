@@ -1,9 +1,23 @@
 import { parseStringPromise } from 'xml2js';
+const FORBIDDEN_XML_PATTERNS = [/<\!DOCTYPE/i, /<\!ENTITY/i, /SYSTEM\s+["']/i, /PUBLIC\s+["']/i];
 function toArray<T>(value: T | T[] | undefined): T[] { if (!value) return []; return Array.isArray(value) ? value : [value]; }
-function pick(node: any, keys: string[]): any { for (const key of keys) if (node?.[key] !== undefined) return node[key]; return undefined; }
+function pick(node: any, keys: string[]): any {
+  for (const key of keys) if (node?.[key] !== undefined) return node[key];
+  if (!node || typeof node !== 'object') return undefined;
+  const normalizedKeys = Object.keys(node).reduce<Record<string, any>>((acc, current) => {
+    const localName = current.includes(':') ? current.split(':').pop() ?? current : current;
+    acc[localName] = node[current];
+    return acc;
+  }, {});
+  for (const key of keys) if (normalizedKeys[key] !== undefined) return normalizedKeys[key];
+  return undefined;
+}
 function firstText(value: any): string | undefined { if (value == null) return undefined; if (typeof value === 'string') return value; if (Array.isArray(value)) return firstText(value[0]); if (typeof value === 'object' && '_' in value) return String(value._); return undefined; }
 function num(value: any): number | null { const t = firstText(value); if (!t) return null; const n = Number(t.replace(',', '.')); return Number.isFinite(n) ? n : null; }
 export async function parseKsefFa3Xml(xml: string) {
+  if (FORBIDDEN_XML_PATTERNS.some((pattern) => pattern.test(xml))) {
+    throw new Error('XML contains forbidden DTD or ENTITY declarations');
+  }
   const parsed = await parseStringPromise(xml, { explicitArray: false, trim: true, mergeAttrs: true });
   const root = parsed?.Faktura || parsed?.Invoice || parsed;
   const fa = pick(root, ['Fa', 'fa']) || root;

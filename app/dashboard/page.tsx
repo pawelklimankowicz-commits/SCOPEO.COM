@@ -10,10 +10,20 @@ async function logoutAction() {
   await signOut({ redirectTo: '/login' });
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ page?: string }>;
+}) {
   const { session, organizationId, membership } = await requireTenantMembership();
+  const invoicePageSize = 50;
+  const params = searchParams ? await searchParams : undefined;
+  const pageParam = Number(params?.page ?? '1');
+  const page = Number.isFinite(pageParam) && pageParam > 0 ? Math.floor(pageParam) : 1;
+  const skip = (page - 1) * invoicePageSize;
   const profile = await prisma.carbonProfile.findUnique({ where: { organizationId } });
   const org = await prisma.organization.findUnique({ where: { id: organizationId } });
+  const invoicesTotal = await prisma.invoice.count({ where: { organizationId } });
   const invoices = await prisma.invoice.findMany({
     where: { organizationId },
     include: {
@@ -26,8 +36,11 @@ export default async function DashboardPage() {
       },
     },
     orderBy: { issueDate: 'desc' },
+    skip,
+    take: invoicePageSize,
   });
   const lines = invoices.flatMap((i) => i.lines);
+  const totalPages = Math.max(1, Math.ceil(invoicesTotal / invoicePageSize));
   const factors = await prisma.emissionFactor.findMany({
     where: { organizationId },
     include: { emissionSource: true },
@@ -109,7 +122,7 @@ export default async function DashboardPage() {
           <strong style={{ color: '#dce6ff' }}>Akcje:</strong> najpierw opcjonalnie „Importuj faktory
           zewnętrzne” (wymaga sieci), potem wklej XML FA i „Importuj XML”, na końcu „Przelicz emisje”.
         </p>
-        <DashboardActionsV9 organizationId={organizationId} />
+        <DashboardActionsV9 />
       </div>
 
       <div className="card section" style={{ marginTop: 28 }}>
@@ -181,6 +194,25 @@ export default async function DashboardPage() {
       </div>
 
       <ReviewPanel lines={lines} factors={factors} history={history} />
+      <p className="app-muted" style={{ marginTop: 10, fontSize: 13 }}>
+        Pokazano {invoices.length} z {invoicesTotal} faktur (limit {invoicePageSize} na widok).
+      </p>
+      <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+        <Link
+          className="btn btn-secondary"
+          href={`/dashboard?page=${Math.max(1, page - 1)}`}
+          aria-disabled={page <= 1}
+        >
+          Poprzednia strona
+        </Link>
+        <Link
+          className="btn btn-secondary"
+          href={`/dashboard?page=${Math.min(totalPages, page + 1)}`}
+          aria-disabled={page >= totalPages}
+        >
+          Następna strona
+        </Link>
+      </div>
 
       <div className="card section" style={{ marginTop: 24 }}>
         <h2>Ostatnia kalkulacja emisji</h2>

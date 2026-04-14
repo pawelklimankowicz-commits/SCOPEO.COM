@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { prisma } from '@/lib/prisma';
 
 type ValidationIssue = { severity: 'error' | 'warning'; code: string; message: string; context?: string };
@@ -9,11 +9,25 @@ function toNum(v: any) { const s = String(v ?? '').trim().replace(',', '.'); con
 function compact(arr: any[]) { return arr.filter(Boolean); }
 function slug(v: string) { return v.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, ''); }
 
-export function validateWorkbookBasics(wb: XLSX.WorkBook, expectedSheets: string[]) {
+export function validateWorkbookBasics(sheetNames: string[], expectedSheets: string[]) {
   const issues: ValidationIssue[] = [];
-  if (!wb.SheetNames.length) issues.push({ severity:'error', code:'NO_SHEETS', message:'Workbook has no sheets' });
-  for (const s of expectedSheets) if (!wb.SheetNames.includes(s)) issues.push({ severity:'error', code:'MISSING_SHEET', message:`Missing sheet: ${s}` });
+  if (!sheetNames.length) issues.push({ severity:'error', code:'NO_SHEETS', message:'Workbook has no sheets' });
+  for (const s of expectedSheets) if (!sheetNames.includes(s)) issues.push({ severity:'error', code:'MISSING_SHEET', message:`Missing sheet: ${s}` });
   return issues;
+}
+
+function worksheetToRows(worksheet: ExcelJS.Worksheet): any[][] {
+  const rows: any[][] = [];
+  worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+    const values = row.values as any[];
+    const normalized = values.slice(1).map((cell) => {
+      if (cell == null) return '';
+      if (typeof cell === 'object' && 'text' in cell) return String((cell as any).text ?? '');
+      return String(cell);
+    });
+    rows[rowNumber - 1] = normalized;
+  });
+  return rows;
 }
 
 export function findHeaderRow(rows: any[][], required: string[]) {
@@ -159,10 +173,21 @@ export async function importExternalFactors(organizationId: string, actorUserId?
     const run = await prisma.factorImportRun.create({ data: { organizationId, actorUserId: actorUserId ?? null, sourceCode: item.code, sourceUrl: item.sourceUrl, status: 'STARTED', validationJson: '[]' } });
     try {
       const res = await fetch(item.sourceUrl);
-      const buffer = Buffer.from(await res.arrayBuffer());
-      const wb = XLSX.read(buffer, { type: 'buffer' });
-      const basics = item.code === 'UK_GOV_CONVERSION' ? validateWorkbookBasics(wb, ['Front page','Factors by Category']) : validateWorkbookBasics(wb, ['Emission Factors Hub']);
-      const rows = XLSX.utils.sheet_to_json(item.code === 'UK_GOV_CONVERSION' ? wb.Sheets['Factors by Category'] : wb.Sheets['Emission Factors Hub'], { header: 1, defval: '' }) as any[][];
+      const workbook = new ExcelJS.Workbook();
+      const workbookBytes = Buffer.from(await res.arrayBuffer());
+      await workbook.xlsx.load(workbookBytes as any);
+      const sheetNames = workbook.worksheets.map((sheet) => sheet.name);
+      const basics =
+        item.code === 'UK_GOV_CONVERSION'
+          ? validateWorkbookBasics(sheetNames, ['Front page', 'Factors by Category'])
+          : validateWorkbookBasics(sheetNames, ['Emission Factors Hub']);
+      const targetSheetName =
+        item.code === 'UK_GOV_CONVERSION' ? 'Factors by Category' : 'Emission Factors Hub';
+      const worksheet = workbook.getWorksheet(targetSheetName);
+      if (!worksheet) {
+        throw new Error(`Missing sheet ${targetSheetName}`);
+      }
+      const rows = worksheetToRows(worksheet);
       const parsed = item.code === 'UK_GOV_CONVERSION' ? parseUkRows(rows) : parseEpaRows(rows);
       const issues: ValidationIssue[] = [...basics, ...(parsed.issues as ValidationIssue[])];
       await prisma.factorImportRun.update({ where: { id: run.id }, data: { status: issues.some(i => i.severity==='error') ? 'FAILED' : 'VALIDATED', validationJson: JSON.stringify(issues) } });

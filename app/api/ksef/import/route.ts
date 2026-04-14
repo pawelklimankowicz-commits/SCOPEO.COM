@@ -5,14 +5,27 @@ import { importInvoicesSchema } from '@/lib/schema';
 import { parseKsefFa3Xml } from '@/lib/ksef-xml';
 import { classifyInvoiceLine } from '@/lib/nlp-mapping';
 import { resolveBestFactor } from '@/lib/factor-import';
+import { checkRateLimit, getClientIp } from '@/lib/security';
 
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  const organizationId = (session.user as any).organizationId as string;
+  const ip = getClientIp(req.headers);
+  const limit = checkRateLimit(`ksef-import:${organizationId}:${ip}`, {
+    windowMs: 60_000,
+    max: 15,
+    blockMs: 5 * 60_000,
+  });
+  if (!limit.ok) {
+    return NextResponse.json(
+      { ok: false, error: 'Too many requests' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfterSec) } }
+    );
+  }
   try {
     const body = await req.json();
     const parsed = importInvoicesSchema.parse(body);
-    const organizationId = (session.user as any).organizationId as string;
     const organization = await prisma.organization.findUnique({ where: { id: organizationId } });
     const invoice = await parseKsefFa3Xml(parsed.xml);
     const supplierTaxId = invoice.sellerTaxId ?? '';

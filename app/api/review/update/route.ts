@@ -3,9 +3,19 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { reviewUpdateSchema } from '@/lib/schema';
 import { ensureAllowedTransition, reviewActionFromStatus, buildDiff } from '@/lib/review-workflow';
+import { checkRateLimit, getClientIp } from '@/lib/security';
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  const organizationId = (session.user as any).organizationId as string;
+  const ip = getClientIp(req.headers);
+  const limit = checkRateLimit(`review-update:${organizationId}:${ip}`, { windowMs: 60_000, max: 60 });
+  if (!limit.ok) {
+    return NextResponse.json(
+      { ok: false, error: 'Too many requests' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfterSec) } }
+    );
+  }
   try {
     const body = await req.json();
     const parsed = reviewUpdateSchema.parse(body);
