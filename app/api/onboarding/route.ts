@@ -3,6 +3,7 @@ import { onboardingSchema } from '@/lib/schema';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { checkRateLimit, getClientIp } from '@/lib/security';
+import { encryptKsefToken } from '@/lib/ksef-token-crypto';
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
@@ -18,7 +19,8 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const parsed = onboardingSchema.parse(body);
-    const profile = await prisma.carbonProfile.upsert({ where: { organizationId: orgId }, update: { companyName: parsed.companyName, reportingYear: parsed.reportingYear, baseYear: parsed.baseYear, boundaryApproach: parsed.boundaryApproach, industry: parsed.industry, ksefTokenMasked: `${parsed.ksefToken.slice(0, 4)}...${parsed.ksefToken.slice(-4)}`, supportsMarketBased: parsed.supportsMarketBased, hasGreenContracts: parsed.hasGreenContracts, businessTravelIncluded: parsed.businessTravelIncluded, employeeCommutingIncluded: parsed.employeeCommutingIncluded, notes: parsed.notes }, create: { organizationId: orgId, companyName: parsed.companyName, reportingYear: parsed.reportingYear, baseYear: parsed.baseYear, boundaryApproach: parsed.boundaryApproach, industry: parsed.industry, ksefTokenMasked: `${parsed.ksefToken.slice(0, 4)}...${parsed.ksefToken.slice(-4)}`, supportsMarketBased: parsed.supportsMarketBased, hasGreenContracts: parsed.hasGreenContracts, businessTravelIncluded: parsed.businessTravelIncluded, employeeCommutingIncluded: parsed.employeeCommutingIncluded, notes: parsed.notes } });
+    const encryptedToken = encryptKsefToken(parsed.ksefToken);
+    const profile = await prisma.carbonProfile.upsert({ where: { organizationId: orgId }, update: { companyName: parsed.companyName, reportingYear: parsed.reportingYear, baseYear: parsed.baseYear, boundaryApproach: parsed.boundaryApproach, industry: parsed.industry, ksefTokenMasked: `${parsed.ksefToken.slice(0, 4)}...${parsed.ksefToken.slice(-4)}`, ksefTokenEncrypted: encryptedToken, supportsMarketBased: parsed.supportsMarketBased, hasGreenContracts: parsed.hasGreenContracts, businessTravelIncluded: parsed.businessTravelIncluded, employeeCommutingIncluded: parsed.employeeCommutingIncluded, notes: parsed.notes }, create: { organizationId: orgId, companyName: parsed.companyName, reportingYear: parsed.reportingYear, baseYear: parsed.baseYear, boundaryApproach: parsed.boundaryApproach, industry: parsed.industry, ksefTokenMasked: `${parsed.ksefToken.slice(0, 4)}...${parsed.ksefToken.slice(-4)}`, ksefTokenEncrypted: encryptedToken, supportsMarketBased: parsed.supportsMarketBased, hasGreenContracts: parsed.hasGreenContracts, businessTravelIncluded: parsed.businessTravelIncluded, employeeCommutingIncluded: parsed.employeeCommutingIncluded, notes: parsed.notes } });
     await prisma.organization.update({ where: { id: orgId }, data: { regionCode: 'PL' } });
     return NextResponse.json({ ok: true, profile });
   } catch (error) {

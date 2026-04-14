@@ -9,6 +9,8 @@ import { checkRateLimit, getClientIp } from '@/lib/security';
 import { isRawPayloadEncryptionConfigured, secureRawPayload } from '@/lib/payload-security';
 import { logger } from '@/lib/logger';
 import { writeProcessingRecord } from '@/lib/privacy-register';
+import { decryptKsefToken } from '@/lib/ksef-token-crypto';
+import { fetchKsefInvoiceXml } from '@/lib/ksef-client';
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -37,7 +39,25 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const parsed = importInvoicesSchema.parse(body);
     const organization = await prisma.organization.findUnique({ where: { id: organizationId } });
-    const invoice = await parseKsefFa3Xml(parsed.xml);
+    let xmlPayload = parsed.xml;
+    if (!xmlPayload && parsed.ksefReferenceNumber) {
+      const profile = await prisma.carbonProfile.findUnique({ where: { organizationId } });
+      if (!profile?.ksefTokenEncrypted) {
+        return NextResponse.json(
+          { ok: false, error: 'Missing encrypted KSeF token. Update onboarding first.' },
+          { status: 400 }
+        );
+      }
+      const token = decryptKsefToken(profile.ksefTokenEncrypted);
+      xmlPayload = await fetchKsefInvoiceXml({
+        token,
+        referenceNumber: parsed.ksefReferenceNumber,
+      });
+    }
+    if (!xmlPayload) {
+      return NextResponse.json({ ok: false, error: 'Missing XML payload' }, { status: 400 });
+    }
+    const invoice = await parseKsefFa3Xml(xmlPayload);
     const securePayload = secureRawPayload(invoice.rawPayload);
     const supplierTaxId = invoice.sellerTaxId ?? '';
     const supplier = await prisma.supplier.upsert({

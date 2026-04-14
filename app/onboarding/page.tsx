@@ -19,7 +19,7 @@ export default async function OnboardingPage() {
       <h1 className="title">Onboarding organizacji</h1>
       <p className="subtitle app-intro">
         Ten krok odpowiada za profil raportowania GHG: granice organizacji, rok bazowy, token integracji
-        KSeF (przechowywany maskowany) oraz zakres tematów (np. delegacje w scope 3). Po zapisie możesz
+        KSeF (przechowywany zaszyfrowany i maskowany) oraz zakres tematów (np. delegacje w scope 3). Po zapisie możesz
         importować faktury XML i faktory emisji w panelu głównym.
       </p>
 

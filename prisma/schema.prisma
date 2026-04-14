@@ -130,6 +130,7 @@ model CarbonProfile {
   boundaryApproach          BoundaryApproach
   industry                  String
   ksefTokenMasked           String
+  ksefTokenEncrypted        String?
   supportsMarketBased       Boolean      @default(false)
   hasGreenContracts         Boolean      @default(false)
   businessTravelIncluded    Boolean      @default(false)

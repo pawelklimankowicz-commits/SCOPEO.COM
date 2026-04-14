@@ -100,7 +100,7 @@ export default function OnboardingV6Form({
         </select>
       </div>
       <div style={{ marginTop: 16 }}>
-        <label>Token integracji KSeF (min. 10 znaków; przechowywany maskowany)</label>
+        <label>Token integracji KSeF (min. 10 znaków; szyfrowany AES-256-GCM)</label>
         <input
           name="ksefToken"
           type="password"
