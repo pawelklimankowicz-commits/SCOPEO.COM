@@ -310,3 +310,18 @@ model VerificationToken {
   expires    DateTime
   @@unique([identifier, token])
 }
+
+model Lead {
+  id               String   @id @default(cuid())
+  name             String
+  email            String
+  company          String
+  invoices         String
+  message          String?
+  phone            String?
+  acceptPrivacy    Boolean  @default(true)
+  marketingEmail   Boolean  @default(false)
+  marketingPhone   Boolean  @default(false)
+  source           String?
+  createdAt        DateTime @default(now())
+}
