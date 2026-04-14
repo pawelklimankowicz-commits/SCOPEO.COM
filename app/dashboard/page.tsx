@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import DashboardActionsV9 from '@/components/DashboardActionsV9';
 import ReviewPanel from '@/components/ReviewPanel';
 import InvitesPanel from '@/components/InvitesPanel';
+import GdprRequestsPanel from '@/components/GdprRequestsPanel';
 import LogoutButton from '@/components/LogoutButton';
 
 export default async function DashboardPage({
@@ -212,6 +213,7 @@ export default async function DashboardPage({
 
       <ReviewPanel lines={lines} factors={factors} history={history} />
       <InvitesPanel canManage={canManageInvites} />
+      <GdprRequestsPanel canManage={canManageInvites} />
       <p className="app-muted" style={{ marginTop: 10, fontSize: 13 }}>
         Pokazano {invoices.length} z {invoicesTotal} faktur (limit {invoicePageSize} na widok).
       </p>
