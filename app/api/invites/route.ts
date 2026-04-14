@@ -65,7 +65,18 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  await sendInvitationEmail({ email: parsed.email.toLowerCase(), token });
+  try {
+    await sendInvitationEmail({ email: parsed.email.toLowerCase(), token });
+  } catch {
+    await prisma.invitation.delete({ where: { id: invite.id } });
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'Nie udało się wysłać emaila z zaproszeniem. Sprawdź konfigurację serwisu email.',
+      },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json({ ok: true, invite });
 }

@@ -16,8 +16,7 @@ export const authOptions: NextAuthOptions = {
       const password = String(credentials.password || '');
       const loginLimit = await checkRateLimit(`login:${email}`, {
         windowMs: 15 * 60_000,
-        max: 10,
-        blockMs: 30 * 60_000,
+        maxRequests: 10,
       });
       if (!loginLimit.ok) {
         return null;

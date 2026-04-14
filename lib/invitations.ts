@@ -16,20 +16,20 @@ export async function sendInvitationEmail(input: {
   token: string;
 }) {
   const appUrl = process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL;
-  const inviteUrl = appUrl
-    ? `${appUrl.replace(/\/$/, '')}/login?inviteToken=${encodeURIComponent(input.token)}`
-    : null;
   const resendKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.LEADS_FROM_EMAIL;
-  if (!inviteUrl || !resendKey || !fromEmail) {
-    throw new Error('Email service not configured for invitations');
+  if (!appUrl || !resendKey || !fromEmail) {
+    throw new Error(
+      'Email service not configured: missing NEXTAUTH_URL, RESEND_API_KEY, or LEADS_FROM_EMAIL'
+    );
   }
+  const inviteUrl = `${appUrl.replace(/\/$/, '')}/login?inviteToken=${encodeURIComponent(input.token)}`;
   const resend = new Resend(resendKey);
   const result = await resend.emails.send({
     from: fromEmail,
     to: input.email.toLowerCase(),
     subject: 'Zaproszenie do Scopeo',
-    text: `Otrzymujesz zaproszenie do organizacji w Scopeo. Użyj linku: ${inviteUrl}`,
+    text: `Otrzymujesz zaproszenie do organizacji w Scopeo.\n\nKliknij link, aby dołączyć:\n${inviteUrl}\n\nLink wygasa po 7 dniach.`,
   });
   if (result.error) {
     throw new Error(`Failed to send invitation email: ${result.error.message}`);

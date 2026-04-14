@@ -22,7 +22,7 @@ const schema = z.object({
 
 export async function POST(req: Request) {
   const ip = getClientIp(req.headers);
-  const limit = await checkRateLimit(`contact:${ip}`, { windowMs: 60_000, max: 8, blockMs: 10 * 60_000 });
+  const limit = await checkRateLimit(`contact:${ip}`, { windowMs: 60_000, maxRequests: 8 });
   if (!limit.ok) {
     return NextResponse.json(
       { error: 'Too many requests' },

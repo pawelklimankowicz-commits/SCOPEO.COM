@@ -11,7 +11,10 @@ export async function POST(req: NextRequest) {
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   const organizationId = (session.user as any).organizationId as string;
   const ip = getClientIp(req.headers);
-  const limit = await checkRateLimit(`review-update:${organizationId}:${ip}`, { windowMs: 60_000, max: 60 });
+  const limit = await checkRateLimit(`review-update:${organizationId}:${ip}`, {
+    windowMs: 60_000,
+    maxRequests: 60,
+  });
   if (!limit.ok) {
     logger.warn({ context: 'review_update', message: 'Rate limited review update', organizationId, ip });
     return NextResponse.json(

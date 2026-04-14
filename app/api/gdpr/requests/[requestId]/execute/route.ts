@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { writeProcessingRecord } from '@/lib/privacy-register';
+import { Resend } from 'resend';
 
 function canManage(role?: string | null) {
   return role === 'OWNER' || role === 'ADMIN';
@@ -124,6 +125,21 @@ export async function POST(
       invoiceAnonymizationPolicy: process.env.GDPR_ERASURE_ANONYMIZE_INVOICES === 'true',
     },
   });
+
+  const resendKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.LEADS_FROM_EMAIL;
+  if (resendKey && fromEmail && request.subjectEmail) {
+    const resend = new Resend(resendKey);
+    await resend.emails.send({
+      from: fromEmail,
+      to: request.subjectEmail,
+      subject: 'Potwierdzenie realizacji wniosku RODO - Scopeo',
+      text:
+        request.type === 'ERASURE'
+          ? `Informujemy, ze Twoj wniosek o usuniecie danych osobowych (nr ${request.id}) zostal zrealizowany. Twoje dane zostaly zanonimizowane zgodnie z wymogami RODO.`
+          : `Informujemy, ze Twoj wniosek o dostep do danych osobowych (nr ${request.id}) zostal zrealizowany. Skontaktuj sie z nami, jesli masz pytania.`,
+    });
+  }
 
   return NextResponse.json({
     ok: true,

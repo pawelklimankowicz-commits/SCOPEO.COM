@@ -6,6 +6,7 @@ import ReviewPanel from '@/components/ReviewPanel';
 import InvitesPanel from '@/components/InvitesPanel';
 import GdprRequestsPanel from '@/components/GdprRequestsPanel';
 import LogoutButton from '@/components/LogoutButton';
+import { EmissionsCharts } from '@/components/EmissionsCharts';
 
 export default async function DashboardPage({
   searchParams,
@@ -47,6 +48,27 @@ export default async function DashboardPage({
     take: invoicePageSize,
   });
   const lines = invoices.flatMap((i) => i.lines);
+  const emissionMap = new Map<string, { categoryCode: string; scope: string; totalCo2eKg: number }>();
+  for (const line of lines) {
+    const categoryCode = line.overrideCategoryCode ?? line.categoryCode;
+    const factor = line.emissionFactor;
+    const factorValue = factor?.factorValue ?? 0;
+    const co2eKg =
+      line.calculationMethod === 'ACTIVITY'
+        ? (line.activityValue ?? 0) * factorValue
+        : line.netValue * factorValue;
+    const scopeLabel =
+      line.scope === 'SCOPE1' ? 'Scope 1' : line.scope === 'SCOPE2' ? 'Scope 2' : 'Scope 3';
+    const key = `${scopeLabel}:${categoryCode}`;
+    const existing = emissionMap.get(key);
+    if (existing) {
+      existing.totalCo2eKg += co2eKg;
+      emissionMap.set(key, existing);
+    } else {
+      emissionMap.set(key, { categoryCode, scope: scopeLabel, totalCo2eKg: co2eKg });
+    }
+  }
+  const emissions = Array.from(emissionMap.values());
   const totalPages = Math.max(1, Math.ceil(invoicesTotal / invoicePageSize));
   const factors = await prisma.emissionFactor.findMany({
     where: { organizationId },
@@ -212,6 +234,7 @@ export default async function DashboardPage({
       </div>
 
       <ReviewPanel lines={lines} factors={factors} history={history} />
+      <EmissionsCharts data={emissions} />
       <InvitesPanel canManage={canManageInvites} />
       <GdprRequestsPanel canManage={canManageInvites} />
       <p className="app-muted" style={{ marginTop: 10, fontSize: 13 }}>

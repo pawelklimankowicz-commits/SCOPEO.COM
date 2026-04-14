@@ -8,8 +8,7 @@ export async function POST() {
   const organizationId = (session.user as any).organizationId as string;
   const limit = await checkRateLimit(`factors-import:${organizationId}`, {
     windowMs: 10 * 60_000,
-    max: 3,
-    blockMs: 30 * 60_000,
+    maxRequests: 3,
   });
   if (!limit.ok) {
     return NextResponse.json(

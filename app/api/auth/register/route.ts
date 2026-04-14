@@ -7,11 +7,14 @@ import { checkRateLimit, getClientIp } from '@/lib/security';
 export async function POST(req: NextRequest) {
   try {
     const ip = getClientIp(req.headers);
-    const limit = await checkRateLimit(`register:${ip}`, { windowMs: 60 * 60_000, max: 5 });
-    if (!limit.ok) {
+    const rl = await checkRateLimit(`register:${ip}`, {
+      windowMs: 60 * 60_000,
+      maxRequests: 5,
+    });
+    if (!rl.ok) {
       return NextResponse.json(
-        { ok: false, error: 'Too many registration attempts' },
-        { status: 429, headers: { 'Retry-After': String(limit.retryAfterSec) } }
+        { ok: false, error: 'Too many registration attempts. Try again later.' },
+        { status: 429, headers: { 'Retry-After': String(rl.retryAfterSec) } }
       );
     }
     const body = await req.json();

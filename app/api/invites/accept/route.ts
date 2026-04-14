@@ -6,9 +6,9 @@ import { hashInvitationToken } from '@/lib/invitations';
 
 const acceptInviteSchema = z.object({
   inviteToken: z.string().min(16),
-  name: z.string().min(2),
+  name: z.string().min(2).optional(),
   email: z.string().email(),
-  password: z.string().min(8),
+  password: z.string().min(8).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -31,32 +31,44 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Invitation email mismatch' }, { status: 400 });
   }
 
-  const passwordHash = await bcrypt.hash(parsed.password, 10);
-  const existingUser = await prisma.user.findUnique({ where: { email } });
-  const user = existingUser
-    ? existingUser
-    : await prisma.user.create({
-        data: {
-          email,
-          name: parsed.name,
-          passwordHash,
-        },
-      });
-
-  await prisma.membership.upsert({
-    where: {
-      userId_organizationId: {
-        userId: user.id,
-        organizationId: invite.organizationId,
-      },
-    },
-    update: { role: invite.role },
-    create: {
-      userId: user.id,
-      organizationId: invite.organizationId,
-      role: invite.role,
-    },
+  const existingUser = await prisma.user.findUnique({
+    where: { email: invite.email.toLowerCase() },
   });
+
+  let userId: string;
+  if (existingUser) {
+    // User already exists — never overwrite their password from invite flow.
+    userId = existingUser.id;
+  } else {
+    if (!parsed.password || typeof parsed.password !== 'string' || parsed.password.length < 8) {
+      return NextResponse.json(
+        { ok: false, error: 'Password must be at least 8 characters' },
+        { status: 400 }
+      );
+    }
+    const passwordHash = await bcrypt.hash(parsed.password, 12);
+    const newUser = await prisma.user.create({
+      data: {
+        email: invite.email.toLowerCase(),
+        name: parsed.name ?? null,
+        passwordHash,
+      },
+    });
+    userId = newUser.id;
+  }
+
+  const existingMembership = await prisma.membership.findFirst({
+    where: { userId, organizationId: invite.organizationId },
+  });
+  if (!existingMembership) {
+    await prisma.membership.create({
+      data: {
+        userId,
+        organizationId: invite.organizationId,
+        role: invite.role,
+      },
+    });
+  }
 
   await prisma.invitation.update({
     where: { id: invite.id },

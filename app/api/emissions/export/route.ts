@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { calculateOrganizationEmissions } from '@/lib/emissions';
+import { checkRateLimit, getClientIp } from '@/lib/security';
 import ExcelJS from 'exceljs';
-import { PDFDocument, StandardFonts } from 'pdf-lib';
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 function toCsv(result: Awaited<ReturnType<typeof calculateOrganizationEmissions>>) {
   const headers = [
@@ -37,35 +38,104 @@ async function toXlsx(result: Awaited<ReturnType<typeof calculateOrganizationEmi
 }
 
 async function toPdf(result: Awaited<ReturnType<typeof calculateOrganizationEmissions>>) {
-  const pdf = await PDFDocument.create();
-  const font = await pdf.embedFont(StandardFonts.Helvetica);
-  let page = pdf.addPage([595, 842]);
-  let y = 810;
-  const line = (text: string) => {
-    if (y < 40) {
-      page = pdf.addPage([595, 842]);
-      y = 810;
-    }
-    page.drawText(text, { x: 40, y, size: 11, font });
-    y -= 16;
+  const rows = result.calculations;
+  const pdfDoc = await PDFDocument.create();
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+  const PAGE_HEIGHT = 841.89; // A4
+  const PAGE_WIDTH = 595.28;
+  const MARGIN = 40;
+  const ROW_HEIGHT = 18;
+  const HEADER_HEIGHT = 80;
+  const ROWS_PER_PAGE = Math.floor((PAGE_HEIGHT - MARGIN * 2 - HEADER_HEIGHT) / ROW_HEIGHT);
+
+  const drawHeaders = (page: any, y: number) => {
+    const cols = ['Faktura', 'Kategoria', 'Zrodlo', 'CO2e (kg)'];
+    const colWidths = [130, 200, 120, 80];
+    let x = MARGIN;
+    cols.forEach((col, i) => {
+      page.drawText(col, { x, y, size: 9, font: boldFont, color: rgb(0.3, 0.3, 0.3) });
+      x += colWidths[i];
+    });
   };
-  line('Scopeo - Emissions Export');
-  line(`Generated: ${new Date().toISOString()}`);
-  line(`Scope1: ${result.scope1.toFixed(2)} kg`);
-  line(`Scope2: ${result.scope2.toFixed(2)} kg`);
-  line(`Scope3: ${result.scope3.toFixed(2)} kg`);
-  line(`Total: ${result.totalKg.toFixed(2)} kg`);
-  y -= 8;
-  for (const row of result.calculations) {
-    line(`${row.invoiceNumber} | ${row.categoryCode} | ${Number(row.co2eKg).toFixed(2)} kg`);
+
+  let page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+  let y = PAGE_HEIGHT - MARGIN;
+
+  page.drawText('Raport emisji CO2', {
+    x: MARGIN,
+    y: y - 20,
+    size: 16,
+    font: boldFont,
+    color: rgb(0, 0, 0),
+  });
+  page.drawText(`Wygenerowano: ${new Date().toISOString()}`, {
+    x: MARGIN,
+    y: y - 40,
+    size: 9,
+    font,
+    color: rgb(0.2, 0.2, 0.2),
+  });
+  page.drawText(
+    `Suma: ${result.totalKg.toFixed(2)} kg (S1: ${result.scope1.toFixed(2)}, S2: ${result.scope2.toFixed(
+      2
+    )}, S3: ${result.scope3.toFixed(2)})`,
+    {
+      x: MARGIN,
+      y: y - 56,
+      size: 9,
+      font,
+      color: rgb(0.2, 0.2, 0.2),
+    }
+  );
+  y -= 80;
+
+  drawHeaders(page, y);
+  y -= ROW_HEIGHT;
+
+  for (let i = 0; i < rows.length; i += 1) {
+    if ((i > 0 && i % ROWS_PER_PAGE === 0) || y < MARGIN + ROW_HEIGHT) {
+      page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+      y = PAGE_HEIGHT - MARGIN;
+      drawHeaders(page, y);
+      y -= ROW_HEIGHT;
+    }
+
+    const row = rows[i];
+    const cells = [
+      String(row.invoiceNumber ?? '').slice(0, 24),
+      String(row.categoryCode ?? '').slice(0, 35),
+      String(row.factorSource ?? '').slice(0, 22),
+      Number(row.co2eKg ?? 0).toFixed(2),
+    ];
+    const colWidths = [130, 200, 120, 80];
+    let x = MARGIN;
+    cells.forEach((cell, colIdx) => {
+      page.drawText(cell, { x, y, size: 8, font, color: rgb(0, 0, 0) });
+      x += colWidths[colIdx];
+    });
+    y -= ROW_HEIGHT;
   }
-  return pdf.save();
+
+  return pdfDoc.save();
 }
 
 export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  const ip = getClientIp(req.headers);
   const organizationId = (session.user as any).organizationId as string;
+  const rl = await checkRateLimit(`export:${organizationId}:${ip}`, {
+    maxRequests: 20,
+    windowMs: 60 * 1000,
+  });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { ok: false, error: 'Too many export requests' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfterSec) } }
+    );
+  }
   const format = (req.nextUrl.searchParams.get('format') ?? 'csv').toLowerCase();
   const reportYear = Number(req.nextUrl.searchParams.get('year'));
   const validReportYear =

@@ -20,8 +20,7 @@ export async function POST(req: NextRequest) {
   const ip = getClientIp(req.headers);
   const limit = await checkRateLimit(`ksef-import:${organizationId}:${ip}`, {
     windowMs: 60_000,
-    max: 15,
-    blockMs: 5 * 60_000,
+    maxRequests: 15,
   });
   if (!limit.ok) {
     logger.warn({ context: 'ksef_import', message: 'Rate limited import request', organizationId, ip });

@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma';
 export async function calculateOrganizationEmissions(
   organizationId: string,
   reportYear?: number,
-  options?: { persist?: boolean }
+  options: { persist?: boolean } = { persist: true }
 ) {
   const dateFilter =
     reportYear && Number.isInteger(reportYear)
@@ -40,7 +40,7 @@ export async function calculateOrganizationEmissions(
     calculations.push({ invoiceNumber: line.invoice.number, description: line.description, categoryCode, factorCode: factor?.code, factorSource: factor?.emissionSource?.code, reviewStatus: line.mappingDecision?.status, co2eKg });
   }
   const totalKg = scope1 + scope2 + scope3;
-  if (options?.persist !== false) {
+  if (options.persist !== false) {
     await prisma.emissionCalculation.create({ data: { organizationId, scope1Kg: scope1, scope2Kg: scope2, scope3Kg: scope3, totalKg, summaryJson: { byCategory, calculations, reportYear: reportYear ?? null } as any } });
   }
   return { scope1, scope2, scope3, totalKg, byCategory, calculations, reportYear: reportYear ?? null };

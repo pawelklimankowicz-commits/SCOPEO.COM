@@ -2,25 +2,35 @@ import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 
 type RateLimitConfig = {
+  maxRequests: number;
   windowMs: number;
-  max: number;
-  blockMs?: number;
 };
 
-type RateLimitState = {
-  count: number;
-  windowStart: number;
-  blockedUntil: number;
-};
+let redis: Redis | null = null;
+let hasWarnedMissingRedis = false;
+const limiters: Record<string, Ratelimit> = {};
 
-const rateStore = new Map<string, RateLimitState>();
-const redis =
-  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? Redis.fromEnv()
-    : null;
+function getRedis() {
+  if (!redis) {
+    const url = process.env.UPSTASH_REDIS_REST_URL;
+    const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+    if (!url || !token) return null;
+    redis = new Redis({ url, token });
+  }
+  return redis;
+}
 
-function now() {
-  return Date.now();
+function getLimiter(key: string, requests: number, window: string): Ratelimit | null {
+  const r = getRedis();
+  if (!r) return null;
+  if (!limiters[key]) {
+    limiters[key] = new Ratelimit({
+      redis: r,
+      limiter: Ratelimit.slidingWindow(requests, window as any),
+      prefix: `scopeo:rl:${key}`,
+    });
+  }
+  return limiters[key];
 }
 
 export function getClientIp(headers: Headers): string {
@@ -36,70 +46,34 @@ export function getClientIp(headers: Headers): string {
     const first = forwarded.split(',')[0]?.trim();
     if (first) return first;
   }
-  return 'unknown';
+  return '127.0.0.1';
 }
 
 export async function checkRateLimit(
-  key: string,
+  identifier: string,
   config: RateLimitConfig
 ): Promise<{ ok: true; remaining: number } | { ok: false; retryAfterSec: number }> {
-  if (redis) {
-    const bucketSeconds = Math.max(1, Math.ceil(config.windowMs / 1000));
-    const ratelimit = new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(config.max, `${bucketSeconds} s`),
-      analytics: true,
-      prefix: 'scopeo:ratelimit',
-    });
-    const result = await ratelimit.limit(key);
-    if (!result.success) {
-      const resetMs = typeof result.reset === 'number' ? result.reset : Date.now() + config.windowMs;
-      return {
-        ok: false,
-        retryAfterSec: Math.max(1, Math.ceil((resetMs - Date.now()) / 1000)),
-      };
+  const windowSec = Math.max(1, Math.floor(config.windowMs / 1000));
+  const limiter = getLimiter(
+    `${config.maxRequests}/${windowSec}s`,
+    config.maxRequests,
+    `${windowSec} s`
+  );
+
+  if (!limiter) {
+    if (!hasWarnedMissingRedis) {
+      hasWarnedMissingRedis = true;
+      console.warn('[rate-limit] Upstash Redis not configured, rate limiting disabled');
     }
+    return { ok: true, remaining: config.maxRequests };
+  }
+
+  const result = await limiter.limit(identifier);
+  if (result.success) {
     return { ok: true, remaining: result.remaining };
   }
-
-  // Fallback for local/dev when Upstash env is unavailable.
-  const timestamp = now();
-  const existing = rateStore.get(key);
-
-  if (!existing) {
-    rateStore.set(key, {
-      count: 1,
-      windowStart: timestamp,
-      blockedUntil: 0,
-    });
-    return { ok: true, remaining: config.max - 1 };
-  }
-
-  if (existing.blockedUntil > timestamp) {
-    return {
-      ok: false,
-      retryAfterSec: Math.max(1, Math.ceil((existing.blockedUntil - timestamp) / 1000)),
-    };
-  }
-
-  if (timestamp - existing.windowStart >= config.windowMs) {
-    existing.windowStart = timestamp;
-    existing.count = 1;
-    existing.blockedUntil = 0;
-    rateStore.set(key, existing);
-    return { ok: true, remaining: config.max - 1 };
-  }
-
-  existing.count += 1;
-  if (existing.count > config.max) {
-    existing.blockedUntil = timestamp + (config.blockMs ?? config.windowMs);
-    rateStore.set(key, existing);
-    return {
-      ok: false,
-      retryAfterSec: Math.max(1, Math.ceil((existing.blockedUntil - timestamp) / 1000)),
-    };
-  }
-
-  rateStore.set(key, existing);
-  return { ok: true, remaining: Math.max(0, config.max - existing.count) };
+  return {
+    ok: false,
+    retryAfterSec: Math.max(1, Math.ceil((result.reset - Date.now()) / 1000)),
+  };
 }
