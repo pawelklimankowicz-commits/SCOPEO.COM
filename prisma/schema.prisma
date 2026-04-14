@@ -152,6 +152,8 @@ model Invoice {
   lines          InvoiceLine[]
   createdAt      DateTime     @default(now())
   @@unique([organizationId, externalId])
+  @@index([organizationId, issueDate])
+  @@index([organizationId, createdAt])
 }
 
 model EmissionSource {
@@ -187,11 +189,12 @@ model EmissionFactor {
   activityKind     String?
   year             Int
   tags             String?
-  metadataJson     String?
+  metadataJson     Json?
   organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   emissionSource   EmissionSource @relation(fields: [emissionSourceId], references: [id], onDelete: Cascade)
   invoiceLines     InvoiceLine[]
   @@unique([organizationId, code, year])
+  @@index([organizationId, categoryCode, year])
 }
 
 model MappingDecision {
@@ -206,13 +209,14 @@ model MappingDecision {
   ruleMatched        String
   status             ReviewStatus @default(PENDING)
   reviewerComment    String?
-  tokensJson         String
+  tokensJson         Json
   currentAssigneeId  String?
   organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   invoiceLines       InvoiceLine[]
   reviewEvents       ReviewEvent[]
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
+  @@index([organizationId, status, createdAt])
 }
 
 model ReviewEvent {
@@ -228,11 +232,12 @@ model ReviewEvent {
   toCategoryCode    String?
   fromFactorId      String?
   toFactorId        String?
-  diffJson          String
+  diffJson          Json
   comment           String?
   createdAt         DateTime     @default(now())
   organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   mappingDecision   MappingDecision @relation(fields: [mappingDecisionId], references: [id], onDelete: Cascade)
+  @@index([organizationId, createdAt])
 }
 
 model FactorImportRun {
@@ -242,11 +247,12 @@ model FactorImportRun {
   sourceCode       String
   sourceUrl        String
   status           ImportStatus
-  validationJson   String
+  validationJson   Json
   importedCount    Int          @default(0)
   errorMessage     String?
   createdAt        DateTime     @default(now())
   organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  @@index([organizationId, createdAt])
 }
 
 model InvoiceLine {
@@ -270,6 +276,8 @@ model InvoiceLine {
   invoice              Invoice           @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   emissionFactor       EmissionFactor?   @relation(fields: [emissionFactorId], references: [id], onDelete: SetNull)
   mappingDecision      MappingDecision?  @relation(fields: [mappingDecisionId], references: [id], onDelete: SetNull)
+  @@index([invoiceId, scope, categoryCode])
+  @@index([mappingDecisionId])
 }
 
 model EmissionCalculation {
@@ -279,9 +287,10 @@ model EmissionCalculation {
   scope2Kg       Float
   scope3Kg       Float
   totalKg        Float
-  summaryJson    String
+  summaryJson    Json
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   createdAt      DateTime     @default(now())
+  @@index([organizationId, createdAt])
 }
 
 model Account {

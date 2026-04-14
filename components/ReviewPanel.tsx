@@ -1,7 +1,18 @@
 'use client';
 import { useState } from 'react';
 import FieldDiffCard from './FieldDiffCard';
-function parseDiff(json: string) { try { return JSON.parse(json); } catch { return { changed:false, changes:[] }; } }
+function parseDiff(value: unknown) {
+  if (!value) return { changed: false, changes: [] };
+  if (typeof value === 'object') return value as any;
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return { changed: false, changes: [] };
+    }
+  }
+  return { changed: false, changes: [] };
+}
 export default function ReviewPanel({ lines, factors, history }: { lines: any[]; factors: any[]; history: any[] }) {
   const [result, setResult] = useState('');
   const [selected, setSelected] = useState<any | null>(history[0] || null);

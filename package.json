@@ -15,7 +15,9 @@
     "coverage:summary": "node tests/unit/coverage-summary.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "db:push": "prisma db push",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:migrate:status": "prisma migrate status",
+    "db:push": "echo \"Use prisma:migrate or prisma:migrate:deploy instead of db push\" && exit 1",
     "repair": "rm -rf node_modules .next && npm cache clean --force && npm install"
   },
   "dependencies": {
@@ -26,6 +28,7 @@
     "exceljs": "^4.4.0",
     "next": "^15.2.4",
     "next-auth": "^5.0.0-beta.25",
+    "pdf-lib": "^1.17.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "resend": "^6.11.0",

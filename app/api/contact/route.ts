@@ -3,6 +3,7 @@ import { Resend } from 'resend';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { checkRateLimit, getClientIp } from '@/lib/security';
+import { logger } from '@/lib/logger';
 
 const schema = z.object({
   name: z.string().min(2),
@@ -85,7 +86,7 @@ export async function POST(req: Request) {
     const salesInbox = process.env.SALES_INBOX_EMAIL;
     const fromEmail = process.env.LEADS_FROM_EMAIL;
     if (!resendKey || !salesInbox || !fromEmail) {
-      console.error('[contact] Missing email envs for lead notification.');
+      logger.error({ context: 'contact', message: 'Missing email envs for lead notification' });
       return NextResponse.json(
         { error: 'Lead saved, but email integration is not configured.' },
         { status: 500 }
@@ -116,7 +117,11 @@ export async function POST(req: Request) {
     });
 
     if (emailResult.error) {
-      console.error('[contact] Failed to send lead notification:', emailResult.error);
+      logger.error({
+        context: 'contact',
+        message: 'Failed to send lead notification',
+        error: emailResult.error.message,
+      });
       return NextResponse.json(
         { error: 'Lead saved, but failed to send notification email.' },
         { status: 502 }
@@ -128,7 +133,11 @@ export async function POST(req: Request) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
     }
-    console.error('[contact] Failed to process lead:', error);
+    logger.error({
+      context: 'contact',
+      message: 'Failed to process lead',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
     return NextResponse.json({ error: 'Failed to process lead' }, { status: 500 });
   }
 }

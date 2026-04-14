@@ -13,19 +13,29 @@ async function logoutAction() {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ page?: string }>;
+  searchParams?: Promise<{ page?: string; year?: string }>;
 }) {
   const { session, organizationId, membership } = await requireTenantMembership();
   const invoicePageSize = 50;
   const params = searchParams ? await searchParams : undefined;
   const pageParam = Number(params?.page ?? '1');
   const page = Number.isFinite(pageParam) && pageParam > 0 ? Math.floor(pageParam) : 1;
+  const yearParam = Number(params?.year ?? '');
+  const selectedYear = Number.isFinite(yearParam) && yearParam >= 2000 && yearParam <= 2100 ? yearParam : undefined;
   const skip = (page - 1) * invoicePageSize;
   const profile = await prisma.carbonProfile.findUnique({ where: { organizationId } });
   const org = await prisma.organization.findUnique({ where: { id: organizationId } });
-  const invoicesTotal = await prisma.invoice.count({ where: { organizationId } });
+  const issueDateFilter = selectedYear
+    ? {
+        gte: new Date(`${selectedYear}-01-01T00:00:00.000Z`),
+        lt: new Date(`${selectedYear + 1}-01-01T00:00:00.000Z`),
+      }
+    : undefined;
+  const invoicesTotal = await prisma.invoice.count({
+    where: { organizationId, ...(issueDateFilter ? { issueDate: issueDateFilter } : {}) },
+  });
   const invoices = await prisma.invoice.findMany({
-    where: { organizationId },
+    where: { organizationId, ...(issueDateFilter ? { issueDate: issueDateFilter } : {}) },
     include: {
       supplier: true,
       lines: {
@@ -123,6 +133,17 @@ export default async function DashboardPage({
           zewnętrzne” (wymaga sieci), potem wklej XML FA i „Importuj XML”, na końcu „Przelicz emisje”.
         </p>
         <DashboardActionsV9 />
+        <div style={{ display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
+          <Link className="btn btn-secondary" href={`/api/emissions/export?format=csv${selectedYear ? `&year=${selectedYear}` : ''}`}>
+            Eksport CSV
+          </Link>
+          <Link className="btn btn-secondary" href={`/api/emissions/export?format=xlsx${selectedYear ? `&year=${selectedYear}` : ''}`}>
+            Eksport Excel
+          </Link>
+          <Link className="btn btn-secondary" href={`/api/emissions/export?format=pdf${selectedYear ? `&year=${selectedYear}` : ''}`}>
+            Eksport PDF
+          </Link>
+        </div>
       </div>
 
       <div className="card section" style={{ marginTop: 28 }}>
@@ -183,7 +204,10 @@ export default async function DashboardPage({
                   <td>{r.importedCount}</td>
                   <td>
                     <div className="small" style={{ maxWidth: 520, whiteSpace: 'pre-wrap' }}>
-                      {r.errorMessage || r.validationJson}
+                      {r.errorMessage ||
+                        (typeof r.validationJson === 'string'
+                          ? r.validationJson
+                          : JSON.stringify(r.validationJson, null, 2))}
                     </div>
                   </td>
                 </tr>
@@ -198,16 +222,26 @@ export default async function DashboardPage({
         Pokazano {invoices.length} z {invoicesTotal} faktur (limit {invoicePageSize} na widok).
       </p>
       <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+        <Link className="btn btn-secondary" href={`/dashboard?page=1${selectedYear ? `&year=${selectedYear}` : ''}`}>
+          Rok: {selectedYear ?? 'wszystkie'}
+        </Link>
+        {profile?.reportingYear ? (
+          <Link className="btn btn-secondary" href={`/dashboard?page=1&year=${profile.reportingYear}`}>
+            Filtruj: {profile.reportingYear}
+          </Link>
+        ) : null}
+      </div>
+      <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
         <Link
           className="btn btn-secondary"
-          href={`/dashboard?page=${Math.max(1, page - 1)}`}
+          href={`/dashboard?page=${Math.max(1, page - 1)}${selectedYear ? `&year=${selectedYear}` : ''}`}
           aria-disabled={page <= 1}
         >
           Poprzednia strona
         </Link>
         <Link
           className="btn btn-secondary"
-          href={`/dashboard?page=${Math.min(totalPages, page + 1)}`}
+          href={`/dashboard?page=${Math.min(totalPages, page + 1)}${selectedYear ? `&year=${selectedYear}` : ''}`}
           aria-disabled={page >= totalPages}
         >
           Następna strona
@@ -220,7 +254,7 @@ export default async function DashboardPage({
           Podsumowanie JSON (scope 1–3, kategorie) po kliknięciu „Przelicz emisje”.
         </p>
         {latestCalculation ? (
-          <pre className="code">{latestCalculation.summaryJson}</pre>
+          <pre className="code">{JSON.stringify(latestCalculation.summaryJson, null, 2)}</pre>
         ) : (
           <p className="empty-hint">Brak kalkulacji — zaimportuj linie faktur i uruchom przeliczenie.</p>
         )}

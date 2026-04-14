@@ -1,6 +1,13 @@
 import { prisma } from '@/lib/prisma';
-export async function calculateOrganizationEmissions(organizationId: string) {
-  const lines = await prisma.invoiceLine.findMany({ where: { invoice: { organizationId } }, include: { emissionFactor: { include: { emissionSource: true } }, mappingDecision: true, invoice: true } });
+export async function calculateOrganizationEmissions(organizationId: string, reportYear?: number) {
+  const dateFilter =
+    reportYear && Number.isInteger(reportYear)
+      ? {
+          gte: new Date(`${reportYear}-01-01T00:00:00.000Z`),
+          lt: new Date(`${reportYear + 1}-01-01T00:00:00.000Z`),
+        }
+      : undefined;
+  const lines = await prisma.invoiceLine.findMany({ where: { invoice: { organizationId, ...(dateFilter ? { issueDate: dateFilter } : {}) } }, include: { emissionFactor: { include: { emissionSource: true } }, mappingDecision: true, invoice: true } });
   const overrideFactorIds = Array.from(
     new Set(lines.map((line) => line.overrideFactorId).filter((id): id is string => Boolean(id)))
   );
@@ -29,6 +36,6 @@ export async function calculateOrganizationEmissions(organizationId: string) {
     calculations.push({ invoiceNumber: line.invoice.number, description: line.description, categoryCode, factorCode: factor?.code, factorSource: factor?.emissionSource?.code, reviewStatus: line.mappingDecision?.status, co2eKg });
   }
   const totalKg = scope1 + scope2 + scope3;
-  await prisma.emissionCalculation.create({ data: { organizationId, scope1Kg: scope1, scope2Kg: scope2, scope3Kg: scope3, totalKg, summaryJson: JSON.stringify({ byCategory, calculations }) } });
-  return { scope1, scope2, scope3, totalKg, byCategory, calculations };
+  await prisma.emissionCalculation.create({ data: { organizationId, scope1Kg: scope1, scope2Kg: scope2, scope3Kg: scope3, totalKg, summaryJson: { byCategory, calculations, reportYear: reportYear ?? null } as any } });
+  return { scope1, scope2, scope3, totalKg, byCategory, calculations, reportYear: reportYear ?? null };
 }

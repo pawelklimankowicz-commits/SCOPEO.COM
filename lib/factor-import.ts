@@ -2,7 +2,7 @@ import ExcelJS from 'exceljs';
 import { prisma } from '@/lib/prisma';
 
 type ValidationIssue = { severity: 'error' | 'warning'; code: string; message: string; context?: string };
-type ParsedFactor = { code: string; name: string; scope: 'SCOPE1'|'SCOPE2'|'SCOPE3'; categoryCode: string; factorValue: number; factorUnit: string; region: string; regionPriority: number; activityKind?: string; year: number; tags?: string; metadataJson?: string };
+type ParsedFactor = { code: string; name: string; scope: 'SCOPE1'|'SCOPE2'|'SCOPE3'; categoryCode: string; factorValue: number; factorUnit: string; region: string; regionPriority: number; activityKind?: string; year: number; tags?: string; metadataJson?: any };
 
 function normalizeText(v: any) { return String(v ?? '').trim(); }
 function toNum(v: any) { const s = String(v ?? '').trim().replace(',', '.'); const n = Number(s); return Number.isFinite(n) ? n : null; }
@@ -84,7 +84,7 @@ export function parseUkRows(rows: any[][]) {
     if (!uom || !ghgUnit) { issues.push({ severity:'warning', code:'MISSING_UNIT', message:'UK row skipped because units are incomplete', context:id }); continue; }
     const scope = mapUkScope(normalizeText(r['Scope']));
     const name = compact([r['Level 1'], r['Level 2'], r['Level 3'], r['Level 4'], r['Column Text']]).map(normalizeText).join(' / ');
-    factors.push({ code: `UK_${slug(id)}_2025`, name, scope, categoryCode: ukCategoryCode(r), factorValue, factorUnit: `${ghgUnit}/${uom}`, region:'UK', regionPriority:50, activityKind: slug(`${r['Column Text'] || r['Level 3'] || ''}_${uom}`), year:2025, tags: compact([r['Level 1'], r['Level 2'], r['Level 3'], r['Level 4'], r['Column Text']]).map(normalizeText).join(','), metadataJson: JSON.stringify(r) });
+    factors.push({ code: `UK_${slug(id)}_2025`, name, scope, categoryCode: ukCategoryCode(r), factorValue, factorUnit: `${ghgUnit}/${uom}`, region:'UK', regionPriority:50, activityKind: slug(`${r['Column Text'] || r['Level 3'] || ''}_${uom}`), year:2025, tags: compact([r['Level 1'], r['Level 2'], r['Level 3'], r['Level 4'], r['Column Text']]).map(normalizeText).join(','), metadataJson: r });
   }
   if (!factors.length) issues.push({ severity:'error', code:'NO_FACTORS_PARSED', message:'UK parser produced zero factors' });
   return { issues, factors };
@@ -112,34 +112,34 @@ export function parseEpaRows(rows: any[][]) {
   parseTable('Table 2', (r) => {
     const fuel = normalizeText(r[2]); const value = toNum(r[3]); const unit = normalizeText(r[4]);
     if (!fuel || fuel === 'Fuel Type' || value === null || !unit) return null;
-    return [{ code:`EPA_mobile_${slug(fuel)}_2025`, name:`EPA Mobile Combustion ${fuel}`, scope:'SCOPE1', categoryCode:'scope1_fuel', factorValue:value, factorUnit:`kg CO2/${unit}`, region:'US', regionPriority:80, activityKind:slug(`${fuel}_${unit}`), year:2025, tags:`epa,mobile,${fuel}`, metadataJson: JSON.stringify({ table:'Table 2', fuel, unit }) }];
+    return [{ code:`EPA_mobile_${slug(fuel)}_2025`, name:`EPA Mobile Combustion ${fuel}`, scope:'SCOPE1', categoryCode:'scope1_fuel', factorValue:value, factorUnit:`kg CO2/${unit}`, region:'US', regionPriority:80, activityKind:slug(`${fuel}_${unit}`), year:2025, tags:`epa,mobile,${fuel}`, metadataJson: { table:'Table 2', fuel, unit } }];
   });
 
   parseTable('Table 6', (r) => {
     const acr = normalizeText(r[2]); const name = normalizeText(r[3]); const co2 = toNum(r[4]);
     if (!acr || acr === 'eGRID Subregion Acronym' || !name || co2 === null) return null;
-    return [{ code:`EPA_electricity_${slug(acr)}_2025`, name:`EPA Electricity ${name}`, scope:'SCOPE2', categoryCode:'scope2_electricity', factorValue:co2, factorUnit:'lb CO2/MWh', region:'US', regionPriority:80, activityKind:'electricity_mwh', year:2025, tags:`epa,electricity,${acr}`, metadataJson: JSON.stringify({ table:'Table 6', acr, name }) }];
+    return [{ code:`EPA_electricity_${slug(acr)}_2025`, name:`EPA Electricity ${name}`, scope:'SCOPE2', categoryCode:'scope2_electricity', factorValue:co2, factorUnit:'lb CO2/MWh', region:'US', regionPriority:80, activityKind:'electricity_mwh', year:2025, tags:`epa,electricity,${acr}`, metadataJson: { table:'Table 6', acr, name } }];
   });
 
   parseTable('Table 8', (r) => {
     const vehicle = normalizeText(r[2]); const co2 = toNum(r[3]); const unit = normalizeText(r[6]);
     if (!vehicle || vehicle === 'Vehicle Type' || co2 === null || !unit) return null;
-    return [{ code:`EPA_transport_${slug(vehicle)}_${slug(unit)}_2025`, name:`EPA Transport ${vehicle}`, scope:'SCOPE3', categoryCode:'scope3_cat4_transport', factorValue:co2, factorUnit:`kg CO2/${unit}`, region:'US', regionPriority:80, activityKind:slug(`transport_${unit}`), year:2025, tags:`epa,transport,${vehicle}`, metadataJson: JSON.stringify({ table:'Table 8', vehicle, unit }) }];
+    return [{ code:`EPA_transport_${slug(vehicle)}_${slug(unit)}_2025`, name:`EPA Transport ${vehicle}`, scope:'SCOPE3', categoryCode:'scope3_cat4_transport', factorValue:co2, factorUnit:`kg CO2/${unit}`, region:'US', regionPriority:80, activityKind:slug(`transport_${unit}`), year:2025, tags:`epa,transport,${vehicle}`, metadataJson: { table:'Table 8', vehicle, unit } }];
   });
 
   parseTable('Table 9', (r) => {
     const material = normalizeText(r[2]); const recycled = toNum(r[3]); const landfilled = toNum(r[4]);
     if (!material || material === 'Material') return null;
     const out: ParsedFactor[] = [];
-    if (recycled !== null) out.push({ code:`EPA_waste_${slug(material)}_recycled_2025`, name:`EPA Waste ${material} recycled`, scope:'SCOPE3', categoryCode:'scope3_cat5_waste', factorValue:recycled, factorUnit:'metric tons CO2e/short ton', region:'US', regionPriority:80, activityKind:'waste_recycled', year:2025, tags:`epa,waste,${material}`, metadataJson: JSON.stringify({ table:'Table 9', mode:'recycled', material }) });
-    if (landfilled !== null) out.push({ code:`EPA_waste_${slug(material)}_landfilled_2025`, name:`EPA Waste ${material} landfilled`, scope:'SCOPE3', categoryCode:'scope3_cat5_waste', factorValue:landfilled, factorUnit:'metric tons CO2e/short ton', region:'US', regionPriority:80, activityKind:'waste_landfilled', year:2025, tags:`epa,waste,${material}`, metadataJson: JSON.stringify({ table:'Table 9', mode:'landfilled', material }) });
+    if (recycled !== null) out.push({ code:`EPA_waste_${slug(material)}_recycled_2025`, name:`EPA Waste ${material} recycled`, scope:'SCOPE3', categoryCode:'scope3_cat5_waste', factorValue:recycled, factorUnit:'metric tons CO2e/short ton', region:'US', regionPriority:80, activityKind:'waste_recycled', year:2025, tags:`epa,waste,${material}`, metadataJson: { table:'Table 9', mode:'recycled', material } });
+    if (landfilled !== null) out.push({ code:`EPA_waste_${slug(material)}_landfilled_2025`, name:`EPA Waste ${material} landfilled`, scope:'SCOPE3', categoryCode:'scope3_cat5_waste', factorValue:landfilled, factorUnit:'metric tons CO2e/short ton', region:'US', regionPriority:80, activityKind:'waste_landfilled', year:2025, tags:`epa,waste,${material}`, metadataJson: { table:'Table 9', mode:'landfilled', material } });
     return out.length ? out : null;
   });
 
   parseTable('Table 10', (r) => {
     const vehicle = normalizeText(r[2]); const co2 = toNum(r[3]); const unit = normalizeText(r[6]);
     if (!vehicle || vehicle === 'Vehicle Type' || co2 === null || !unit) return null;
-    return [{ code:`EPA_travel_${slug(vehicle)}_${slug(unit)}_2025`, name:`EPA Business Travel ${vehicle}`, scope:'SCOPE3', categoryCode:'scope3_cat6_business_travel', factorValue:co2, factorUnit:`kg CO2/${unit}`, region:'US', regionPriority:80, activityKind:slug(`travel_${unit}`), year:2025, tags:`epa,travel,${vehicle}`, metadataJson: JSON.stringify({ table:'Table 10', vehicle, unit }) }];
+    return [{ code:`EPA_travel_${slug(vehicle)}_${slug(unit)}_2025`, name:`EPA Business Travel ${vehicle}`, scope:'SCOPE3', categoryCode:'scope3_cat6_business_travel', factorValue:co2, factorUnit:`kg CO2/${unit}`, region:'US', regionPriority:80, activityKind:slug(`travel_${unit}`), year:2025, tags:`epa,travel,${vehicle}`, metadataJson: { table:'Table 10', vehicle, unit } }];
   });
 
   if (!factors.length) issues.push({ severity:'error', code:'NO_FACTORS_PARSED', message:'EPA parser produced zero factors' });
@@ -148,8 +148,8 @@ export function parseEpaRows(rows: any[][]) {
 
 function addPolandRegionalOverlays() {
   return [
-    { code:'PL_GRID_ELECTRICITY_2025', name:'Poland grid electricity overlay', scope:'SCOPE2', categoryCode:'scope2_electricity', factorValue:0.72, factorUnit:'kgCO2e/kWh', region:'PL', regionPriority:1, activityKind:'electricity_kwh', year:2025, tags:'poland,electricity,grid', metadataJson: JSON.stringify({ source:'regional_overlay' }) },
-    { code:'PL_DISTRICT_HEAT_2025', name:'Poland district heat overlay', scope:'SCOPE2', categoryCode:'scope2_district_heat', factorValue:0.28, factorUnit:'kgCO2e/kWh', region:'PL', regionPriority:1, activityKind:'district_heat_kwh', year:2025, tags:'poland,heat', metadataJson: JSON.stringify({ source:'regional_overlay' }) }
+    { code:'PL_GRID_ELECTRICITY_2025', name:'Poland grid electricity overlay', scope:'SCOPE2', categoryCode:'scope2_electricity', factorValue:0.72, factorUnit:'kgCO2e/kWh', region:'PL', regionPriority:1, activityKind:'electricity_kwh', year:2025, tags:'poland,electricity,grid', metadataJson: { source:'regional_overlay' } },
+    { code:'PL_DISTRICT_HEAT_2025', name:'Poland district heat overlay', scope:'SCOPE2', categoryCode:'scope2_district_heat', factorValue:0.28, factorUnit:'kgCO2e/kWh', region:'PL', regionPriority:1, activityKind:'district_heat_kwh', year:2025, tags:'poland,heat', metadataJson: { source:'regional_overlay' } }
   ] as ParsedFactor[];
 }
 
@@ -170,7 +170,7 @@ export async function importExternalFactors(organizationId: string, actorUserId?
   };
   const results = [];
   for (const item of [sources.uk, sources.epa]) {
-    const run = await prisma.factorImportRun.create({ data: { organizationId, actorUserId: actorUserId ?? null, sourceCode: item.code, sourceUrl: item.sourceUrl, status: 'STARTED', validationJson: '[]' } });
+    const run = await prisma.factorImportRun.create({ data: { organizationId, actorUserId: actorUserId ?? null, sourceCode: item.code, sourceUrl: item.sourceUrl, status: 'STARTED', validationJson: [] as any } });
     try {
       const res = await fetch(item.sourceUrl);
       const workbook = new ExcelJS.Workbook();
@@ -190,11 +190,11 @@ export async function importExternalFactors(organizationId: string, actorUserId?
       const rows = worksheetToRows(worksheet);
       const parsed = item.code === 'UK_GOV_CONVERSION' ? parseUkRows(rows) : parseEpaRows(rows);
       const issues: ValidationIssue[] = [...basics, ...(parsed.issues as ValidationIssue[])];
-      await prisma.factorImportRun.update({ where: { id: run.id }, data: { status: issues.some(i => i.severity==='error') ? 'FAILED' : 'VALIDATED', validationJson: JSON.stringify(issues) } });
+      await prisma.factorImportRun.update({ where: { id: run.id }, data: { status: issues.some(i => i.severity==='error') ? 'FAILED' : 'VALIDATED', validationJson: issues as any } });
       if (issues.some(i => i.severity==='error')) { results.push({ source:item.code, ok:false, issues }); continue; }
       const source = await upsertSource(organizationId, item);
       const count = await persistFactors(organizationId, source.id, parsed.factors);
-      await prisma.factorImportRun.update({ where: { id: run.id }, data: { status:'IMPORTED', importedCount:count, validationJson: JSON.stringify(issues) } });
+      await prisma.factorImportRun.update({ where: { id: run.id }, data: { status:'IMPORTED', importedCount:count, validationJson: issues as any } });
       results.push({ source:item.code, ok:true, importedCount:count, issues });
     } catch (e:any) {
       await prisma.factorImportRun.update({ where: { id: run.id }, data: { status:'FAILED', errorMessage:e?.message || 'Unknown error' } });
