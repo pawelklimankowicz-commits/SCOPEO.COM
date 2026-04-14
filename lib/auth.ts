@@ -1,16 +1,17 @@
-import NextAuth from 'next-auth';
+import { getServerSession, type NextAuthOptions } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { checkRateLimit } from '@/lib/security';
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   session: { strategy: 'jwt' },
   providers: [Credentials({
     name: 'credentials',
     credentials: { email: {}, password: {} },
     async authorize(credentials) {
+      if (!credentials) return null;
       const email = String(credentials.email || '').trim().toLowerCase();
       const password = String(credentials.password || '');
       const loginLimit = checkRateLimit(`login:${email}`, {
@@ -33,5 +34,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) { if (user) { token.organizationId = (user as any).organizationId; token.organizationSlug = (user as any).organizationSlug; token.role = (user as any).role; } return token; },
     async session({ session, token }) { if (session.user) { (session.user as any).id = token.sub; (session.user as any).organizationId = token.organizationId; (session.user as any).organizationSlug = token.organizationSlug; (session.user as any).role = token.role; } return session; },
   },
-  trustHost: true,
-});
+};
+
+export async function auth() {
+  return getServerSession(authOptions);
+}

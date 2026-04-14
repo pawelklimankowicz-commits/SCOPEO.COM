@@ -1,14 +1,10 @@
 import Link from 'next/link';
 import { requireTenantMembership } from '@/lib/tenant';
 import { prisma } from '@/lib/prisma';
-import { signOut } from '@/lib/auth';
 import DashboardActionsV9 from '@/components/DashboardActionsV9';
 import ReviewPanel from '@/components/ReviewPanel';
-
-async function logoutAction() {
-  'use server';
-  await signOut({ redirectTo: '/login' });
-}
+import InvitesPanel from '@/components/InvitesPanel';
+import LogoutButton from '@/components/LogoutButton';
 
 export default async function DashboardPage({
   searchParams,
@@ -77,6 +73,7 @@ export default async function DashboardPage({
 
   const email = (session.user as { email?: string | null }).email;
   const role = (session.user as { role?: string | null }).role;
+  const canManageInvites = role === 'OWNER' || role === 'ADMIN';
 
   return (
     <main className="container app-page">
@@ -97,11 +94,7 @@ export default async function DashboardPage({
           <Link className="btn btn-secondary" href="/onboarding">
             Onboarding
           </Link>
-          <form action={logoutAction}>
-            <button className="btn btn-secondary" type="submit">
-              Wyloguj
-            </button>
-          </form>
+          <LogoutButton />
         </div>
       </div>
 
@@ -218,6 +211,7 @@ export default async function DashboardPage({
       </div>
 
       <ReviewPanel lines={lines} factors={factors} history={history} />
+      <InvitesPanel canManage={canManageInvites} />
       <p className="app-muted" style={{ marginTop: 10, fontSize: 13 }}>
         Pokazano {invoices.length} z {invoicesTotal} faktur (limit {invoicePageSize} na widok).
       </p>

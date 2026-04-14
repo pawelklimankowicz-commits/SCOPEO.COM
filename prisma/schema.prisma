@@ -76,6 +76,13 @@ enum GdprRequestStatus {
   REJECTED
 }
 
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  CANCELLED
+}
+
 model User {
   id            String       @id @default(cuid())
   name          String?
@@ -107,6 +114,7 @@ model Organization {
   importRuns           FactorImportRun[]
   gdprRequests         GdprRequest[]
   processingRecords    ProcessingRecord[]
+  invitations          Invitation[]
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
 }
@@ -402,4 +410,21 @@ model ProcessingRecord {
 
   @@index([organizationId, createdAt])
   @@index([eventType, createdAt])
+}
+
+model Invitation {
+  id             String           @id @default(cuid())
+  organizationId String
+  email          String
+  role           Role
+  tokenHash      String           @unique
+  status         InvitationStatus @default(PENDING)
+  inviterUserId  String?
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  createdAt      DateTime         @default(now())
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status, createdAt])
+  @@index([email, status])
 }
