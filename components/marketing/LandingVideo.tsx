@@ -1,4 +1,7 @@
 export default function LandingVideo() {
+  const landingVideoUrl =
+    'https://r4krlmm3xizaa0ms.public.blob.vercel-storage.com/marketing/scopeo-landing.mp4';
+
   return (
     <section className="mkt-section mkt-section--surface" aria-labelledby="landing-video-heading">
       <div className="mkt-inner">
@@ -18,7 +21,7 @@ export default function LandingVideo() {
             preload="metadata"
             poster="/marketing/hero-scopeo-mint.png"
           >
-            <source src="/marketing/scopeo-landing.mp4" type="video/mp4" />
+            <source src={landingVideoUrl} type="video/mp4" />
             <track
               kind="subtitles"
               srcLang="pl"
