@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import LegalSections from '@/components/legal/LegalSections';
+import { LEGAL_COMPANY } from '@/lib/legal';
 
 export const metadata: Metadata = {
   title: 'Polityka prywatności — Scopeo',
@@ -15,9 +16,9 @@ export default function PolitykaPage() {
           <p className="mkt-kicker mkt-kicker--on-dark">Polityka prywatności</p>
           <h1>Polityka prywatności</h1>
           <p>
-            Treść poniżej odpowiada kompletowi dokumentów prawnych Scopeo / Black Gold Sp. z o.o. Przed
-            publikacją produkcyjną należy uzupełnić dane rejestrowe, kontakt do IOD oraz listy podmiotów
-            przetwarzających.
+            Treść poniżej odpowiada kompletowi dokumentów prawnych Scopeo / {LEGAL_COMPANY.name}. Dane
+            identyfikacyjne administratora są publikowane centralnie i utrzymywane spójnie we wszystkich
+            dokumentach prawnych.
           </p>
           <p style={{ marginTop: 12, fontSize: '0.8125rem', color: '#64748b' }}>
             Ostatnia aktualizacja: {new Date().getFullYear()}-04-13

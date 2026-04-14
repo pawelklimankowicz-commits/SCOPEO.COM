@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import LegalSections from '@/components/legal/LegalSections';
+import { LEGAL_COMPANY } from '@/lib/legal';
 
 export const metadata: Metadata = {
   title: 'Polityka cookies — Scopeo',
@@ -16,7 +17,7 @@ export default function CookiesPage() {
           <h1>Polityka cookies</h1>
           <p>
             Zasady plików cookies i technologii podobnych dla strony i platformy Scopeo — zgodnie z kompletem
-            dokumentów Black Gold Sp. z o.o.
+            dokumentów {LEGAL_COMPANY.name}.
           </p>
           <p style={{ marginTop: 12, fontSize: '0.8125rem', color: '#64748b' }}>
             Ostatnia aktualizacja: {new Date().getFullYear()}-04-13

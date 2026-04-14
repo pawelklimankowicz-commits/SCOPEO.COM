@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import LegalSections from '@/components/legal/LegalSections';
+import { LEGAL_COMPANY } from '@/lib/legal';
 
 export const metadata: Metadata = {
   title: 'DPA — powierzenie przetwarzania danych — Scopeo',
@@ -16,7 +17,7 @@ export default function DpaPage() {
           <h1>Umowa powierzenia przetwarzania danych osobowych (DPA)</h1>
           <p>
             Poniższy dokument realizuje wymogi art. 28 RODO dla relacji administrator (Klient) — procesor
-            (Black Gold Sp. z o.o.) przy korzystaniu z platformy Scopeo.
+            ({LEGAL_COMPANY.name}) przy korzystaniu z platformy Scopeo.
           </p>
           <p style={{ marginTop: 12, fontSize: '0.8125rem', color: '#64748b' }}>
             Ostatnia aktualizacja: {new Date().getFullYear()}-04-13

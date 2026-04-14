@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LegalFormClauses } from '@/components/legal/LegalSections';
+import { LEGAL_COMPANY } from '@/lib/legal';
 
 export const metadata: Metadata = {
   title: 'Klauzule formularzy — Scopeo',
   description:
-    'Wzorcowe klauzule informacyjne i checkboxy dla formularza demo, rejestracji, kontaktu i lead magnet — Scopeo / Black Gold Sp. z o.o.',
+    `Wzorcowe klauzule informacyjne i checkboxy dla formularza demo, rejestracji, kontaktu i lead magnet — Scopeo / ${LEGAL_COMPANY.name}.`,
   robots: { index: true, follow: true },
 };
 
@@ -22,7 +23,7 @@ export default function KlauzuleFormularzyPage() {
             procesami zgód.
           </p>
           <p style={{ marginTop: 12, fontSize: '0.8125rem', color: '#64748b' }}>
-            Źródło: komplet dokumentów Scopeo / Black Gold Sp. z o.o.
+            Źródło: komplet dokumentów Scopeo / {LEGAL_COMPANY.name}.
           </p>
         </div>
       </div>
