@@ -42,6 +42,29 @@ export default function InvitesPanel({ canManage }: { canManage: boolean }) {
     }
   }
 
+  async function updateInvite(inviteId: string, action: 'cancel' | 'resend') {
+    const res = await fetch('/api/invites', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inviteId, action }),
+    });
+    const data = await res.json();
+    setResult(JSON.stringify(data, null, 2));
+    if (data.ok) await loadInvites();
+  }
+
+  function expiryLabel(invite: Invite) {
+    const expiresAt = new Date(invite.expiresAt).getTime();
+    const now = Date.now();
+    if (invite.status === 'ACCEPTED') return 'Przyjęte';
+    if (invite.status === 'CANCELLED') return 'Unieważnione';
+    if (expiresAt <= now) return 'Wygasło';
+    const hours = Math.ceil((expiresAt - now) / (1000 * 60 * 60));
+    if (hours < 24) return `Wygasa za ${hours}h`;
+    const days = Math.ceil(hours / 24);
+    return `Wygasa za ${days}d`;
+  }
+
   if (!canManage) return null;
 
   return (
@@ -82,6 +105,7 @@ export default function InvitesPanel({ canManage }: { canManage: boolean }) {
             <th>Rola</th>
             <th>Status</th>
             <th>Wygasa</th>
+            <th>Akcje</th>
           </tr>
         </thead>
         <tbody>
@@ -90,7 +114,28 @@ export default function InvitesPanel({ canManage }: { canManage: boolean }) {
               <td>{invite.email}</td>
               <td>{invite.role}</td>
               <td>{invite.status}</td>
-              <td>{new Date(invite.expiresAt).toLocaleString()}</td>
+              <td>
+                {expiryLabel(invite)}
+                <div className="small">{new Date(invite.expiresAt).toLocaleString()}</div>
+              </td>
+              <td style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => updateInvite(invite.id, 'resend')}
+                  disabled={invite.status === 'ACCEPTED' || invite.status === 'CANCELLED'}
+                >
+                  Re-send
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => updateInvite(invite.id, 'cancel')}
+                  disabled={invite.status === 'ACCEPTED' || invite.status === 'CANCELLED'}
+                >
+                  Unieważnij
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>

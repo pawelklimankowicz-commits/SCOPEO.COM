@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-import { createInvitationToken } from '@/lib/invitations';
-import { Resend } from 'resend';
+import { createInvitationToken, sendInvitationEmail } from '@/lib/invitations';
 
 const createInviteSchema = z.object({
   email: z.string().email(),
   role: z.enum(['ADMIN', 'ANALYST', 'REVIEWER', 'APPROVER', 'VIEWER']),
+});
+const updateInviteSchema = z.object({
+  inviteId: z.string().min(1),
+  action: z.enum(['cancel', 'resend']),
 });
 
 function canManageInvites(role?: string | null) {
@@ -22,6 +25,14 @@ export async function GET() {
     return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
   }
   const organizationId = (session.user as any).organizationId as string;
+  await prisma.invitation.updateMany({
+    where: {
+      organizationId,
+      status: 'PENDING',
+      expiresAt: { lt: new Date() },
+    },
+    data: { status: 'EXPIRED' },
+  });
   const invites = await prisma.invitation.findMany({
     where: { organizationId },
     orderBy: { createdAt: 'desc' },
@@ -54,21 +65,49 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  const appUrl = process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL;
-  const inviteUrl = appUrl
-    ? `${appUrl.replace(/\/$/, '')}/login?inviteToken=${encodeURIComponent(token)}`
-    : null;
-  const resendKey = process.env.RESEND_API_KEY;
-  const fromEmail = process.env.LEADS_FROM_EMAIL;
-  if (inviteUrl && resendKey && fromEmail) {
-    const resend = new Resend(resendKey);
-    await resend.emails.send({
-      from: fromEmail,
-      to: parsed.email.toLowerCase(),
-      subject: 'Zaproszenie do Scopeo',
-      text: `Otrzymujesz zaproszenie do organizacji w Scopeo. Użyj linku: ${inviteUrl}`,
+  await sendInvitationEmail({ email: parsed.email.toLowerCase(), token });
+
+  return NextResponse.json({ ok: true, invite });
+}
+
+export async function PATCH(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  const role = (session.user as any).role as string | null | undefined;
+  if (!canManageInvites(role)) {
+    return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
+  }
+  const organizationId = (session.user as any).organizationId as string;
+  const body = await req.json();
+  const parsed = updateInviteSchema.parse(body);
+  const invite = await prisma.invitation.findFirst({
+    where: { id: parsed.inviteId, organizationId },
+  });
+  if (!invite) return NextResponse.json({ ok: false, error: 'Invite not found' }, { status: 404 });
+
+  if (parsed.action === 'cancel') {
+    if (invite.status === 'ACCEPTED') {
+      return NextResponse.json({ ok: false, error: 'Accepted invite cannot be cancelled' }, { status: 400 });
+    }
+    const updated = await prisma.invitation.update({
+      where: { id: invite.id },
+      data: { status: 'CANCELLED' },
     });
+    return NextResponse.json({ ok: true, invite: updated });
   }
 
-  return NextResponse.json({ ok: true, invite, inviteUrl });
+  if (invite.status !== 'PENDING' && invite.status !== 'EXPIRED') {
+    return NextResponse.json({ ok: false, error: 'Invite is not resendable' }, { status: 400 });
+  }
+  const { token, tokenHash } = createInvitationToken();
+  const updated = await prisma.invitation.update({
+    where: { id: invite.id },
+    data: {
+      tokenHash,
+      status: 'PENDING',
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    },
+  });
+  await sendInvitationEmail({ email: invite.email, token });
+  return NextResponse.json({ ok: true, invite: updated });
 }
