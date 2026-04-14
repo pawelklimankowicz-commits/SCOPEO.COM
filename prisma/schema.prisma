@@ -83,6 +83,14 @@ enum InvitationStatus {
   CANCELLED
 }
 
+enum KsefImportJobStatus {
+  PENDING
+  IN_PROGRESS
+  RETRY
+  SUCCEEDED
+  FAILED
+}
+
 model User {
   id            String       @id @default(cuid())
   name          String?
@@ -115,6 +123,7 @@ model Organization {
   gdprRequests         GdprRequest[]
   processingRecords    ProcessingRecord[]
   invitations          Invitation[]
+  ksefImportJobs       KsefImportJob[]
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
 }
@@ -427,4 +436,25 @@ model Invitation {
 
   @@index([organizationId, status, createdAt])
   @@index([email, status])
+}
+
+model KsefImportJob {
+  id                  String             @id @default(cuid())
+  organizationId      String
+  actorUserId         String?
+  referenceNumber     String
+  status              KsefImportJobStatus @default(PENDING)
+  attemptCount        Int                @default(0)
+  maxAttempts         Int                @default(5)
+  nextAttemptAt       DateTime?
+  lastError           String?
+  payloadJson         Json?
+  startedAt           DateTime?
+  completedAt         DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  organization        Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status, nextAttemptAt, createdAt])
+  @@index([organizationId, referenceNumber, createdAt])
 }
