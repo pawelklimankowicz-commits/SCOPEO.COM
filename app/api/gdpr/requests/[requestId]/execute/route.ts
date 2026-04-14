@@ -43,8 +43,6 @@ export async function POST(
     });
     for (const user of users) {
       if (user.id === session.user.id) continue;
-      await prisma.session.deleteMany({ where: { userId: user.id } });
-      await prisma.account.deleteMany({ where: { userId: user.id } });
       await prisma.user.update({
         where: { id: user.id },
         data: {

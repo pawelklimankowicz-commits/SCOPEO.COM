@@ -1,5 +1,6 @@
 # Go-live checklist
 
+- `npx prisma migrate deploy` runs against production `DATABASE_URL` as part of release (Vercel build alone does not apply migrations).
 - Production env variables configured.
 - Database backups verified.
 - Rollback procedure tested.

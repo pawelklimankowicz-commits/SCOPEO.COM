@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "title": "Współczynniki emisji (PL) — KOBiZE",
+  "documentationUrl": "https://www.kobize.pl/pl/fileCategory/id/28/wskazniki-emisyjnosci",
+  "notes": [
+    "CO2 dla energii elektrycznej za rok sprawozdawczy 2023: 597 kg CO2/MWh u odbiorcy końcowego (0,597 kg/kWh) — publikacja KOBiZE grudzień 2024.",
+    "Ciepło sieciowe: wartość robocza; zastąp wskaźnikiem z aktualnej publikacji KOBiZE/URE przy corocznym imporcie.",
+    "Paliwa stacjonarne (gaz, olej, węgiel): dopisz osobne wiersze po dopięciu mapowania activityKind w silniku albo dodaj dedykowane categoryCode — wiele wierszy scope1_fuel z tym samym categoryCode psuje wybór w resolveBestFactor."
+  ],
+  "factors": [
+    {
+      "codeSuffix": "ELECTRICITY_GRID_CONSUMER",
+      "name": "Energia elektryczna — u odbiorcy końcowego (mix krajowy, OZE, straty)",
+      "scope": "SCOPE2",
+      "categoryCode": "scope2_electricity",
+      "factorValue": 0.597,
+      "factorUnit": "kgCO2e/kWh",
+      "region": "PL",
+      "regionPriority": 1,
+      "activityKind": "electricity_kwh",
+      "year": 2023,
+      "tags": "kobize,poland,electricity,consumer,grid",
+      "metadataJson": {
+        "source": "kobize",
+        "kobizeDataYear": 2023,
+        "co2KgPerMwh": 597,
+        "kobizePublicationUrl": "https://www.kobize.pl/pl/file/wskazniki-emisyjnosci/id/211/wskazniki-emisyjnosci-dla-energii-elektrycznej-za-rok-2023-opublikowane-w-grudniu-2024-r",
+        "referenceNote": "597 kg CO2/MWh u odbiorcy końcowego — KOBiZE za 2023; przeliczenie na kWh: /1000."
+      }
+    },
+    {
+      "codeSuffix": "DISTRICT_HEAT",
+      "name": "Ciepło sieciowe (średnia robocza PL — do weryfikacji z KOBiZE/URE)",
+      "scope": "SCOPE2",
+      "categoryCode": "scope2_district_heat",
+      "factorValue": 0.28,
+      "factorUnit": "kgCO2e/kWh",
+      "region": "PL",
+      "regionPriority": 1,
+      "activityKind": "district_heat_kwh",
+      "year": 2023,
+      "tags": "kobize,poland,heat,district",
+      "metadataJson": {
+        "source": "kobize_placeholder",
+        "kobizeDataYear": 2023,
+        "referenceNote": "Wartość robocza (wcześniejsza nakładka). Zaktualizuj z oficjalnych tabel KOBiZE dla ciepła sieciowego."
+      }
+    }
+  ]
+}

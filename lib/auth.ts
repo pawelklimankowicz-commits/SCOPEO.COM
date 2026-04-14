@@ -1,30 +1,49 @@
 import { getServerSession, type NextAuthOptions } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { checkRateLimit } from '@/lib/security';
+import { checkRateLimit, getClientIp } from '@/lib/security';
+
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
   session: { strategy: 'jwt' },
   providers: [Credentials({
     name: 'credentials',
     credentials: { email: {}, password: {} },
-    async authorize(credentials) {
+    async authorize(credentials, req) {
       if (!credentials) return null;
       const email = String(credentials.email || '').trim().toLowerCase();
       const password = String(credentials.password || '');
-      const loginLimit = await checkRateLimit(`login:${email}`, {
+      const ip = getClientIp(req.headers);
+      const ipLimit = await checkRateLimit(`login-ip:${ip}`, {
+        windowMs: 15 * 60_000,
+        maxRequests: 30,
+      });
+      if (!ipLimit.ok) {
+        return null;
+      }
+      const emailLimit = await checkRateLimit(`login:${email}`, {
         windowMs: 15 * 60_000,
         maxRequests: 10,
       });
-      if (!loginLimit.ok) {
+      if (!emailLimit.ok) {
         return null;
       }
-      const user = await prisma.user.findUnique({ where: { email }, include: { memberships: { include: { organization: true } } } });
+      const user = await prisma.user.findUnique({
+        where: { email },
+        include: {
+          memberships: {
+            orderBy: { id: 'asc' },
+            include: { organization: true },
+          },
+        },
+      });
       if (!user?.passwordHash) return null;
       const ok = await bcrypt.compare(password, user.passwordHash);
       if (!ok) return null;
+      /**
+       * Product limitation: JWT/session expose a single `organizationId` / role. We take the first
+       * membership (stable order: id asc). There is no workspace switcher API or UI — see README.
+       */
       const m = user.memberships[0];
       return { id: user.id, email: user.email, name: user.name, organizationId: m?.organizationId ?? null, organizationSlug: m?.organization.slug ?? null, role: m?.role ?? null } as any;
     }

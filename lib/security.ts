@@ -33,15 +33,32 @@ function getLimiter(key: string, requests: number, window: string): Ratelimit | 
   return limiters[key];
 }
 
-export function getClientIp(headers: Headers): string {
-  const vercelForwarded = headers.get('x-vercel-forwarded-for');
+/** NextAuth przekazuje `headers` jako zwykły obiekt; route handlers — `Headers`. */
+type HeaderSource = Headers | Record<string, string | string[] | undefined> | undefined;
+
+function headerFirst(headers: HeaderSource, name: string): string | null {
+  if (!headers) return null;
+  if (typeof (headers as Headers).get === 'function') {
+    return (headers as Headers).get(name);
+  }
+  const o = headers as Record<string, string | string[] | undefined>;
+  const lower = name.toLowerCase();
+  const raw = o[lower] ?? o[name];
+  if (raw == null) return null;
+  const s = Array.isArray(raw) ? raw[0] : raw;
+  const t = typeof s === 'string' ? s.trim() : String(s).trim();
+  return t || null;
+}
+
+export function getClientIp(headers: HeaderSource): string {
+  const vercelForwarded = headerFirst(headers, 'x-vercel-forwarded-for');
   if (vercelForwarded) {
     const first = vercelForwarded.split(',')[0]?.trim();
     if (first) return first;
   }
-  const realIp = headers.get('x-real-ip')?.trim();
+  const realIp = headerFirst(headers, 'x-real-ip')?.trim();
   if (realIp) return realIp;
-  const forwarded = headers.get('x-forwarded-for');
+  const forwarded = headerFirst(headers, 'x-forwarded-for');
   if (forwarded) {
     const first = forwarded.split(',')[0]?.trim();
     if (first) return first;

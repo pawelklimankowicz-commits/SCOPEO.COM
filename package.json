@@ -10,8 +10,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --test tests/unit/*.test.mjs",
-    "test:ci": "node --test --experimental-test-coverage tests/unit/*.test.mjs",
+    "test": "node --test tests/unit/*.test.mjs && npm run test:integration",
+    "test:integration": "node --import tsx --test tests/integration/emissions-math.test.ts tests/integration/ksef-xml.test.ts tests/integration/payload-security.test.ts tests/integration/kobize-factors.test.ts tests/integration/api-health.test.ts",
+    "test:ci": "node --test --experimental-test-coverage tests/unit/*.test.mjs && npm run test:integration",
     "coverage:summary": "node tests/unit/coverage-summary.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
@@ -21,7 +22,6 @@
     "repair": "rm -rf node_modules .next && npm cache clean --force && npm install"
   },
   "dependencies": {
-    "@auth/prisma-adapter": "^2.8.0",
     "@prisma/client": "6.6.0",
     "@sentry/nextjs": "^10.48.0",
     "@swc/helpers": "0.5.17",
@@ -49,6 +49,7 @@
     "@types/xml2js": "^0.4.14",
     "fast-check": "^3.23.2",
     "prisma": "6.6.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.8.2"
   }
 }

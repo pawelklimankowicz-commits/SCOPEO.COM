@@ -34,10 +34,15 @@ export async function POST(req: NextRequest) {
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   const organizationId = (session.user as any).organizationId as string;
   const role = (session.user as any).role as string | null | undefined;
-  if (!canManage(role)) return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
 
   const body = await req.json();
   const parsed = createRequestSchema.parse(body);
+  const isOwnRequest =
+    parsed.subjectEmail.toLowerCase() === session.user.email?.toLowerCase();
+  const canManageOthers = canManage(role);
+  if (!isOwnRequest && !canManageOthers) {
+    return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
+  }
   const created = await prisma.gdprRequest.create({
     data: {
       organizationId,

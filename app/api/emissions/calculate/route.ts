@@ -21,7 +21,10 @@ export async function POST(req: NextRequest) {
     const reportYear = Number(body?.reportYear);
     const validReportYear =
       Number.isFinite(reportYear) && reportYear >= 2000 && reportYear <= 2100 ? reportYear : undefined;
-    const result = await calculateOrganizationEmissions(organizationId, validReportYear);
+    const persistSnapshot = body?.persistSnapshot === true;
+    const result = await calculateOrganizationEmissions(organizationId, validReportYear, {
+      persist: persistSnapshot,
+    });
     return NextResponse.json({ ok: true, result });
   } catch (error) {
     return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : 'Unknown error' }, { status: 400 });

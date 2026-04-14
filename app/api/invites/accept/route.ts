@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { hashInvitationToken } from '@/lib/invitations';
+import { BCRYPT_SALT_ROUNDS } from '@/lib/password-hash';
 
 const acceptInviteSchema = z.object({
   inviteToken: z.string().min(16),
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const passwordHash = await bcrypt.hash(parsed.password, 12);
+    const passwordHash = await bcrypt.hash(parsed.password, BCRYPT_SALT_ROUNDS);
     const newUser = await prisma.user.create({
       data: {
         email: invite.email.toLowerCase(),

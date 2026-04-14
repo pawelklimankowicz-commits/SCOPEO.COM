@@ -14,6 +14,14 @@ function pick(node: any, keys: string[]): any {
 }
 function firstText(value: any): string | undefined { if (value == null) return undefined; if (typeof value === 'string') return value; if (Array.isArray(value)) return firstText(value[0]); if (typeof value === 'object' && '_' in value) return String(value._); return undefined; }
 function num(value: any): number | null { const t = firstText(value); if (!t) return null; const n = Number(t.replace(',', '.')); return Number.isFinite(n) ? n : null; }
+
+/** Segment identyfikatora podatkowego sprzedawcy do unikalnego klucza faktury (unika kolizji numer+data między dostawcami). */
+export function taxIdSegmentForExternalId(sellerTaxId: string | undefined | null): string {
+  const raw = String(sellerTaxId ?? '').trim();
+  if (!raw) return 'NO_TAX_ID';
+  return raw.replace(/\s+/g, '').replace(/[^0-9A-Za-z]/g, '');
+}
+
 export async function parseKsefFa3Xml(xml: string) {
   if (FORBIDDEN_XML_PATTERNS.some((pattern) => pattern.test(xml))) {
     throw new Error('XML contains forbidden DTD or ENTITY declarations');
@@ -32,5 +40,6 @@ export async function parseKsefFa3Xml(xml: string) {
   const lines = rowList.map((row: any, idx: number) => ({ description: firstText(pick(row, ['P_7', 'NazwaTowaruUslugi', 'Description'])) || `Line ${idx+1}`, quantity: num(pick(row, ['P_8A', 'Ilosc', 'Quantity'])), unit: firstText(pick(row, ['P_8B', 'JednostkaMiary', 'Unit'])), netValue: num(pick(row, ['P_11', 'WartoscNetto', 'NetValue'])) || 0, currency }));
   const netValue = num(pick(fa, ['P_13_1', 'WartoscNetto', 'NetTotal'])) || lines.reduce((a,b)=>a+b.netValue,0);
   const grossValue = num(pick(fa, ['P_15', 'WartoscBrutto', 'GrossTotal'])) || netValue;
-  return { externalId: `${number}-${issueDate}`, number, issueDate, sellerName, sellerTaxId, currency, netValue, grossValue, lines, rawPayload: xml };
+  const externalId = `${taxIdSegmentForExternalId(sellerTaxId)}-${number}-${issueDate}`;
+  return { externalId, number, issueDate, sellerName, sellerTaxId, currency, netValue, grossValue, lines, rawPayload: xml };
 }

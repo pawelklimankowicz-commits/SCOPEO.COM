@@ -7,6 +7,9 @@
     }
   ],
   "functions": {
+    "app/api/cron/ksef-worker/route.ts": {
+      "maxDuration": 60
+    },
     "app/api/ksef/jobs/process/route.ts": {
       "maxDuration": 60
     },

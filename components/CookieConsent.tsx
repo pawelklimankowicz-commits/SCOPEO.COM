@@ -1,29 +1,90 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import {
+  COOKIE_CONSENT_STORAGE_KEY,
+  COOKIE_CONSENT_VERSION,
+} from '@/lib/cookie-consent';
 
-export function CookieConsent() {
-  const [visible, setVisible] = useState(false);
+type Props = {
+  isLoggedIn: boolean;
+  /** Zgoda z DB dla bieżącej wersji polityki; null = brak rekordu lub stara wersja */
+  serverAnalyticsCookies: boolean | null;
+};
+
+export function CookieConsent({ isLoggedIn, serverAnalyticsCookies }: Props) {
+  const [visible, setVisible] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const consent = localStorage.getItem('cookie-consent');
-    if (!consent) setVisible(true);
-  }, []);
+    const run = async () => {
+      if (serverAnalyticsCookies !== null) {
+        localStorage.setItem(
+          COOKIE_CONSENT_STORAGE_KEY,
+          serverAnalyticsCookies ? 'accepted' : 'rejected'
+        );
+        if (!serverAnalyticsCookies && typeof window !== 'undefined' && (window as any).Sentry) {
+          (window as any).Sentry.close();
+        }
+        setVisible(false);
+        return;
+      }
 
-  const accept = () => {
-    localStorage.setItem('cookie-consent', 'accepted');
-    setVisible(false);
-  };
+      if (isLoggedIn) {
+        const local = localStorage.getItem(COOKIE_CONSENT_STORAGE_KEY);
+        if (local === 'accepted' || local === 'rejected') {
+          try {
+            const res = await fetch('/api/user/cookie-consent', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                choice: local === 'accepted' ? 'accepted' : 'rejected',
+                consentVersion: COOKIE_CONSENT_VERSION,
+              }),
+            });
+            if (!res.ok) throw new Error('save failed');
+          } catch {
+            /* localStorage nadal obowiązuje po stronie klienta */
+          }
+          if (local === 'rejected' && (window as any).Sentry) {
+            (window as any).Sentry.close();
+          }
+          setVisible(false);
+          return;
+        }
+        setVisible(true);
+        return;
+      }
 
-  const reject = () => {
-    localStorage.setItem('cookie-consent', 'rejected');
+      const local = localStorage.getItem(COOKIE_CONSENT_STORAGE_KEY);
+      setVisible(!local);
+    };
+
+    void run();
+  }, [isLoggedIn, serverAnalyticsCookies]);
+
+  const persist = async (choice: 'accepted' | 'rejected') => {
+    localStorage.setItem(
+      COOKIE_CONSENT_STORAGE_KEY,
+      choice === 'accepted' ? 'accepted' : 'rejected'
+    );
+    if (isLoggedIn) {
+      try {
+        await fetch('/api/user/cookie-consent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ choice, consentVersion: COOKIE_CONSENT_VERSION }),
+        });
+      } catch {
+        /* zgoda zapisana lokalnie */
+      }
+    }
     setVisible(false);
-    if (typeof window !== 'undefined' && (window as any).Sentry) {
+    if (choice === 'rejected' && typeof window !== 'undefined' && (window as any).Sentry) {
       (window as any).Sentry.close();
     }
   };
 
-  if (!visible) return null;
+  if (visible === null || !visible) return null;
 
   return (
     <div
@@ -51,19 +112,20 @@ export function CookieConsent() {
         }}
       >
         <div style={{ fontSize: 14, color: '#334155' }}>
-          <p style={{ margin: '0 0 4px 0', fontWeight: 700 }}>Uzywamy plikow cookie</p>
+          <p style={{ margin: '0 0 4px 0', fontWeight: 700 }}>Używamy plików cookie</p>
           <p>
-            Stosujemy niezbedne pliki cookie do dzialania aplikacji oraz opcjonalne do monitorowania bledow
-            (Sentry). Szczegoly w{' '}
+            Stosujemy niezbędne pliki cookie do działania aplikacji oraz opcjonalne do monitorowania błędów
+            (Sentry). Szczegóły w{' '}
             <a href="/polityka-prywatnosci" style={{ color: '#2563eb', textDecoration: 'underline' }}>
-              polityce prywatnosci
+              polityce prywatności
             </a>
             .
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
           <button
-            onClick={reject}
+            type="button"
+            onClick={() => void persist('rejected')}
             style={{
               borderRadius: 8,
               border: '1px solid #cbd5e1',
@@ -73,10 +135,11 @@ export function CookieConsent() {
               fontSize: 13,
             }}
           >
-            Tylko niezbedne
+            Tylko niezbędne
           </button>
           <button
-            onClick={accept}
+            type="button"
+            onClick={() => void persist('accepted')}
             style={{
               borderRadius: 8,
               border: 0,
@@ -86,7 +149,7 @@ export function CookieConsent() {
               fontSize: 13,
             }}
           >
-            Akceptuje wszystkie
+            Akceptuję wszystkie
           </button>
         </div>
       </div>

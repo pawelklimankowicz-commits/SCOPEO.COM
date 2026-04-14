@@ -3,7 +3,10 @@ import { prisma } from '@/lib/prisma';
 import { decryptKsefToken } from '@/lib/ksef-token-crypto';
 import { fetchKsefInvoiceXml } from '@/lib/ksef-client';
 import { importKsefXmlForOrganization } from '@/lib/ksef-import-service';
+import { getKsefProcessBudgetMs } from '@/lib/ksef-worker-config';
 import { logger } from '@/lib/logger';
+
+export const maxDuration = 60;
 
 function canRunWorker(req: Request) {
   const workerSecret = process.env.KSEF_WORKER_SECRET?.trim();
@@ -33,8 +36,21 @@ export async function POST(req: Request) {
     take: 10,
   });
 
+  const budgetMs = getKsefProcessBudgetMs();
+  const deadline = Date.now() + budgetMs;
   const results: Array<{ jobId: string; status: string; error?: string }> = [];
+  let stoppedForBudget = false;
+
   for (const job of jobs) {
+    if (Date.now() >= deadline) {
+      stoppedForBudget = true;
+      logger.info({
+        context: 'ksef_worker',
+        message: 'Stopped batch: process budget exhausted before starting next job',
+        budgetMs,
+      });
+      break;
+    }
     try {
       await prisma.ksefImportJob.update({
         where: { id: job.id },
@@ -100,7 +116,13 @@ export async function POST(req: Request) {
     }
   }
 
-  return NextResponse.json({ ok: true, processed: results.length, results });
+  return NextResponse.json({
+    ok: true,
+    processed: results.length,
+    results,
+    stoppedForBudget,
+    budgetMs,
+  });
 }
 
 export async function GET(req: Request) {

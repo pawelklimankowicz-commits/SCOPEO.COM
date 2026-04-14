@@ -1,5 +1,58 @@
 import ExcelJS from 'exceljs';
+import type { EmissionFactor, EmissionSource } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
+import { buildKobizeParsedFactors } from '@/lib/kobize-pl-factors';
+
+/** Domyślne URL-e (UK Gov / EPA zmieniają pliki co roku — ustaw env, patrz README i .env.example). */
+const DEFAULT_UK_FLAT_XLSX_URL =
+  'https://assets.publishing.service.gov.uk/media/6846b6ea57f3515d9611f0dd/ghg-conversion-factors-2025-flat-format.xlsx';
+const DEFAULT_EPA_HUB_XLSX_URL =
+  'https://www.epa.gov/system/files/other-files/2025-01/ghg-emission-factors-hub-2025.xlsx';
+
+export type FactorImportResolvedConfig = {
+  ukDataYear: number;
+  epaDataYear: number;
+  overlayYear: number;
+  ukGhgColumn: string;
+  ukFlatXlsxUrl: string;
+  epaHubXlsxUrl: string;
+};
+
+/**
+ * UK Gov i EPA publikują co roku nowe XLSX i zmieniają nagłówki kolumn (np. „GHG Conversion Factor YYYY”).
+ * Ustaw zmienne FACTOR_IMPORT_* w środowisku po każdej aktualizacji źródeł (zwykle raz do roku).
+ */
+export function resolveFactorImportConfig(): FactorImportResolvedConfig {
+  const overlayYear = Number(process.env.FACTOR_IMPORT_DATA_YEAR || '2025');
+  const ukDataYear = Number(process.env.FACTOR_IMPORT_UK_DATA_YEAR || String(overlayYear));
+  const epaDataYear = Number(process.env.FACTOR_IMPORT_EPA_DATA_YEAR || String(overlayYear));
+  const ukGhgColumn =
+    process.env.FACTOR_IMPORT_UK_GHG_COLUMN?.trim() || `GHG Conversion Factor ${ukDataYear}`;
+  const ukFlatXlsxUrl = process.env.FACTOR_IMPORT_UK_FLAT_XLSX_URL?.trim() || DEFAULT_UK_FLAT_XLSX_URL;
+  const epaHubXlsxUrl = process.env.FACTOR_IMPORT_EPA_HUB_XLSX_URL?.trim() || DEFAULT_EPA_HUB_XLSX_URL;
+  return {
+    ukDataYear,
+    epaDataYear,
+    overlayYear,
+    ukGhgColumn,
+    ukFlatXlsxUrl,
+    epaHubXlsxUrl,
+  };
+}
+
+export type EmissionFactorWithSource = EmissionFactor & { emissionSource: EmissionSource };
+
+function pickBestEmissionFactorForRegion(
+  factors: EmissionFactorWithSource[],
+  regionCode: string
+): EmissionFactorWithSource | null {
+  return (
+    factors.find((f) => f.region === regionCode) ||
+    factors.find((f) => f.region === 'EU') ||
+    factors[0] ||
+    null
+  );
+}
 
 type ValidationIssue = { severity: 'error' | 'warning'; code: string; message: string; context?: string };
 type ParsedFactor = { code: string; name: string; scope: 'SCOPE1'|'SCOPE2'|'SCOPE3'; categoryCode: string; factorValue: number; factorUnit: string; region: string; regionPriority: number; activityKind?: string; year: number; tags?: string; metadataJson?: any };
@@ -64,8 +117,20 @@ function ukCategoryCode(r: any) {
   return 'scope3_cat1_purchased_services';
 }
 
-export function parseUkRows(rows: any[][]) {
-  const required = ['ID','Scope','Level 1','Level 2','Level 3','Level 4','Column Text','UOM','GHG/Unit','GHG Conversion Factor 2025'];
+export function parseUkRows(rows: any[][], opts: { ghgColumn: string; dataYear: number }) {
+  const { ghgColumn, dataYear } = opts;
+  const required = [
+    'ID',
+    'Scope',
+    'Level 1',
+    'Level 2',
+    'Level 3',
+    'Level 4',
+    'Column Text',
+    'UOM',
+    'GHG/Unit',
+    ghgColumn,
+  ];
   const issues: ValidationIssue[] = [];
   const headerRowIdx = findHeaderRow(rows, required);
   if (headerRowIdx < 0) return { issues:[{ severity:'error', code:'HEADER_NOT_FOUND', message:'Could not locate UK flat file header row' }], factors: [] as ParsedFactor[] };
@@ -76,7 +141,7 @@ export function parseUkRows(rows: any[][]) {
   const factors: ParsedFactor[] = [];
   for (const r of jsonRows) {
     const id = normalizeText(r['ID']);
-    const factorValue = toNum(r['GHG Conversion Factor 2025']);
+    const factorValue = toNum(r[ghgColumn]);
     const ghgUnit = normalizeText(r['GHG/Unit']);
     const uom = normalizeText(r['UOM']);
     if (!id) continue;
@@ -84,13 +149,13 @@ export function parseUkRows(rows: any[][]) {
     if (!uom || !ghgUnit) { issues.push({ severity:'warning', code:'MISSING_UNIT', message:'UK row skipped because units are incomplete', context:id }); continue; }
     const scope = mapUkScope(normalizeText(r['Scope']));
     const name = compact([r['Level 1'], r['Level 2'], r['Level 3'], r['Level 4'], r['Column Text']]).map(normalizeText).join(' / ');
-    factors.push({ code: `UK_${slug(id)}_2025`, name, scope, categoryCode: ukCategoryCode(r), factorValue, factorUnit: `${ghgUnit}/${uom}`, region:'UK', regionPriority:50, activityKind: slug(`${r['Column Text'] || r['Level 3'] || ''}_${uom}`), year:2025, tags: compact([r['Level 1'], r['Level 2'], r['Level 3'], r['Level 4'], r['Column Text']]).map(normalizeText).join(','), metadataJson: r });
+    factors.push({ code: `UK_${slug(id)}_${dataYear}`, name, scope, categoryCode: ukCategoryCode(r), factorValue, factorUnit: `${ghgUnit}/${uom}`, region:'UK', regionPriority:50, activityKind: slug(`${r['Column Text'] || r['Level 3'] || ''}_${uom}`), year:dataYear, tags: compact([r['Level 1'], r['Level 2'], r['Level 3'], r['Level 4'], r['Column Text']]).map(normalizeText).join(','), metadataJson: r });
   }
   if (!factors.length) issues.push({ severity:'error', code:'NO_FACTORS_PARSED', message:'UK parser produced zero factors' });
   return { issues, factors };
 }
 
-export function parseEpaRows(rows: any[][]) {
+export function parseEpaRows(rows: any[][], dataYear: number) {
   const issues: ValidationIssue[] = [];
   const tableStarts: Record<string, number> = {};
   for (let i=0;i<rows.length;i++) {
@@ -112,45 +177,50 @@ export function parseEpaRows(rows: any[][]) {
   parseTable('Table 2', (r) => {
     const fuel = normalizeText(r[2]); const value = toNum(r[3]); const unit = normalizeText(r[4]);
     if (!fuel || fuel === 'Fuel Type' || value === null || !unit) return null;
-    return [{ code:`EPA_mobile_${slug(fuel)}_2025`, name:`EPA Mobile Combustion ${fuel}`, scope:'SCOPE1', categoryCode:'scope1_fuel', factorValue:value, factorUnit:`kg CO2/${unit}`, region:'US', regionPriority:80, activityKind:slug(`${fuel}_${unit}`), year:2025, tags:`epa,mobile,${fuel}`, metadataJson: { table:'Table 2', fuel, unit } }];
+    return [{ code:`EPA_mobile_${slug(fuel)}_${dataYear}`, name:`EPA Mobile Combustion ${fuel}`, scope:'SCOPE1', categoryCode:'scope1_fuel', factorValue:value, factorUnit:`kg CO2/${unit}`, region:'US', regionPriority:80, activityKind:slug(`${fuel}_${unit}`), year:dataYear, tags:`epa,mobile,${fuel}`, metadataJson: { table:'Table 2', fuel, unit } }];
   });
 
   parseTable('Table 6', (r) => {
     const acr = normalizeText(r[2]); const name = normalizeText(r[3]); const co2 = toNum(r[4]);
     if (!acr || acr === 'eGRID Subregion Acronym' || !name || co2 === null) return null;
-    return [{ code:`EPA_electricity_${slug(acr)}_2025`, name:`EPA Electricity ${name}`, scope:'SCOPE2', categoryCode:'scope2_electricity', factorValue:co2, factorUnit:'lb CO2/MWh', region:'US', regionPriority:80, activityKind:'electricity_mwh', year:2025, tags:`epa,electricity,${acr}`, metadataJson: { table:'Table 6', acr, name } }];
+    return [{ code:`EPA_electricity_${slug(acr)}_${dataYear}`, name:`EPA Electricity ${name}`, scope:'SCOPE2', categoryCode:'scope2_electricity', factorValue:co2, factorUnit:'lb CO2/MWh', region:'US', regionPriority:80, activityKind:'electricity_mwh', year:dataYear, tags:`epa,electricity,${acr}`, metadataJson: { table:'Table 6', acr, name } }];
   });
 
   parseTable('Table 8', (r) => {
     const vehicle = normalizeText(r[2]); const co2 = toNum(r[3]); const unit = normalizeText(r[6]);
     if (!vehicle || vehicle === 'Vehicle Type' || co2 === null || !unit) return null;
-    return [{ code:`EPA_transport_${slug(vehicle)}_${slug(unit)}_2025`, name:`EPA Transport ${vehicle}`, scope:'SCOPE3', categoryCode:'scope3_cat4_transport', factorValue:co2, factorUnit:`kg CO2/${unit}`, region:'US', regionPriority:80, activityKind:slug(`transport_${unit}`), year:2025, tags:`epa,transport,${vehicle}`, metadataJson: { table:'Table 8', vehicle, unit } }];
+    return [{ code:`EPA_transport_${slug(vehicle)}_${slug(unit)}_${dataYear}`, name:`EPA Transport ${vehicle}`, scope:'SCOPE3', categoryCode:'scope3_cat4_transport', factorValue:co2, factorUnit:`kg CO2/${unit}`, region:'US', regionPriority:80, activityKind:slug(`transport_${unit}`), year:dataYear, tags:`epa,transport,${vehicle}`, metadataJson: { table:'Table 8', vehicle, unit } }];
   });
 
   parseTable('Table 9', (r) => {
     const material = normalizeText(r[2]); const recycled = toNum(r[3]); const landfilled = toNum(r[4]);
     if (!material || material === 'Material') return null;
     const out: ParsedFactor[] = [];
-    if (recycled !== null) out.push({ code:`EPA_waste_${slug(material)}_recycled_2025`, name:`EPA Waste ${material} recycled`, scope:'SCOPE3', categoryCode:'scope3_cat5_waste', factorValue:recycled, factorUnit:'metric tons CO2e/short ton', region:'US', regionPriority:80, activityKind:'waste_recycled', year:2025, tags:`epa,waste,${material}`, metadataJson: { table:'Table 9', mode:'recycled', material } });
-    if (landfilled !== null) out.push({ code:`EPA_waste_${slug(material)}_landfilled_2025`, name:`EPA Waste ${material} landfilled`, scope:'SCOPE3', categoryCode:'scope3_cat5_waste', factorValue:landfilled, factorUnit:'metric tons CO2e/short ton', region:'US', regionPriority:80, activityKind:'waste_landfilled', year:2025, tags:`epa,waste,${material}`, metadataJson: { table:'Table 9', mode:'landfilled', material } });
+    if (recycled !== null) out.push({ code:`EPA_waste_${slug(material)}_recycled_${dataYear}`, name:`EPA Waste ${material} recycled`, scope:'SCOPE3', categoryCode:'scope3_cat5_waste', factorValue:recycled, factorUnit:'metric tons CO2e/short ton', region:'US', regionPriority:80, activityKind:'waste_recycled', year:dataYear, tags:`epa,waste,${material}`, metadataJson: { table:'Table 9', mode:'recycled', material } });
+    if (landfilled !== null) out.push({ code:`EPA_waste_${slug(material)}_landfilled_${dataYear}`, name:`EPA Waste ${material} landfilled`, scope:'SCOPE3', categoryCode:'scope3_cat5_waste', factorValue:landfilled, factorUnit:'metric tons CO2e/short ton', region:'US', regionPriority:80, activityKind:'waste_landfilled', year:dataYear, tags:`epa,waste,${material}`, metadataJson: { table:'Table 9', mode:'landfilled', material } });
     return out.length ? out : null;
   });
 
   parseTable('Table 10', (r) => {
     const vehicle = normalizeText(r[2]); const co2 = toNum(r[3]); const unit = normalizeText(r[6]);
     if (!vehicle || vehicle === 'Vehicle Type' || co2 === null || !unit) return null;
-    return [{ code:`EPA_travel_${slug(vehicle)}_${slug(unit)}_2025`, name:`EPA Business Travel ${vehicle}`, scope:'SCOPE3', categoryCode:'scope3_cat6_business_travel', factorValue:co2, factorUnit:`kg CO2/${unit}`, region:'US', regionPriority:80, activityKind:slug(`travel_${unit}`), year:2025, tags:`epa,travel,${vehicle}`, metadataJson: { table:'Table 10', vehicle, unit } }];
+    return [{ code:`EPA_travel_${slug(vehicle)}_${slug(unit)}_${dataYear}`, name:`EPA Business Travel ${vehicle}`, scope:'SCOPE3', categoryCode:'scope3_cat6_business_travel', factorValue:co2, factorUnit:`kg CO2/${unit}`, region:'US', regionPriority:80, activityKind:slug(`travel_${unit}`), year:dataYear, tags:`epa,travel,${vehicle}`, metadataJson: { table:'Table 10', vehicle, unit } }];
   });
 
   if (!factors.length) issues.push({ severity:'error', code:'NO_FACTORS_PARSED', message:'EPA parser produced zero factors' });
   return { issues, factors };
 }
 
-function addPolandRegionalOverlays() {
-  return [
-    { code:'PL_GRID_ELECTRICITY_2025', name:'Poland grid electricity overlay', scope:'SCOPE2', categoryCode:'scope2_electricity', factorValue:0.72, factorUnit:'kgCO2e/kWh', region:'PL', regionPriority:1, activityKind:'electricity_kwh', year:2025, tags:'poland,electricity,grid', metadataJson: { source:'regional_overlay' } },
-    { code:'PL_DISTRICT_HEAT_2025', name:'Poland district heat overlay', scope:'SCOPE2', categoryCode:'scope2_district_heat', factorValue:0.28, factorUnit:'kgCO2e/kWh', region:'PL', regionPriority:1, activityKind:'district_heat_kwh', year:2025, tags:'poland,heat', metadataJson: { source:'regional_overlay' } }
-  ] as ParsedFactor[];
+const FACTOR_IMPORT_FETCH_TIMEOUT_MS = 25_000;
+
+async function fetchFactorWorkbook(url: string): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FACTOR_IMPORT_FETCH_TIMEOUT_MS);
+  try {
+    return await fetch(url, { signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 async function upsertSource(organizationId: string, source: any) {
@@ -163,16 +233,49 @@ async function persistFactors(organizationId: string, emissionSourceId: string, 
 }
 
 export async function importExternalFactors(organizationId: string, actorUserId?: string | null) {
+  const cfg = resolveFactorImportConfig();
   const sources = {
-    uk: { code:'UK_GOV_CONVERSION', name:'UK Government Conversion Factors', publisher:'UK Government', sourceUrl:'https://assets.publishing.service.gov.uk/media/6846b6ea57f3515d9611f0dd/ghg-conversion-factors-2025-flat-format.xlsx', methodology:'Government conversion factors for company reporting', version:'2025-v1', validFromYear:2025, region:'UK', notes:'Parsed from flat file XLSX' },
-    epa: { code:'EPA_EF_HUB', name:'EPA GHG Emission Factors Hub', publisher:'US EPA', sourceUrl:'https://www.epa.gov/system/files/other-files/2025-01/ghg-emission-factors-hub-2025.xlsx', methodology:'Organizational default emission factors', version:'2025', validFromYear:2025, region:'US', notes:'Parsed from workbook XLSX' },
-    pl: { code:'PL_REGIONAL_OVERLAY', name:'Poland Regional Overlay', publisher:'Internal regional resolver', sourceUrl:'', methodology:'Regional priority overlay', version:'2025-v1', validFromYear:2025, region:'PL', notes:'Regional priority factors for Poland' }
+    uk: {
+      code:'UK_GOV_CONVERSION',
+      name:'UK Government Conversion Factors',
+      publisher:'UK Government',
+      sourceUrl: cfg.ukFlatXlsxUrl,
+      methodology:'Government conversion factors for company reporting',
+      version:`${cfg.ukDataYear}-v1`,
+      validFromYear: cfg.ukDataYear,
+      region:'UK',
+      notes:'Parsed from flat file XLSX (URL/kolumna GHG z env — wymaga corocznej aktualizacji)',
+    },
+    epa: {
+      code:'EPA_EF_HUB',
+      name:'EPA GHG Emission Factors Hub',
+      publisher:'US EPA',
+      sourceUrl: cfg.epaHubXlsxUrl,
+      methodology:'Organizational default emission factors',
+      version: String(cfg.epaDataYear),
+      validFromYear: cfg.epaDataYear,
+      region:'US',
+      notes:'Parsed from workbook XLSX (URL z env — wymaga corocznej aktualizacji)',
+    },
+    pl: {
+      code: 'KOBIZE_PL',
+      name: 'KOBiZE — wskaźniki krajowe (PL)',
+      publisher: 'Krajowy Ośrodek Bilansowania i Zarządzania Emisjami (KOBiZE)',
+      sourceUrl: 'https://www.kobize.pl/pl/fileCategory/id/28/wskazniki-emisyjnosci',
+      methodology:
+        'Wskaźniki emisyjności z publikacji KOBiZE (m.in. energia elektryczna); plik data/kobize-pl-factors.json — aktualizacja roczna',
+      version: `${cfg.overlayYear}-kobize-v1`,
+      validFromYear: cfg.overlayYear,
+      region: 'PL',
+      notes:
+        'Domyślnie: prąd 0,597 kgCO2e/kWh (597 kg CO2/MWh u odbiorcy, rok sprawozdawczy 2023). Dopisz kolejne lata z plików PDF/XLSX na kobize.pl.',
+    },
   };
   const results = [];
   for (const item of [sources.uk, sources.epa]) {
     const run = await prisma.factorImportRun.create({ data: { organizationId, actorUserId: actorUserId ?? null, sourceCode: item.code, sourceUrl: item.sourceUrl, status: 'STARTED', validationJson: [] as any } });
     try {
-      const res = await fetch(item.sourceUrl);
+      const res = await fetchFactorWorkbook(item.sourceUrl);
       const workbook = new ExcelJS.Workbook();
       const workbookBytes = Buffer.from(await res.arrayBuffer());
       await workbook.xlsx.load(workbookBytes as any);
@@ -188,7 +291,10 @@ export async function importExternalFactors(organizationId: string, actorUserId?
         throw new Error(`Missing sheet ${targetSheetName}`);
       }
       const rows = worksheetToRows(worksheet);
-      const parsed = item.code === 'UK_GOV_CONVERSION' ? parseUkRows(rows) : parseEpaRows(rows);
+      const parsed =
+        item.code === 'UK_GOV_CONVERSION'
+          ? parseUkRows(rows, { ghgColumn: cfg.ukGhgColumn, dataYear: cfg.ukDataYear })
+          : parseEpaRows(rows, cfg.epaDataYear);
       const issues: ValidationIssue[] = [...basics, ...(parsed.issues as ValidationIssue[])];
       await prisma.factorImportRun.update({ where: { id: run.id }, data: { status: issues.some(i => i.severity==='error') ? 'FAILED' : 'VALIDATED', validationJson: issues as any } });
       if (issues.some(i => i.severity==='error')) { results.push({ source:item.code, ok:false, issues }); continue; }
@@ -202,12 +308,54 @@ export async function importExternalFactors(organizationId: string, actorUserId?
     }
   }
   const plSource = await upsertSource(organizationId, sources.pl);
-  const overlayCount = await persistFactors(organizationId, plSource.id, addPolandRegionalOverlays());
-  results.push({ source:'PL_REGIONAL_OVERLAY', ok:true, importedCount:overlayCount, issues:[] });
+  const kobizeFactors = buildKobizeParsedFactors(cfg.overlayYear);
+  const kobizeCount = await persistFactors(organizationId, plSource.id, kobizeFactors as ParsedFactor[]);
+  results.push({ source: 'KOBIZE_PL', ok: true, importedCount: kobizeCount, issues: [] });
   return { results };
 }
 
-export async function resolveBestFactor(organizationId: string, regionCode: string, categoryCode: string) {
-  const factors = await prisma.emissionFactor.findMany({ where: { organizationId, categoryCode }, include: { emissionSource: true }, orderBy: [{ regionPriority: 'asc' }, { year: 'desc' }] });
-  return factors.find(f => f.region === regionCode) || factors.find(f => f.region === 'EU') || factors[0] || null;
+export async function resolveBestFactor(
+  organizationId: string,
+  regionCode: string,
+  categoryCode: string
+): Promise<EmissionFactorWithSource | null> {
+  const factors = await prisma.emissionFactor.findMany({
+    where: { organizationId, categoryCode },
+    include: { emissionSource: true },
+    orderBy: [{ regionPriority: 'asc' }, { year: 'desc' }],
+  });
+  return pickBestEmissionFactorForRegion(factors, regionCode);
+}
+
+/** Jedno zapytanie dla wielu kategorii — ten sam wybór co {@link resolveBestFactor}. */
+export async function resolveBestFactorsForCategories(
+  organizationId: string,
+  regionCode: string,
+  categoryCodes: string[]
+): Promise<Map<string, EmissionFactorWithSource | null>> {
+  const unique = [...new Set(categoryCodes)];
+  const map = new Map<string, EmissionFactorWithSource | null>();
+  if (unique.length === 0) return map;
+  const allFactors = await prisma.emissionFactor.findMany({
+    where: { organizationId, categoryCode: { in: unique } },
+    include: { emissionSource: true },
+    orderBy: [{ regionPriority: 'asc' }, { year: 'desc' }],
+  });
+  const byCategory = new Map<string, EmissionFactorWithSource[]>();
+  for (const f of allFactors) {
+    const arr = byCategory.get(f.categoryCode) ?? [];
+    arr.push(f);
+    byCategory.set(f.categoryCode, arr);
+  }
+  for (const list of byCategory.values()) {
+    list.sort((a, b) => {
+      if (a.regionPriority !== b.regionPriority) return a.regionPriority - b.regionPriority;
+      return b.year - a.year;
+    });
+  }
+  for (const cat of unique) {
+    const list = byCategory.get(cat) ?? [];
+    map.set(cat, pickBestEmissionFactorForRegion(list, regionCode));
+  }
+  return map;
 }

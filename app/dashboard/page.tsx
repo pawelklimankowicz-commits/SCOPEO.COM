@@ -70,10 +70,19 @@ export default async function DashboardPage({
   }
   const emissions = Array.from(emissionMap.values());
   const totalPages = Math.max(1, Math.ceil(invoicesTotal / invoicePageSize));
+  const factorCount = await prisma.emissionFactor.count({ where: { organizationId } });
+  const lineCategoryCodes = [
+    ...new Set(lines.map((l) => l.overrideCategoryCode ?? l.categoryCode).filter(Boolean)),
+  ];
+  /** Panel review: dropdown z ograniczoną liczbą faktorów (nie cała baza 2k–5k). */
   const factors = await prisma.emissionFactor.findMany({
-    where: { organizationId },
+    where: {
+      organizationId,
+      ...(lineCategoryCodes.length > 0 ? { categoryCode: { in: lineCategoryCodes } } : {}),
+    },
     include: { emissionSource: true },
     orderBy: [{ regionPriority: 'asc' }, { year: 'desc' }],
+    take: 200,
   });
   const sources = await prisma.emissionSource.findMany({
     where: { organizationId },
@@ -110,7 +119,7 @@ export default async function DashboardPage({
             Zalogowany: <strong style={{ color: '#e8edff' }}>{email}</strong> · rola:{' '}
             <strong style={{ color: '#e8edff' }}>{role}</strong> · region:{' '}
             {org?.regionCode || 'PL'}. Poniżej: import faktur KSeF (XML), import faktorów (UK / EPA /
-            overlay PL), kalkulacja kg CO₂e oraz kolejka review z historią zmian.
+            KOBiZE PL), kalkulacja kg CO₂e oraz kolejka review z historią zmian.
           </p>
         </div>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -128,10 +137,14 @@ export default async function DashboardPage({
         </div>
       ) : null}
 
-      <div className="grid grid-3">
+      <div className="grid grid-4">
         <div className="kpi">
           <div className="small">Profil emisji</div>
           <h3 style={{ margin: '8px 0 0', color: '#f2f6ff' }}>{profile ? 'Skonfigurowany' : 'Brak'}</h3>
+        </div>
+        <div className="kpi">
+          <div className="small">Rekordy faktorów (DB)</div>
+          <h3 style={{ margin: '8px 0 0', color: '#f2f6ff' }}>{factorCount}</h3>
         </div>
         <div className="kpi">
           <div className="small">Importy faktorów (XLSX)</div>
@@ -165,7 +178,10 @@ export default async function DashboardPage({
       <div className="card section" style={{ marginTop: 28 }}>
         <h2>Źródła i wersje faktorów</h2>
         <p className="app-muted" style={{ marginTop: 0, fontSize: 14 }}>
-          Rekordy powstają po udanym imporcie workbooków (UK Government, EPA) oraz overlayu PL.
+          Rekordy powstają po udanym imporcie workbooków (UK Government, EPA) oraz zestawu KOBiZE (PL) z
+          pliku JSON. W bazie jest{' '}
+          <strong style={{ color: '#e8edff' }}>{factorCount}</strong> rekordów faktorów emisji (pełna lista nie jest
+          ładowana na ten widok).
         </p>
         {sources.length === 0 ? (
           <p className="empty-hint">Brak źródeł — uruchom import faktorów w sekcji akcji powyżej.</p>
@@ -233,6 +249,15 @@ export default async function DashboardPage({
         )}
       </div>
 
+      {factorCount > factors.length ? (
+        <p className="app-muted" style={{ marginTop: 20, marginBottom: 0, fontSize: 13 }}>
+          Lista faktorów w polu „Override” jest skrócona: załadowano {factors.length} rekordów
+          {lineCategoryCodes.length > 0
+            ? ` (kategorie z linii na tej stronie faktur)`
+            : ` (pierwsze wg priorytetu regionu)`}
+          , w bazie jest <strong style={{ color: '#dce6ff' }}>{factorCount}</strong> łącznie.
+        </p>
+      ) : null}
       <ReviewPanel lines={lines} factors={factors} history={history} />
       <EmissionsCharts data={emissions} />
       <InvitesPanel canManage={canManageInvites} />
