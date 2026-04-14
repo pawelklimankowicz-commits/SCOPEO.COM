@@ -1,9 +1,12 @@
-/** Dane do uzupełnienia przed produkcją — spójne we wszystkich dokumentach prawnych. */
 export const LEGAL_COMPANY = {
   name: 'Black Gold Sp. z o.o.',
   seat: 'Poznań',
-  /** Uzupełnij: KRS, NIP, REGON, pełny adres do korespondencji. */
-  registryNote: 'Pełne dane rejestrowe (KRS, NIP, REGON) oraz adres korespondencyjny — do publikacji produkcyjnej.',
+  /**
+   * Dane rejestrowe publikujemy tylko jako komplet.
+   * Uzupełnij prawdziwe wartości przed publikacją:
+   * "KRS ..., NIP ..., REGON ..., adres korespondencyjny: ...".
+   */
+  registryDetails: '',
 } as const;
 
 export const LEGAL_EMAIL = {

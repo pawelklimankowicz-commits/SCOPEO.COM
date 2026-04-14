@@ -8,6 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function KontaktPrawnyPage() {
+  const registryDetails = LEGAL_COMPANY.registryDetails.trim();
+  const registryLine = registryDetails.length > 0 ? ` ${registryDetails}` : '';
+
   return (
     <>
       <div className="mkt-page-head mkt-page-head--dark">
@@ -37,7 +40,7 @@ export default function KontaktPrawnyPage() {
             <div className="mkt-legal-card">
               <h3>Podmiot</h3>
               <p>
-                {LEGAL_COMPANY.name}, siedziba: {LEGAL_COMPANY.seat}. {LEGAL_COMPANY.registryNote}
+                {LEGAL_COMPANY.name}, siedziba: {LEGAL_COMPANY.seat}.{registryLine}
               </p>
             </div>
           </div>
@@ -70,10 +73,12 @@ export default function KontaktPrawnyPage() {
             </li>
           </ul>
 
-          <p>
-            Adres korespondencyjny oraz dane rejestrowe należy uzupełnić w wersji produkcyjnej i pokazać spójnie we
-            wszystkich dokumentach prawnych.
-          </p>
+          {registryLine ? null : (
+            <p>
+              Dane rejestrowe i adres korespondencyjny są aktualizowane centralnie i publikowane po ich kompletnej
+              weryfikacji.
+            </p>
+          )}
 
           <p>
             <Link href="/kontakt" className="mkt-link">

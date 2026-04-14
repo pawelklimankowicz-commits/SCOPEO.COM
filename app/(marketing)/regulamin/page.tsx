@@ -8,6 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function RegulaminPage() {
+  const registryDetails = LEGAL_COMPANY.registryDetails.trim();
+  const registryLine = registryDetails.length > 0 ? ` ${registryDetails}` : '';
+
   return (
     <>
       <div className="mkt-page-head mkt-page-head--dark">
@@ -49,7 +52,7 @@ export default function RegulaminPage() {
               <h3>Usługodawca</h3>
               <p>
                 Usługodawcą platformy Scopeo jest {LEGAL_COMPANY.name} z siedzibą w {LEGAL_COMPANY.seat}.{' '}
-                {LEGAL_COMPANY.registryNote}
+                {registryLine}
               </p>
             </div>
           </div>
