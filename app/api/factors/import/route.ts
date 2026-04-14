@@ -6,7 +6,7 @@ export async function POST() {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   const organizationId = (session.user as any).organizationId as string;
-  const limit = checkRateLimit(`factors-import:${organizationId}`, {
+  const limit = await checkRateLimit(`factors-import:${organizationId}`, {
     windowMs: 10 * 60_000,
     max: 3,
     blockMs: 30 * 60_000,

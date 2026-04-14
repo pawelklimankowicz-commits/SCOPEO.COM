@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   const organizationId = (session.user as any).organizationId as string;
   const ip = getClientIp(req.headers);
-  const limit = checkRateLimit(`review-update:${organizationId}:${ip}`, { windowMs: 60_000, max: 60 });
+  const limit = await checkRateLimit(`review-update:${organizationId}:${ip}`, { windowMs: 60_000, max: 60 });
   if (!limit.ok) {
     logger.warn({ context: 'review_update', message: 'Rate limited review update', organizationId, ip });
     return NextResponse.json(
@@ -33,13 +33,22 @@ export async function POST(req: NextRequest) {
     const diff = buildDiff(before, after);
     await prisma.reviewEvent.create({ data: { organizationId: line.mappingDecision.organizationId, mappingDecisionId: line.mappingDecisionId, actorUserId: session.user.id as string, actorRole, action: reviewActionFromStatus(parsed.status as any) as any, fromStatus: before.status as any, toStatus: after.status as any, fromCategoryCode: before.categoryCode, toCategoryCode: after.categoryCode, fromFactorId: before.factorId, toFactorId: after.factorId, diffJson: diff as any, comment: parsed.comment ?? null } });
     const resendKey = process.env.RESEND_API_KEY;
-    const workflowInbox = process.env.REVIEW_WORKFLOW_EMAIL || process.env.SALES_INBOX_EMAIL;
+    let workflowRecipient = process.env.REVIEW_WORKFLOW_EMAIL || process.env.SALES_INBOX_EMAIL;
+    if (after.assigneeUserId) {
+      const assignedUser = await prisma.user.findUnique({
+        where: { id: after.assigneeUserId },
+        select: { email: true },
+      });
+      if (assignedUser?.email) {
+        workflowRecipient = assignedUser.email;
+      }
+    }
     const fromEmail = process.env.LEADS_FROM_EMAIL;
-    if (resendKey && workflowInbox && fromEmail) {
+    if (resendKey && workflowRecipient && fromEmail) {
       const resend = new Resend(resendKey);
       const emailResult = await resend.emails.send({
         from: fromEmail,
-        to: workflowInbox,
+        to: workflowRecipient,
         subject: `Scopeo review: ${before.status} -> ${after.status}`,
         text: [
           `Organization ID: ${organizationId}`,

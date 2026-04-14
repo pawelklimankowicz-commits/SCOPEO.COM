@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   const orgId = (session.user as any).organizationId as string;
   const ip = getClientIp(req.headers);
-  const limit = checkRateLimit(`onboarding:${orgId}:${ip}`, { windowMs: 60_000, max: 20 });
+  const limit = await checkRateLimit(`onboarding:${orgId}:${ip}`, { windowMs: 60_000, max: 20 });
   if (!limit.ok) {
     return NextResponse.json(
       { ok: false, error: 'Too many requests' },

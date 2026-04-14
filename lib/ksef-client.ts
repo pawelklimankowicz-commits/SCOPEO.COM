@@ -8,13 +8,17 @@ export async function fetchKsefInvoiceXml(input: {
   token: string;
   referenceNumber: string;
 }): Promise<string> {
-  const baseUrl = process.env.KSEF_API_BASE_URL?.trim();
+  const baseUrl = (
+    process.env.KSEF_API_BASE_URL?.trim() || 'https://ksef-test.mf.gov.pl/api'
+  ).replace(/\/$/, '');
   if (!baseUrl) {
     throw new Error('KSEF_API_BASE_URL is missing');
   }
-  const url = `${baseUrl.replace(/\/$/, '')}/invoices/${encodeURIComponent(
+  const initUrl = `${baseUrl}/online/Session/InitSigned`;
+  const invoiceUrl = `${baseUrl}/online/Invoice/KSeF?ksefReferenceNumber=${encodeURIComponent(
     input.referenceNumber
-  )}/xml`;
+  )}`;
+  const terminateUrl = `${baseUrl}/online/Session/Terminate`;
   const maxAttempts = Number(process.env.KSEF_FETCH_MAX_ATTEMPTS ?? '4');
   const timeoutMs = Number(process.env.KSEF_FETCH_TIMEOUT_MS ?? '15000');
   let lastError: Error | null = null;
@@ -23,16 +27,36 @@ export async function fetchKsefInvoiceXml(input: {
     const abortController = new AbortController();
     const timeout = setTimeout(() => abortController.abort(), timeoutMs);
     try {
-      const response = await fetch(url, {
-        method: 'GET',
+      const sessionInitRes = await fetch(initUrl, {
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${input.token}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({}),
+        cache: 'no-store',
+        signal: abortController.signal,
+      });
+      if (!sessionInitRes.ok) {
+        throw new Error(`KSeF session init failed with status ${sessionInitRes.status}`);
+      }
+      const sessionPayload = (await sessionInitRes.json().catch(() => ({}))) as Record<string, any>;
+      const sessionToken =
+        sessionPayload.sessionToken ||
+        sessionPayload.referenceNumber ||
+        sessionPayload.token ||
+        input.token;
+
+      const response = await fetch(invoiceUrl, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${sessionToken}`,
           Accept: 'application/xml, text/xml, application/octet-stream',
         },
         cache: 'no-store',
         signal: abortController.signal,
       });
-      clearTimeout(timeout);
 
       if (!response.ok) {
         const body = await response.text().catch(() => '');
@@ -60,6 +84,15 @@ export async function fetchKsefInvoiceXml(input: {
       if (!xml || !xml.includes('<')) {
         throw new Error('KSeF API response did not contain XML payload');
       }
+      await fetch(terminateUrl, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${sessionToken}`,
+          Accept: 'application/json',
+        },
+        cache: 'no-store',
+      }).catch(() => null);
+      clearTimeout(timeout);
       return xml;
     } catch (error) {
       clearTimeout(timeout);

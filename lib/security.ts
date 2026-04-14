@@ -1,3 +1,6 @@
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
+
 type RateLimitConfig = {
   windowMs: number;
   max: number;
@@ -11,24 +14,55 @@ type RateLimitState = {
 };
 
 const rateStore = new Map<string, RateLimitState>();
+const redis =
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+    ? Redis.fromEnv()
+    : null;
 
 function now() {
   return Date.now();
 }
 
 export function getClientIp(headers: Headers): string {
+  const vercelForwarded = headers.get('x-vercel-forwarded-for');
+  if (vercelForwarded) {
+    const first = vercelForwarded.split(',')[0]?.trim();
+    if (first) return first;
+  }
+  const realIp = headers.get('x-real-ip')?.trim();
+  if (realIp) return realIp;
   const forwarded = headers.get('x-forwarded-for');
   if (forwarded) {
     const first = forwarded.split(',')[0]?.trim();
     if (first) return first;
   }
-  return headers.get('x-real-ip') ?? 'unknown';
+  return 'unknown';
 }
 
-export function checkRateLimit(
+export async function checkRateLimit(
   key: string,
   config: RateLimitConfig
-): { ok: true; remaining: number } | { ok: false; retryAfterSec: number } {
+): Promise<{ ok: true; remaining: number } | { ok: false; retryAfterSec: number }> {
+  if (redis) {
+    const bucketSeconds = Math.max(1, Math.ceil(config.windowMs / 1000));
+    const ratelimit = new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(config.max, `${bucketSeconds} s`),
+      analytics: true,
+      prefix: 'scopeo:ratelimit',
+    });
+    const result = await ratelimit.limit(key);
+    if (!result.success) {
+      const resetMs = typeof result.reset === 'number' ? result.reset : Date.now() + config.windowMs;
+      return {
+        ok: false,
+        retryAfterSec: Math.max(1, Math.ceil((resetMs - Date.now()) / 1000)),
+      };
+    }
+    return { ok: true, remaining: result.remaining };
+  }
+
+  // Fallback for local/dev when Upstash env is unavailable.
   const timestamp = now();
   const existing = rateStore.get(key);
 

@@ -38,10 +38,14 @@ async function toXlsx(result: Awaited<ReturnType<typeof calculateOrganizationEmi
 
 async function toPdf(result: Awaited<ReturnType<typeof calculateOrganizationEmissions>>) {
   const pdf = await PDFDocument.create();
-  const page = pdf.addPage([595, 842]);
   const font = await pdf.embedFont(StandardFonts.Helvetica);
+  let page = pdf.addPage([595, 842]);
   let y = 810;
   const line = (text: string) => {
+    if (y < 40) {
+      page = pdf.addPage([595, 842]);
+      y = 810;
+    }
     page.drawText(text, { x: 40, y, size: 11, font });
     y -= 16;
   };
@@ -52,7 +56,7 @@ async function toPdf(result: Awaited<ReturnType<typeof calculateOrganizationEmis
   line(`Scope3: ${result.scope3.toFixed(2)} kg`);
   line(`Total: ${result.totalKg.toFixed(2)} kg`);
   y -= 8;
-  for (const row of result.calculations.slice(0, 20)) {
+  for (const row of result.calculations) {
     line(`${row.invoiceNumber} | ${row.categoryCode} | ${Number(row.co2eKg).toFixed(2)} kg`);
   }
   return pdf.save();
@@ -66,7 +70,9 @@ export async function GET(req: NextRequest) {
   const reportYear = Number(req.nextUrl.searchParams.get('year'));
   const validReportYear =
     Number.isFinite(reportYear) && reportYear >= 2000 && reportYear <= 2100 ? reportYear : undefined;
-  const result = await calculateOrganizationEmissions(organizationId, validReportYear);
+  const result = await calculateOrganizationEmissions(organizationId, validReportYear, {
+    persist: false,
+  });
 
   if (format === 'xlsx') {
     const file = await toXlsx(result);

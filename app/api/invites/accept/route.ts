@@ -32,18 +32,16 @@ export async function POST(req: NextRequest) {
   }
 
   const passwordHash = await bcrypt.hash(parsed.password, 10);
-  const user = await prisma.user.upsert({
-    where: { email },
-    update: {
-      name: parsed.name,
-      passwordHash,
-    },
-    create: {
-      email,
-      name: parsed.name,
-      passwordHash,
-    },
-  });
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  const user = existingUser
+    ? existingUser
+    : await prisma.user.create({
+        data: {
+          email,
+          name: parsed.name,
+          passwordHash,
+        },
+      });
 
   await prisma.membership.upsert({
     where: {

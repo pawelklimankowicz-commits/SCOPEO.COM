@@ -21,12 +21,18 @@ export async function sendInvitationEmail(input: {
     : null;
   const resendKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.LEADS_FROM_EMAIL;
-  if (!inviteUrl || !resendKey || !fromEmail) return null;
+  if (!inviteUrl || !resendKey || !fromEmail) {
+    throw new Error('Email service not configured for invitations');
+  }
   const resend = new Resend(resendKey);
-  return resend.emails.send({
+  const result = await resend.emails.send({
     from: fromEmail,
     to: input.email.toLowerCase(),
     subject: 'Zaproszenie do Scopeo',
     text: `Otrzymujesz zaproszenie do organizacji w Scopeo. Użyj linku: ${inviteUrl}`,
   });
+  if (result.error) {
+    throw new Error(`Failed to send invitation email: ${result.error.message}`);
+  }
+  return result;
 }

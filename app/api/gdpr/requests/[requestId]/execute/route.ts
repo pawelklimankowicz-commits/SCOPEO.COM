@@ -28,6 +28,8 @@ export async function POST(
 
   let affectedUsers = 0;
   let affectedLeads = 0;
+  let affectedSuppliers = 0;
+  let affectedInvoiceLines = 0;
   const email = request.subjectEmail.toLowerCase();
 
   if (request.type === 'ERASURE') {
@@ -65,6 +67,36 @@ export async function POST(
       },
     });
     affectedLeads = leadsResult.count;
+
+    const localPart = email.split('@')[0] ?? '';
+    const shouldAnonymizeInvoices = process.env.GDPR_ERASURE_ANONYMIZE_INVOICES === 'true';
+    if (shouldAnonymizeInvoices && localPart.length >= 3) {
+      const supplierUpdate = await prisma.supplier.updateMany({
+        where: {
+          organizationId,
+          OR: [
+            { name: { contains: email, mode: 'insensitive' } },
+            { name: { contains: localPart, mode: 'insensitive' } },
+          ],
+        },
+        data: { name: 'Deleted Supplier', taxId: null },
+      });
+      affectedSuppliers = supplierUpdate.count;
+
+      const lines = await prisma.invoiceLine.findMany({
+        where: {
+          invoice: { organizationId, supplier: { name: 'Deleted Supplier' } },
+        },
+        select: { id: true },
+      });
+      for (const line of lines) {
+        await prisma.invoiceLine.update({
+          where: { id: line.id },
+          data: { description: '[ANONYMIZED]' },
+        });
+      }
+      affectedInvoiceLines = lines.length;
+    }
   }
 
   const updatedRequest = await prisma.gdprRequest.update({
@@ -87,8 +119,18 @@ export async function POST(
       type: request.type,
       affectedUsers,
       affectedLeads,
+      affectedSuppliers,
+      affectedInvoiceLines,
+      invoiceAnonymizationPolicy: process.env.GDPR_ERASURE_ANONYMIZE_INVOICES === 'true',
     },
   });
 
-  return NextResponse.json({ ok: true, request: updatedRequest, affectedUsers, affectedLeads });
+  return NextResponse.json({
+    ok: true,
+    request: updatedRequest,
+    affectedUsers,
+    affectedLeads,
+    affectedSuppliers,
+    affectedInvoiceLines,
+  });
 }

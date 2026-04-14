@@ -6,10 +6,13 @@ import { importKsefXmlForOrganization } from '@/lib/ksef-import-service';
 import { logger } from '@/lib/logger';
 
 function canRunWorker(req: Request) {
-  const secret = process.env.KSEF_WORKER_SECRET?.trim();
-  if (!secret) return false;
+  const workerSecret = process.env.KSEF_WORKER_SECRET?.trim();
   const provided = req.headers.get('x-ksef-worker-secret')?.trim();
-  return provided === secret;
+  if (workerSecret && provided === workerSecret) return true;
+  const cronSecret = process.env.CRON_SECRET?.trim();
+  const authHeader = req.headers.get('authorization')?.trim();
+  if (cronSecret && authHeader === `Bearer ${cronSecret}`) return true;
+  return false;
 }
 
 function backoffMs(attemptCount: number) {
@@ -98,4 +101,8 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json({ ok: true, processed: results.length, results });
+}
+
+export async function GET(req: Request) {
+  return POST(req);
 }

@@ -1,0 +1,14 @@
+{
+  "regions": ["fra1"],
+  "functions": {
+    "app/api/ksef/jobs/process/route.ts": {
+      "maxDuration": 60
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/ksef/jobs/process",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}
