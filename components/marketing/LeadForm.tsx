@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 type Props = {
   variant?: 'default' | 'compact';
@@ -9,6 +10,7 @@ type Props = {
 
 export default function LeadForm({ variant = 'default', idPrefix = 'lead' }: Props) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const pathname = usePathname();
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -24,6 +26,8 @@ export default function LeadForm({ variant = 'default', idPrefix = 'lead' }: Pro
       acceptPrivacy: fd.get('acceptPrivacy') === 'on',
       marketingEmail: fd.get('marketingEmail') === 'on',
       marketingPhone: fd.get('marketingPhone') === 'on',
+      consentVersion: 'lead-form-v1-2026-04-14',
+      pagePath: pathname,
     };
     try {
       const res = await fetch('/api/contact', {

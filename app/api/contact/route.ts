@@ -13,26 +13,64 @@ const schema = z.object({
   acceptPrivacy: z.literal(true),
   marketingEmail: z.boolean().optional(),
   marketingPhone: z.boolean().optional(),
+  consentVersion: z.string().min(3).max(120).default('lead-form-v1'),
+  pagePath: z.string().min(1).max(200).optional(),
 });
 
 export async function POST(req: Request) {
   try {
     const json = await req.json();
     const lead = schema.parse(json);
+    const forwardedFor = req.headers.get('x-forwarded-for');
+    const ipAddress = forwardedFor ? forwardedFor.split(',')[0]?.trim() : null;
+    const userAgent = req.headers.get('user-agent');
 
-    const createdLead = await prisma.lead.create({
-      data: {
-        name: lead.name,
-        email: lead.email,
-        company: lead.company,
-        invoices: lead.invoices,
-        message: lead.message ?? null,
-        phone: lead.phone ?? null,
-        acceptPrivacy: lead.acceptPrivacy,
-        marketingEmail: lead.marketingEmail ?? false,
-        marketingPhone: lead.marketingPhone ?? false,
-        source: 'demo_form',
-      },
+    const createdLead = await prisma.$transaction(async (tx) => {
+      const savedLead = await tx.lead.create({
+        data: {
+          name: lead.name,
+          email: lead.email,
+          company: lead.company,
+          invoices: lead.invoices,
+          message: lead.message ?? null,
+          phone: lead.phone ?? null,
+          acceptPrivacy: lead.acceptPrivacy,
+          marketingEmail: lead.marketingEmail ?? false,
+          marketingPhone: lead.marketingPhone ?? false,
+          source: lead.pagePath ? `demo_form:${lead.pagePath}` : 'demo_form',
+        },
+      });
+
+      const consentRows = [];
+      if (lead.marketingEmail) {
+        consentRows.push({
+          leadId: savedLead.id,
+          channel: 'EMAIL' as const,
+          consentText:
+            'Wyrażam zgodę na przesyłanie informacji handlowych drogą elektroniczną (e-mail) o produktach i usługach Scopeo.',
+          consentVersion: lead.consentVersion,
+          formPath: lead.pagePath ?? null,
+          ipAddress,
+          userAgent,
+        });
+      }
+      if (lead.marketingPhone) {
+        consentRows.push({
+          leadId: savedLead.id,
+          channel: 'PHONE' as const,
+          consentText: 'Wyrażam zgodę na kontakt telefoniczny w sprawach handlowych.',
+          consentVersion: lead.consentVersion,
+          formPath: lead.pagePath ?? null,
+          ipAddress,
+          userAgent,
+        });
+      }
+
+      if (consentRows.length > 0) {
+        await tx.leadMarketingConsent.createMany({ data: consentRows });
+      }
+
+      return savedLead;
     });
 
     const resendKey = process.env.RESEND_API_KEY;
@@ -62,6 +100,9 @@ export async function POST(req: Request) {
         `Zgoda RODO: ${lead.acceptPrivacy ? 'tak' : 'nie'}`,
         `Marketing email: ${lead.marketingEmail ? 'tak' : 'nie'}`,
         `Marketing telefon: ${lead.marketingPhone ? 'tak' : 'nie'}`,
+        `Wersja zgód: ${lead.consentVersion}`,
+        `Źródło formularza: ${lead.pagePath ?? '-'}`,
+        `IP: ${ipAddress ?? '-'}`,
         `Wiadomość: ${lead.message ?? '-'}`,
       ].join('\n'),
     });

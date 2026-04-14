@@ -59,6 +59,11 @@ enum ImportStatus {
   IMPORTED
 }
 
+enum MarketingChannel {
+  EMAIL
+  PHONE
+}
+
 model User {
   id            String       @id @default(cuid())
   name          String?
@@ -324,4 +329,21 @@ model Lead {
   marketingPhone   Boolean  @default(false)
   source           String?
   createdAt        DateTime @default(now())
+  consents         LeadMarketingConsent[]
+}
+
+model LeadMarketingConsent {
+  id               String           @id @default(cuid())
+  leadId           String
+  channel          MarketingChannel
+  consentText      String
+  consentVersion   String
+  legalBasis       String           @default("art. 6 ust. 1 lit. a RODO")
+  formPath         String?
+  ipAddress        String?
+  userAgent        String?
+  grantedAt        DateTime         @default(now())
+  lead             Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, channel, grantedAt])
 }
