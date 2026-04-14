@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import CookieSettingsButton from '@/components/marketing/CookieSettingsButton';
 
 export default function SiteFooter() {
   const y = new Date().getFullYear();
@@ -72,6 +73,9 @@ export default function SiteFooter() {
             </li>
             <li>
               <Link href="/cookies">Polityka cookies</Link>
+            </li>
+            <li>
+              <CookieSettingsButton />
             </li>
             <li>
               <Link href="/dpa">DPA (powierzenie)</Link>
