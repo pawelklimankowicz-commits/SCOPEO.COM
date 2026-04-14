@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { checkRateLimit, getClientIp } from '@/lib/security';
 import { logger } from '@/lib/logger';
+import { writeProcessingRecord } from '@/lib/privacy-register';
 
 const schema = z.object({
   name: z.string().min(2),
@@ -81,6 +82,20 @@ export async function POST(req: Request) {
 
       return savedLead;
     });
+    const privacyOrgId = process.env.DEFAULT_PRIVACY_ORGANIZATION_ID;
+    if (privacyOrgId) {
+      await writeProcessingRecord({
+        organizationId: privacyOrgId,
+        eventType: 'LEAD_CAPTURED',
+        subjectRef: createdLead.email,
+        legalBasis: 'art. 6 ust. 1 lit. a RODO',
+        payload: {
+          leadId: createdLead.id,
+          marketingEmail: lead.marketingEmail ?? false,
+          marketingPhone: lead.marketingPhone ?? false,
+        },
+      });
+    }
 
     const resendKey = process.env.RESEND_API_KEY;
     const salesInbox = process.env.SALES_INBOX_EMAIL;

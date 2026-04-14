@@ -10,11 +10,15 @@ function getCipherKey(): Buffer | null {
   return decoded;
 }
 
+export function isRawPayloadEncryptionConfigured(): boolean {
+  return Boolean(getCipherKey());
+}
+
 export function secureRawPayload(xml: string): string {
   const capped = Buffer.from(xml, 'utf8').subarray(0, MAX_RAW_PAYLOAD_BYTES).toString('utf8');
   const key = getCipherKey();
   if (!key) {
-    return capped;
+    throw new Error('DATA_ENCRYPTION_KEY is missing or invalid (must be base64-encoded 32-byte key)');
   }
   const iv = crypto.randomBytes(12);
   const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);

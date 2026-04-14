@@ -64,6 +64,18 @@ enum MarketingChannel {
   PHONE
 }
 
+enum GdprRequestType {
+  ACCESS
+  ERASURE
+}
+
+enum GdprRequestStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+}
+
 model User {
   id            String       @id @default(cuid())
   name          String?
@@ -93,6 +105,8 @@ model Organization {
   mappingDecisions     MappingDecision[]
   reviewEvents         ReviewEvent[]
   importRuns           FactorImportRun[]
+  gdprRequests         GdprRequest[]
+  processingRecords    ProcessingRecord[]
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
 }
@@ -355,4 +369,36 @@ model LeadMarketingConsent {
   lead             Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
   @@index([leadId, channel, grantedAt])
+}
+
+model GdprRequest {
+  id                String            @id @default(cuid())
+  organizationId    String
+  requesterUserId   String?
+  subjectEmail      String
+  type              GdprRequestType
+  status            GdprRequestStatus @default(OPEN)
+  notes             String?
+  processedAt       DateTime?
+  processedByUserId String?
+  createdAt         DateTime          @default(now())
+  organization      Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status, createdAt])
+  @@index([subjectEmail])
+}
+
+model ProcessingRecord {
+  id             String       @id @default(cuid())
+  organizationId String
+  actorUserId    String?
+  eventType      String
+  subjectRef     String?
+  legalBasis     String?
+  payload        Json?
+  createdAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
+  @@index([eventType, createdAt])
 }

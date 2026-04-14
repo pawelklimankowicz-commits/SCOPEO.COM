@@ -6,13 +6,20 @@ import { parseKsefFa3Xml } from '@/lib/ksef-xml';
 import { classifyInvoiceLine } from '@/lib/nlp-mapping';
 import { resolveBestFactor } from '@/lib/factor-import';
 import { checkRateLimit, getClientIp } from '@/lib/security';
-import { secureRawPayload } from '@/lib/payload-security';
+import { isRawPayloadEncryptionConfigured, secureRawPayload } from '@/lib/payload-security';
 import { logger } from '@/lib/logger';
+import { writeProcessingRecord } from '@/lib/privacy-register';
 
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   const organizationId = (session.user as any).organizationId as string;
+  if (!isRawPayloadEncryptionConfigured()) {
+    return NextResponse.json(
+      { ok: false, error: 'KSeF import is disabled until DATA_ENCRYPTION_KEY is configured' },
+      { status: 503 }
+    );
+  }
   const ip = getClientIp(req.headers);
   const limit = checkRateLimit(`ksef-import:${organizationId}:${ip}`, {
     windowMs: 60_000,
@@ -53,6 +60,14 @@ export async function POST(req: NextRequest) {
       organizationId,
       invoiceId: savedInvoice.id,
       lines: createdLines.length,
+    });
+    await writeProcessingRecord({
+      organizationId,
+      actorUserId: session.user.id as string,
+      eventType: 'KSEF_IMPORT',
+      subjectRef: invoice.sellerTaxId ?? invoice.sellerName,
+      legalBasis: 'art. 6 ust. 1 lit. b RODO',
+      payload: { invoiceId: savedInvoice.id, lines: createdLines.length },
     });
     return NextResponse.json({ ok: true, invoice: savedInvoice, lines: createdLines });
   } catch (error) {
