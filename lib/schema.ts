@@ -29,6 +29,36 @@ export const onboardingSchema = z.object({
   employeeCommutingIncluded: z.boolean(),
   notes: z.string().optional().nullable(),
 });
+export const onboardingProfileSchema = z.object({
+  companyName: z.string().trim().min(2, 'Podaj nazwę firmy'),
+  taxId: z
+    .string()
+    .trim()
+    .transform((v) => v.replace(/\D/g, ''))
+    .refine((v) => v.length === 0 || /^\d{10}$/.test(v), 'NIP musi mieć 10 cyfr')
+    .nullable()
+    .optional(),
+  addressStreet: z.string().trim().min(2, 'Podaj ulicę'),
+  addressPostalCode: z.string().trim().min(4, 'Podaj kod pocztowy'),
+  addressCity: z.string().trim().min(2, 'Podaj miasto'),
+  reportingYear: z.number().int().min(2023).max(2100),
+});
+
+export const onboardingBoundarySchema = z.object({
+  industry: z.string().trim().min(1, 'Wybierz branżę'),
+  boundaryApproach: z.enum(['operational_control', 'financial_control', 'equity_share']),
+  includeScope3: z.boolean().default(false),
+});
+
+export const onboardingKsefSchema = z.object({
+  ksefToken: z.string().trim().min(10, 'Token KSeF musi mieć min. 10 znaków'),
+  contextNip: z
+    .string()
+    .trim()
+    .transform((v) => v.replace(/\D/g, ''))
+    .refine((v) => /^\d{10}$/.test(v), 'NIP musi mieć 10 cyfr'),
+  skip: z.boolean().optional().default(false),
+});
 export const importInvoicesSchema = z
   .object({
     xml: z.string().min(20).optional(),

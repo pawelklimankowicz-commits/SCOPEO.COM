@@ -7,6 +7,7 @@ import { checkRateLimit, getClientIp } from '@/lib/security';
 import { BCRYPT_SALT_ROUNDS } from '@/lib/password-hash';
 import { Resend } from 'resend';
 import crypto from 'crypto';
+import { getOrCreateStripeCustomer } from '@/lib/billing';
 
 export async function POST(req: NextRequest) {
   try {
@@ -42,7 +43,18 @@ export async function POST(req: NextRequest) {
           },
         },
       },
+      include: {
+        memberships: {
+          select: { organizationId: true },
+          orderBy: { id: 'asc' },
+          take: 1,
+        },
+      },
     });
+    const organizationId = user.memberships[0]?.organizationId;
+    if (organizationId) {
+      void getOrCreateStripeCustomer(organizationId).catch(() => null);
+    }
     const rawToken = crypto.randomBytes(32).toString('hex');
     const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
     await prisma.emailVerificationToken.create({

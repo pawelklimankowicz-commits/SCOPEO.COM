@@ -33,6 +33,39 @@ enum CalculationMethod {
   SPEND
 }
 
+enum SubscriptionPlan {
+  MIKRO
+  STARTER
+  GROWTH
+  SCALE
+  ENTERPRISE
+}
+
+enum BillingInterval {
+  MONTHLY
+  ANNUAL
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  TRIALING
+}
+
+enum NotificationType {
+  KSEF_IMPORT_DONE
+  KSEF_IMPORT_FAILED
+  REVIEW_SUBMITTED
+  REVIEW_APPROVED
+  REVIEW_REJECTED
+  INVOICE_LIMIT_WARNING
+  GDPR_REQUEST_RECEIVED
+  FACTOR_IMPORT_DONE
+  MEMBER_JOINED
+  MEMBER_ROLE_CHANGED
+}
+
 enum ReviewStatus {
   PENDING
   IN_REVIEW
@@ -99,6 +132,7 @@ model User {
   image         String?
   passwordHash  String?
   memberships   Membership[]
+  notifications Notification[]
   cookieConsent UserConsent?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
@@ -141,6 +175,8 @@ model Organization {
   name                 String
   slug                 String                @unique
   regionCode           String?               @default("PL")
+  onboardingCompletedAt DateTime?
+  onboardingStep       Int                   @default(0)
   memberships          Membership[]
   carbonProfiles       CarbonProfile[]
   invoices             Invoice[]
@@ -155,8 +191,65 @@ model Organization {
   processingRecords    ProcessingRecord[]
   invitations          Invitation[]
   ksefImportJobs       KsefImportJob[]
+  subscription         Subscription?
+  notifications        Notification[]
+  apiKeys              ApiKey[]
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  organizationId       String             @unique
+  organization         Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  stripeCustomerId     String             @unique
+  stripeSubscriptionId String?            @unique
+  plan                 SubscriptionPlan   @default(MIKRO)
+  billingInterval      BillingInterval    @default(MONTHLY)
+  status               SubscriptionStatus @default(TRIALING)
+  trialEndsAt          DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  ksefConnectionLimit  Int                @default(1)
+  userLimit            Int                @default(1)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@index([stripeCustomerId])
+}
+
+model Notification {
+  id             String           @id @default(cuid())
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String?
+  user           User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  type           NotificationType
+  title          String
+  body           String
+  link           String?
+  readAt         DateTime?
+  createdAt      DateTime         @default(now())
+
+  @@index([organizationId, userId, readAt])
+}
+
+model ApiKey {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  keyHash        String       @unique
+  keyPrefix      String
+  scopes         String[]
+  lastUsedAt     DateTime?
+  expiresAt      DateTime?
+  createdBy      String
+  revokedAt      DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId])
+  @@index([keyHash])
 }
 
 model Membership {
@@ -197,6 +290,7 @@ model Supplier {
   taxId          String       @default("")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   invoices       Invoice[]
+  categoryHints  SupplierCategoryHint[]
   @@unique([organizationId, name, taxId])
 }
 
@@ -337,11 +431,26 @@ model InvoiceLine {
   estimated            Boolean           @default(false)
   overrideCategoryCode String?
   overrideFactorId     String?
+  classificationReasoning String?
   invoice              Invoice           @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   emissionFactor       EmissionFactor?   @relation(fields: [emissionFactorId], references: [id], onDelete: SetNull)
   mappingDecision      MappingDecision?  @relation(fields: [mappingDecisionId], references: [id], onDelete: SetNull)
   @@index([invoiceId, scope, categoryCode])
   @@index([mappingDecisionId])
+}
+
+model SupplierCategoryHint {
+  id             String   @id @default(cuid())
+  organizationId String
+  supplierId     String
+  supplier       Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  categoryCode   String
+  confidence     Float    @default(1.0)
+  sampleCount    Int      @default(1)
+  updatedAt      DateTime @updatedAt
+
+  @@unique([organizationId, supplierId, categoryCode])
+  @@index([supplierId])
 }
 
 model EmissionCalculation {

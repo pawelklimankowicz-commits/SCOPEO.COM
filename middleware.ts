@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
 function generateNonce(): string {
   const bytes = new Uint8Array(16);
@@ -9,9 +10,68 @@ function generateNonce(): string {
   return btoa(binary);
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const nonce = generateNonce();
   const isDev = process.env.NODE_ENV === 'development';
+  const { pathname } = request.nextUrl;
+
+  const token = await getToken({
+    req: request,
+    secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+  });
+  const guardedPath =
+    pathname.startsWith('/dashboard') ||
+    (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth/'));
+  const activeOrganizationId =
+    typeof token?.activeOrganizationId === 'string'
+      ? token.activeOrganizationId
+      : typeof token?.organizationId === 'string'
+        ? token.organizationId
+        : null;
+  const organizations = Array.isArray(token?.organizations)
+    ? (token?.organizations as Array<{ id?: string }>).map((item) => item?.id).filter(Boolean)
+    : [];
+  if (guardedPath && activeOrganizationId && organizations.length > 0 && !organizations.includes(activeOrganizationId)) {
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ ok: false, error: 'Invalid organization context' }, { status: 403 });
+    }
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/login';
+    redirectUrl.search = '';
+    return NextResponse.redirect(redirectUrl);
+  }
+  const role = typeof token?.role === 'string' ? token.role : null;
+  const onboardingCompletedAt =
+    typeof token?.onboardingCompletedAt === 'string' ? token.onboardingCompletedAt : null;
+  const ownerNeedsOnboarding = role === 'OWNER' && !onboardingCompletedAt;
+
+  if (ownerNeedsOnboarding && pathname.startsWith('/dashboard')) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/onboarding/step/1';
+    redirectUrl.search = '';
+    return NextResponse.redirect(redirectUrl);
+  }
+  if (
+    ownerNeedsOnboarding &&
+    pathname.startsWith('/api/') &&
+    !pathname.startsWith('/api/auth/') &&
+    !pathname.startsWith('/api/onboarding/') &&
+    pathname !== '/api/ksef/test'
+  ) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'Onboarding wymagany. Dokoncz konfiguracje organizacji.',
+      },
+      { status: 403 }
+    );
+  }
+  if (!ownerNeedsOnboarding && pathname.startsWith('/onboarding')) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/dashboard';
+    redirectUrl.search = '';
+    return NextResponse.redirect(redirectUrl);
+  }
 
   const cspHeader = [
     "default-src 'self'",
@@ -39,7 +99,7 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     {
-      source: '/((?!api|_next/static|_next/image|favicon.ico).*)',
+      source: '/((?!_next/static|_next/image|favicon.ico).*)',
       missing: [
         { type: 'header', key: 'next-router-prefetch' },
         { type: 'header', key: 'purpose', value: 'prefetch' },

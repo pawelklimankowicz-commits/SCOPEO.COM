@@ -6,10 +6,20 @@ import { ensureAllowedTransition, reviewActionFromStatus, buildDiff } from '@/li
 import { checkRateLimit, getClientIp } from '@/lib/security';
 import { Resend } from 'resend';
 import { logger } from '@/lib/logger';
+import { canAccessReviewWorkflow } from '@/lib/billing-features';
+import { createNotification } from '@/lib/notifications';
+import { applySupplierHintFeedback } from '@/lib/supplier-hints';
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   const organizationId = (session.user as any).organizationId as string;
+  const subscription = await prisma.subscription.findUnique({
+    where: { organizationId },
+    select: { plan: true },
+  });
+  if (!canAccessReviewWorkflow(subscription?.plan ?? 'MIKRO')) {
+    return NextResponse.json({ ok: false, error: 'Upgrade planu wymagany' }, { status: 403 });
+  }
   const ip = getClientIp(req.headers);
   const limit = await checkRateLimit(`review-update:${organizationId}:${ip}`, {
     windowMs: 60_000,
@@ -30,7 +40,7 @@ export async function POST(req: NextRequest) {
         id: parsed.lineId,
         invoice: { organizationId },
       },
-      include: { mappingDecision: true },
+      include: { mappingDecision: true, invoice: { select: { supplierId: true } } },
     });
     if (!line) return NextResponse.json({ ok: false, error: 'Not found' }, { status: 404 });
     if (!line.mappingDecisionId || !line.mappingDecision) {
@@ -49,8 +59,30 @@ export async function POST(req: NextRequest) {
       },
       include: { emissionFactor: true, mappingDecision: true },
     });
+    const newCategoryCode = parsed.overrideCategoryCode ?? updatedLine.overrideCategoryCode ?? updatedLine.categoryCode;
+    if (parsed.status === 'APPROVED' && line.invoice.supplierId && newCategoryCode) {
+      await applySupplierHintFeedback({
+        organizationId,
+        supplierId: line.invoice.supplierId,
+        categoryCode: newCategoryCode,
+      });
+    }
     const diff = buildDiff(before, after);
     await prisma.reviewEvent.create({ data: { organizationId: line.mappingDecision.organizationId, mappingDecisionId: line.mappingDecisionId, actorUserId: session.user.id as string, actorRole, action: reviewActionFromStatus(parsed.status as any) as any, fromStatus: before.status as any, toStatus: after.status as any, fromCategoryCode: before.categoryCode, toCategoryCode: after.categoryCode, fromFactorId: before.factorId, toFactorId: after.factorId, diffJson: diff as any, comment: parsed.comment ?? null } });
+    const notificationType =
+      parsed.status === 'APPROVED'
+        ? 'REVIEW_APPROVED'
+        : parsed.status === 'REJECTED'
+          ? 'REVIEW_REJECTED'
+          : 'REVIEW_SUBMITTED';
+    await createNotification({
+      organizationId,
+      userId: after.assigneeUserId ?? undefined,
+      type: notificationType as any,
+      title: `Review: ${parsed.status}`,
+      body: `Linia "${line.description.slice(0, 80)}" ma nowy status ${parsed.status}.`,
+      link: '/dashboard/review',
+    });
     const resendKey = process.env.RESEND_API_KEY;
     let workflowRecipient = process.env.REVIEW_WORKFLOW_EMAIL || process.env.SALES_INBOX_EMAIL;
     if (after.assigneeUserId) {

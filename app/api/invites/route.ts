@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { createInvitationToken, sendInvitationEmail } from '@/lib/invitations';
 import { checkRateLimit, getClientIp } from '@/lib/security';
+import { requireUserCapacity } from '@/lib/billing-guard';
 
 const createInviteSchema = z.object({
   email: z.string().email(),
@@ -65,6 +66,14 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
   const parsed = createInviteSchema.parse(body);
+  try {
+    await requireUserCapacity(organizationId);
+  } catch (error: unknown) {
+    return NextResponse.json(
+      { ok: false, error: error instanceof Error ? error.message : 'Upgrade planu wymagany' },
+      { status: 403 }
+    );
+  }
   const { token, tokenHash } = createInvitationToken();
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 

@@ -4,6 +4,7 @@ import type { EmissionFactor, EmissionSource } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { buildKobizeParsedFactors } from '@/lib/kobize-pl-factors';
 import { writeProcessingRecord } from '@/lib/privacy-register';
+import { createNotification } from '@/lib/notifications';
 
 /** Domyślne URL-e (UK Gov / EPA zmieniają pliki co roku — ustaw env, patrz README i .env.example). */
 const DEFAULT_UK_FLAT_XLSX_URL =
@@ -387,6 +388,14 @@ export async function importExternalFactors(organizationId: string, actorUserId?
         issueCount: Array.isArray(item.issues) ? item.issues.length : 0,
       })),
     },
+  });
+  await createNotification({
+    organizationId,
+    userId: actorUserId ?? undefined,
+    type: 'FACTOR_IMPORT_DONE',
+    title: 'Import faktorow zakonczony',
+    body: `Zaimportowano ${importedCount} rekordow z zewnetrznych zrodel.`,
+    link: '/dashboard/report',
   });
   return { results };
 }

@@ -5,6 +5,7 @@ import { fetchKsefInvoiceXml } from '@/lib/ksef-client';
 import { importKsefXmlForOrganization } from '@/lib/ksef-import-service';
 import { getKsefProcessBudgetMs } from '@/lib/ksef-worker-config';
 import { logger } from '@/lib/logger';
+import { createNotification } from '@/lib/notifications';
 
 export const maxDuration = 60;
 
@@ -90,6 +91,14 @@ export async function POST(req: Request) {
           } as any,
         },
       });
+      await createNotification({
+        organizationId: job.organizationId,
+        userId: job.actorUserId ?? undefined,
+        type: 'KSEF_IMPORT_DONE',
+        title: 'Import KSeF zakonczony',
+        body: `Zaimportowano fakture ${job.referenceNumber}.`,
+        link: '/dashboard/invoices',
+      });
       results.push({ jobId: job.id, status: 'SUCCEEDED' });
     } catch (error) {
       const latest = await prisma.ksefImportJob.findUnique({ where: { id: job.id } });
@@ -116,6 +125,14 @@ export async function POST(req: Request) {
         jobId: job.id,
         attempts,
         error: message,
+      });
+      await createNotification({
+        organizationId: job.organizationId,
+        userId: job.actorUserId ?? undefined,
+        type: 'KSEF_IMPORT_FAILED',
+        title: 'Import KSeF nieudany',
+        body: `Faktura ${job.referenceNumber}: ${message.slice(0, 120)}`,
+        link: '/dashboard',
       });
       results.push({ jobId: job.id, status: finalFailure ? 'FAILED' : 'RETRY', error: message });
     }

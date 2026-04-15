@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { writeProcessingRecord } from '@/lib/privacy-register';
 import { checkRateLimit } from '@/lib/security';
+import { createNotification } from '@/lib/notifications';
 
 const createRequestSchema = z.object({
   subjectEmail: z.string().email(),
@@ -72,6 +73,13 @@ export async function POST(req: NextRequest) {
     subjectRef: parsed.subjectEmail.toLowerCase(),
     legalBasis: 'art. 12-17 RODO',
     payload: { requestId: created.id, type: created.type },
+  });
+  await createNotification({
+    organizationId,
+    type: 'GDPR_REQUEST_RECEIVED',
+    title: 'Nowy wniosek GDPR',
+    body: `${parsed.type} dla ${parsed.subjectEmail.toLowerCase()}`,
+    link: '/dashboard/gdpr',
   });
 
   return NextResponse.json({ ok: true, request: created });

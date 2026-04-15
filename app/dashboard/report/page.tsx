@@ -79,6 +79,15 @@ export default async function DashboardReportPage({
         <Link className="btn btn-secondary" href={`/api/emissions/report${selectedYear ? `?year=${selectedYear}` : ''}`}>
           Pobierz raport GHG (PDF)
         </Link>
+        <Link className="btn btn-secondary" href={`/api/emissions/csrd-export?year=${selectedYear ?? profile?.reportingYear ?? new Date().getFullYear()}&format=json`}>
+          Pobierz CSRD JSON
+        </Link>
+        <Link className="btn btn-secondary" href={`/api/emissions/csrd-export?year=${selectedYear ?? profile?.reportingYear ?? new Date().getFullYear()}&format=csv`}>
+          Pobierz CSRD CSV
+        </Link>
+        <Link className="btn btn-secondary" href={`/api/emissions/csrd-export/xml?year=${selectedYear ?? profile?.reportingYear ?? new Date().getFullYear()}`}>
+          Pobierz ESRS XML
+        </Link>
         {profile?.reportingYear ? (
           <Link className="btn btn-secondary" href={`/dashboard/report?year=${profile.reportingYear}`}>
             Filtruj: {profile.reportingYear}

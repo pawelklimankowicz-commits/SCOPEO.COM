@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import { hashInvitationToken } from '@/lib/invitations';
 import { BCRYPT_SALT_ROUNDS } from '@/lib/password-hash';
 import { checkRateLimit, getClientIp } from '@/lib/security';
+import { createNotification } from '@/lib/notifications';
 
 const acceptInviteSchema = z.object({
   inviteToken: z.string().min(16),
@@ -87,6 +88,13 @@ export async function POST(req: NextRequest) {
   await prisma.invitation.update({
     where: { id: invite.id },
     data: { status: 'ACCEPTED', acceptedAt: new Date() },
+  });
+  await createNotification({
+    organizationId: invite.organizationId,
+    type: 'MEMBER_JOINED',
+    title: 'Nowy czlonek organizacji',
+    body: `${email} dolaczyl do organizacji.`,
+    link: '/dashboard/settings',
   });
 
   return NextResponse.json({ ok: true });

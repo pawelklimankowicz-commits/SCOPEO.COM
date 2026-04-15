@@ -18,6 +18,39 @@ function resolveAuthSecret(): string {
   return createHash('sha256').update(seed).digest('hex');
 }
 
+type SessionOrganization = {
+  id: string;
+  name: string;
+  slug: string;
+  role: string;
+};
+
+async function loadUserOrganizations(userId: string): Promise<SessionOrganization[]> {
+  const memberships = await prisma.membership.findMany({
+    where: { userId },
+    include: {
+      organization: { select: { id: true, name: true, slug: true } },
+    },
+    orderBy: { id: 'asc' },
+  });
+  return memberships.map((membership) => ({
+    id: membership.organization.id,
+    name: membership.organization.name,
+    slug: membership.organization.slug,
+    role: membership.role,
+  }));
+}
+
+function pickActiveOrganization(
+  organizations: SessionOrganization[],
+  requestedId?: string | null,
+  currentId?: string | null
+) {
+  if (requestedId && organizations.some((item) => item.id === requestedId)) return requestedId;
+  if (currentId && organizations.some((item) => item.id === currentId)) return currentId;
+  return organizations[0]?.id ?? null;
+}
+
 export const authOptions: NextAuthOptions = {
   secret: resolveAuthSecret(),
   session: { strategy: 'jwt' },
@@ -55,26 +88,35 @@ export const authOptions: NextAuthOptions = {
       if (!user?.passwordHash) return null;
       const ok = await bcrypt.compare(password, user.passwordHash);
       if (!ok) return null;
-      /**
-       * Product limitation: JWT/session expose a single `organizationId` / role. We take the first
-       * membership (stable order: id asc). There is no workspace switcher API or UI — see README.
-       */
       const m = user.memberships[0];
-      return { id: user.id, email: user.email, name: user.name, organizationId: m?.organizationId ?? null, organizationSlug: m?.organization.slug ?? null, role: m?.role ?? null } as any;
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        organizationId: m?.organizationId ?? null,
+        organizationSlug: m?.organization.slug ?? null,
+        role: m?.role ?? null,
+      } as any;
     }
   })],
   callbacks: {
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.sub;
-        (session.user as any).organizationId = token.organizationId;
-        (session.user as any).organizationSlug = token.organizationSlug;
+        (session.user as any).id = token.sub ?? '';
+        (session.user as any).organizationId = token.activeOrganizationId ?? token.organizationId ?? null;
+        (session.user as any).organizationSlug = token.organizationSlug ?? null;
         (session.user as any).role = token.role;
         (session.user as any).emailVerified = token.emailVerified;
+        (session.user as any).onboardingCompletedAt = token.onboardingCompletedAt ?? null;
+        (session.user as any).onboardingStep = Number(token.onboardingStep ?? 0);
+        (session.user as any).organizations = token.organizations ?? [];
       }
+      (session as any).organizationId = token.activeOrganizationId ?? token.organizationId ?? null;
+      (session as any).organizations = token.organizations ?? [];
+      (session as any).activeOrganizationId = token.activeOrganizationId ?? token.organizationId ?? null;
       return session;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.organizationId = (user as any).organizationId;
         token.organizationSlug = (user as any).organizationSlug;
@@ -84,6 +126,35 @@ export const authOptions: NextAuthOptions = {
           select: { emailVerified: true },
         });
         token.emailVerified = dbUser?.emailVerified ?? null;
+      }
+
+      const shouldRefreshOrganizations =
+        Boolean(user) || trigger === 'update' || !Array.isArray(token.organizations);
+      if (token.sub && shouldRefreshOrganizations) {
+        const organizations = await loadUserOrganizations(String(token.sub));
+        token.organizations = organizations;
+        const requestedOrgId =
+          trigger === 'update' ? ((session as any)?.activeOrganizationId as string | undefined) : undefined;
+        const activeOrganizationId = pickActiveOrganization(
+          organizations,
+          requestedOrgId ?? null,
+          (token.activeOrganizationId as string | undefined) ?? (token.organizationId as string | undefined)
+        );
+        token.activeOrganizationId = activeOrganizationId;
+        token.organizationId = activeOrganizationId;
+        const active = organizations.find((item) => item.id === activeOrganizationId);
+        token.organizationSlug = active?.slug ?? null;
+        token.role = active?.role ?? null;
+      }
+
+      const organizationId = (token.activeOrganizationId as string | undefined) ?? (token.organizationId as string | undefined);
+      if (organizationId) {
+        const org = await prisma.organization.findUnique({
+          where: { id: organizationId },
+          select: { onboardingCompletedAt: true, onboardingStep: true },
+        });
+        token.onboardingCompletedAt = org?.onboardingCompletedAt?.toISOString() ?? null;
+        token.onboardingStep = org?.onboardingStep ?? 0;
       }
       return token;
     },

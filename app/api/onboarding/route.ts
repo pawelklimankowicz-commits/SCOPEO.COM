@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { checkRateLimit, getClientIp } from '@/lib/security';
 import { encryptKsefToken } from '@/lib/ksef-token-crypto';
+import { requireKsefCapacity } from '@/lib/billing-guard';
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
@@ -26,6 +27,14 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const parsed = onboardingSchema.parse(body);
+    const existingProfile = await prisma.carbonProfile.findUnique({
+      where: { organizationId: orgId },
+      select: { taxId: true },
+    });
+    const creatingNewConnection = !existingProfile?.taxId;
+    if (creatingNewConnection) {
+      await requireKsefCapacity(orgId);
+    }
     const encryptedToken = encryptKsefToken(parsed.ksefToken);
     const profile = await prisma.carbonProfile.upsert({
       where: { organizationId: orgId },
@@ -61,7 +70,10 @@ export async function POST(req: NextRequest) {
         notes: parsed.notes,
       },
     });
-    await prisma.organization.update({ where: { id: orgId }, data: { regionCode: 'PL' } });
+    await prisma.organization.update({
+      where: { id: orgId },
+      data: { regionCode: 'PL', onboardingStep: 3 },
+    });
     return NextResponse.json({ ok: true, profile });
   } catch (error) {
     return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : 'Unknown error' }, { status: 400 });

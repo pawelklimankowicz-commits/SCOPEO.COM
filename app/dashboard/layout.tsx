@@ -1,11 +1,23 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import LogoutButton from '@/components/LogoutButton';
+import WorkspaceSwitcher from '@/components/workspace-switcher';
+import AuthSessionProvider from '@/components/AuthSessionProvider';
+import NotificationBell from '@/components/notification-bell';
 import { requireTenantMembership } from '@/lib/tenant';
+import { prisma } from '@/lib/prisma';
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const { session, membership } = await requireTenantMembership();
   const role = (session.user as any).role as string;
+  const organization = await prisma.organization.findUnique({
+    where: { id: membership.organizationId },
+    select: { onboardingCompletedAt: true },
+  });
+  if (role === 'OWNER' && !organization?.onboardingCompletedAt) {
+    redirect('/onboarding/step/1');
+  }
 
   const navLinks = [
     { href: '/dashboard', label: 'Przeglad' },
@@ -13,11 +25,13 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     { href: '/dashboard/review', label: 'Review' },
     { href: '/dashboard/report', label: 'Raport emisji' },
     { href: '/dashboard/settings', label: 'Ustawienia' },
+    ...(role === 'OWNER' || role === 'ADMIN' ? [{ href: '/dashboard/audit', label: 'Audit log' }] : []),
     ...(role === 'OWNER' || role === 'ADMIN' ? [{ href: '/dashboard/gdpr', label: 'GDPR' }] : []),
   ];
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <AuthSessionProvider>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <header
         style={{
           background: '#0f172a',
@@ -33,6 +47,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           <span style={{ color: '#475569', fontSize: 13 }}>{membership.organization.name}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <WorkspaceSwitcher />
+          <NotificationBell />
           <span style={{ color: '#64748b', fontSize: 12 }}>
             {(session.user as any).email} · {role}
           </span>
@@ -40,7 +56,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         </div>
       </header>
 
-      <div style={{ display: 'flex', flex: 1 }}>
+        <div style={{ display: 'flex', flex: 1 }}>
         <nav
           style={{
             width: 200,
@@ -66,7 +82,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           ))}
         </nav>
         <main style={{ flex: 1, padding: 32, overflowY: 'auto' }}>{children}</main>
+        </div>
       </div>
-    </div>
+    </AuthSessionProvider>
   );
 }

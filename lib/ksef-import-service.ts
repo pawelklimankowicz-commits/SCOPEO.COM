@@ -2,7 +2,7 @@ import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { parseKsefFa3Xml } from '@/lib/ksef-xml';
 import { secureRawPayload } from '@/lib/payload-security';
-import { classifyInvoiceLine } from '@/lib/nlp-mapping';
+import { classifyInvoiceLine, classifyWithContext } from '@/lib/nlp-mapping';
 import { resolveBestFactorsForCategories } from '@/lib/factor-import';
 import { logger } from '@/lib/logger';
 import { writeProcessingRecord } from '@/lib/privacy-register';
@@ -84,10 +84,31 @@ export async function importKsefXmlForOrganization(input: {
   });
 
   const regionCode = organization?.regionCode || 'PL';
-  const classified = invoice.lines.map((line) => ({
-    line,
-    cls: classifyInvoiceLine(line),
-  }));
+  const classified = await Promise.all(
+    invoice.lines.map(async (line) => {
+      const fallback = classifyInvoiceLine(line);
+      const contextual = await classifyWithContext(line.description, supplier.id, input.organizationId);
+      return {
+        line,
+        cls: {
+          ...fallback,
+          categoryCode: contextual.categoryCode,
+          confidence: contextual.confidence,
+          scope: contextual.scope,
+          method: contextual.method,
+          activityUnit: contextual.activityUnit ?? fallback.activityUnit,
+          activityValue: contextual.activityValue ?? fallback.activityValue,
+          matchedTokens: contextual.matchedTokens,
+        },
+        reasoning: {
+          source: contextual.source,
+          confidence: contextual.confidence,
+          reasoning: contextual.reasoning,
+          matchedTokens: contextual.matchedTokens,
+        },
+      };
+    })
+  );
 
   type InvoiceLineImported = Prisma.InvoiceLineGetPayload<{
     include: {
@@ -172,7 +193,7 @@ export async function importKsefXmlForOrganization(input: {
       });
 
       await prisma.invoiceLine.createMany({
-        data: classifiedToCreate.map(({ line, cls }, i) => {
+        data: classifiedToCreate.map(({ line, cls, reasoning }, i) => {
           const factor = factorMap.get(cls.categoryCode) ?? null;
           return {
             invoiceId: savedInvoice.id,
@@ -189,6 +210,7 @@ export async function importKsefXmlForOrganization(input: {
             activityValue: cls.activityValue ?? null,
             activityUnit: cls.activityUnit ?? null,
             estimated: cls.confidence < 0.9,
+            classificationReasoning: JSON.stringify(reasoning),
           };
         }),
       });

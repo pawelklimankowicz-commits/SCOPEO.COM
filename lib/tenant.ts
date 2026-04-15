@@ -4,7 +4,10 @@ import { redirect } from 'next/navigation';
 export async function requireTenantMembership() {
   const session = await auth();
   if (!session?.user) redirect('/login');
-  const organizationId = (session.user as any).organizationId as string | undefined;
+  const organizationId =
+    ((session as any).activeOrganizationId as string | undefined) ||
+    ((session as any).organizationId as string | undefined) ||
+    ((session.user as any).organizationId as string | undefined);
   if (!organizationId) redirect('/login');
   const membership = await prisma.membership.findFirst({ where: { userId: session.user.id as string, organizationId }, include: { organization: true } });
   if (!membership) redirect('/login');

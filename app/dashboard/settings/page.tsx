@@ -36,6 +36,12 @@ export default async function DashboardSettingsPage() {
           <Link className="btn btn-secondary" href="/onboarding">
             Przejdź do onboardingu
           </Link>
+          <Link className="btn btn-secondary" href="/dashboard/settings/billing">
+            Billing i plan
+          </Link>
+          <Link className="btn btn-secondary" href="/dashboard/settings/api-keys">
+            Klucze API
+          </Link>
         </div>
         {profile ? (
           <table>

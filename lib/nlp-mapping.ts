@@ -1,3 +1,5 @@
+import { prisma } from '@/lib/prisma';
+
 const stopwords = new Set([
   'i', 'oraz', 'the', 'for', 'do', 'na', 'z', 'w', 'usluga', 'towar',
   'za', 'od', 'ze', 'po', 'przy', 'przez', 'przed', 'nad', 'pod',
@@ -139,5 +141,64 @@ export function classifyInvoiceLine(input: {
     candidates.push({ scope: 'SCOPE3', categoryCode: CAT1_PURCHASED_GOODS_AND_SERVICES, factorTags: ['services'], method: 'SPEND', confidence: 0.35, ruleMatched: 'fallback_services_rule' });
   }
   candidates.sort((a, b) => b.confidence - a.confidence);
-  return { ...candidates[0], normalizedText: normalized, tokens: ts, candidates };
+  const matchedTokens = candidates[0]
+    ? ts.filter((token) => normalize(candidates[0].ruleMatched || '').includes(token.slice(0, 4)))
+    : [];
+  return { ...candidates[0], normalizedText: normalized, tokens: ts, matchedTokens, candidates };
+}
+
+export async function classifyWithContext(
+  description: string,
+  supplierId: string | null,
+  organizationId: string
+): Promise<{
+  categoryCode: string;
+  confidence: number;
+  source: 'supplier_hint' | 'nlp' | 'fallback';
+  reasoning: string;
+  matchedTokens: string[];
+  scope: 'SCOPE1' | 'SCOPE2' | 'SCOPE3';
+  method: 'ACTIVITY' | 'SPEND';
+  activityUnit?: string | null;
+  activityValue?: number | null;
+}> {
+  if (supplierId) {
+    const hint = await prisma.supplierCategoryHint.findFirst({
+      where: { organizationId, supplierId, confidence: { gte: 0.8 } },
+      orderBy: { sampleCount: 'desc' },
+    });
+    if (hint && hint.sampleCount >= 3) {
+      return {
+        categoryCode: hint.categoryCode,
+        confidence: hint.confidence,
+        source: 'supplier_hint',
+        reasoning: `Dostawca historycznie klasyfikowany jako "${hint.categoryCode}" (${hint.sampleCount} potwierdzen)`,
+        matchedTokens: [],
+        scope: hint.categoryCode.startsWith('scope1')
+          ? 'SCOPE1'
+          : hint.categoryCode.startsWith('scope2')
+            ? 'SCOPE2'
+            : 'SCOPE3',
+        method: 'SPEND',
+      };
+    }
+  }
+
+  const nlpResult = classifyInvoiceLine({
+    description,
+    netValue: 0,
+    quantity: null,
+    unit: null,
+  });
+  return {
+    categoryCode: nlpResult.categoryCode ?? 'uncategorized',
+    confidence: nlpResult.confidence ?? 0.5,
+    source: nlpResult.ruleMatched === 'fallback_services_rule' ? 'fallback' : 'nlp',
+    reasoning: `NLP: dopasowane slowa kluczowe: [${(nlpResult.matchedTokens ?? []).join(', ') || 'brak'}]`,
+    matchedTokens: nlpResult.matchedTokens ?? [],
+    scope: (nlpResult.scope as 'SCOPE1' | 'SCOPE2' | 'SCOPE3') ?? 'SCOPE3',
+    method: (nlpResult.method as 'ACTIVITY' | 'SPEND') ?? 'SPEND',
+    activityUnit: nlpResult.activityUnit ?? null,
+    activityValue: nlpResult.activityValue ?? null,
+  };
 }
