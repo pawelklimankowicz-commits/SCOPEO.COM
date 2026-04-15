@@ -112,7 +112,7 @@ export default async function DashboardInvoicesPage({
                   )}
                 </td>
                 <td>{invoice.issueDate.toISOString().slice(0, 10)}</td>
-                <td>{invoice.netTotal.toFixed(2)}</td>
+                <td>{invoice.netValue.toFixed(2)}</td>
                 <td>{invoice._count.lines}</td>
               </tr>
             ))}

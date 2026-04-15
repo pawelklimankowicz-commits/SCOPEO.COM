@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { renderToBuffer } from '@react-pdf/renderer';
-import React from 'react';
 import { auth } from '@/lib/auth';
 import { calculateOrganizationEmissions } from '@/lib/emissions';
 import { GhgReportDocument } from '@/lib/ghg-report-pdf';
@@ -36,7 +35,7 @@ export async function GET(req: NextRequest) {
   }
 
   const pdfBuffer = await renderToBuffer(
-    React.createElement(GhgReportDocument, {
+    GhgReportDocument({
       data: {
         companyName: profile.companyName,
         reportingYear: validYear ?? profile.reportingYear,
@@ -58,7 +57,7 @@ export async function GET(req: NextRequest) {
     .replace(/\s+/g, '-')
     .toLowerCase()}-${validYear ?? profile.reportingYear}.pdf`;
 
-  return new NextResponse(pdfBuffer, {
+  return new NextResponse(new Uint8Array(pdfBuffer), {
     headers: {
       'Content-Type': 'application/pdf',
       'Content-Disposition': `attachment; filename="${filename}"`,
