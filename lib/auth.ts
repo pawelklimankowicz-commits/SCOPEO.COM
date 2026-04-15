@@ -2,9 +2,24 @@ import { getServerSession, type NextAuthOptions } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { createHash } from 'node:crypto';
 import { checkRateLimit, getClientIp } from '@/lib/security';
 
+function resolveAuthSecret(): string {
+  const explicit = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+  if (explicit && explicit.trim().length >= 16) return explicit;
+  // Fallback prevents production 500 when secret env is accidentally missing.
+  // It is deterministic per deployment environment but should be replaced by AUTH_SECRET.
+  const seed =
+    process.env.DATABASE_URL ||
+    process.env.NEXTAUTH_URL ||
+    process.env.VERCEL_URL ||
+    'scopeo-fallback-secret';
+  return createHash('sha256').update(seed).digest('hex');
+}
+
 export const authOptions: NextAuthOptions = {
+  secret: resolveAuthSecret(),
   session: { strategy: 'jwt' },
   providers: [Credentials({
     name: 'credentials',
