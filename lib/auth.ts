@@ -64,8 +64,29 @@ export const authOptions: NextAuthOptions = {
     }
   })],
   callbacks: {
-    async jwt({ token, user }) { if (user) { token.organizationId = (user as any).organizationId; token.organizationSlug = (user as any).organizationSlug; token.role = (user as any).role; } return token; },
-    async session({ session, token }) { if (session.user) { (session.user as any).id = token.sub; (session.user as any).organizationId = token.organizationId; (session.user as any).organizationSlug = token.organizationSlug; (session.user as any).role = token.role; } return session; },
+    async session({ session, token }) {
+      if (session.user) {
+        (session.user as any).id = token.sub;
+        (session.user as any).organizationId = token.organizationId;
+        (session.user as any).organizationSlug = token.organizationSlug;
+        (session.user as any).role = token.role;
+        (session.user as any).emailVerified = token.emailVerified;
+      }
+      return session;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.organizationId = (user as any).organizationId;
+        token.organizationSlug = (user as any).organizationSlug;
+        token.role = (user as any).role;
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { emailVerified: true },
+        });
+        token.emailVerified = dbUser?.emailVerified ?? null;
+      }
+      return token;
+    },
   },
 };
 

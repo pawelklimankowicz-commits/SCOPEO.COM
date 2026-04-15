@@ -105,6 +105,9 @@ export default function AuthForms() {
           <button className="btn btn-primary" type="submit" style={{ marginTop: 18 }}>
             Zaloguj
           </button>
+          <p style={{ marginTop: 12, fontSize: 13 }}>
+            <a href="/reset-password">Zapomniałeś hasła?</a>
+          </p>
         </form>
 
         <form onSubmit={handleRegister} className="card section">

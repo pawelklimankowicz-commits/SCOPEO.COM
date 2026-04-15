@@ -104,6 +104,28 @@ model User {
   updatedAt     DateTime     @updatedAt
 }
 
+model EmailVerificationToken {
+  id         String   @id @default(cuid())
+  tokenHash  String   @unique
+  email      String
+  expiresAt  DateTime
+  verifiedAt DateTime?
+  createdAt  DateTime @default(now())
+
+  @@index([email])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  email     String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+}
+
 model UserConsent {
   id                 String   @id @default(cuid())
   userId             String   @unique

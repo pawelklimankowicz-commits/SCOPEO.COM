@@ -5,6 +5,8 @@ import { registerSchema } from '@/lib/schema';
 import bcrypt from 'bcryptjs';
 import { checkRateLimit, getClientIp } from '@/lib/security';
 import { BCRYPT_SALT_ROUNDS } from '@/lib/password-hash';
+import { Resend } from 'resend';
+import crypto from 'crypto';
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,6 +43,26 @@ export async function POST(req: NextRequest) {
         },
       },
     });
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+    await prisma.emailVerificationToken.create({
+      data: {
+        tokenHash,
+        email: parsed.email.toLowerCase(),
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    });
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL ?? '').replace(/\/$/, '');
+    const verifyUrl = `${appUrl}/api/auth/verify-email?token=${encodeURIComponent(rawToken)}`;
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    void resend.emails
+      .send({
+        from: process.env.LEADS_FROM_EMAIL ?? 'noreply@scopeo.com',
+        to: parsed.email.toLowerCase(),
+        subject: 'Potwierdź adres email — Scopeo',
+        text: `Witaj ${parsed.name},\n\nAby dokończyć rejestrację, potwierdź swój adres email:\n\n${verifyUrl}\n\nLink ważny przez 24 godziny.`,
+      })
+      .catch(console.error);
     return NextResponse.json({ ok: true, userId: user.id });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {

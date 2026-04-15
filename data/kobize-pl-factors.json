@@ -1,49 +1,139 @@
 {
   "schemaVersion": 1,
-  "title": "Współczynniki emisji (PL) — KOBiZE",
-  "documentationUrl": "https://www.kobize.pl/pl/fileCategory/id/28/wskazniki-emisyjnosci",
-  "notes": [
-    "CO2 dla energii elektrycznej za rok sprawozdawczy 2023: 597 kg CO2/MWh u odbiorcy końcowego (0,597 kg/kWh) — publikacja KOBiZE grudzień 2024.",
-    "Ciepło sieciowe: wartość robocza; zastąp wskaźnikiem z aktualnej publikacji KOBiZE/URE przy corocznym imporcie.",
-    "Paliwa stacjonarne (gaz, olej, węgiel): dopisz osobne wiersze po dopięciu mapowania activityKind w silniku albo dodaj dedykowane categoryCode — wiele wierszy scope1_fuel z tym samym categoryCode psuje wybór w resolveBestFactor."
-  ],
   "factors": [
     {
-      "codeSuffix": "ELECTRICITY_GRID_CONSUMER",
-      "name": "Energia elektryczna — u odbiorcy końcowego (mix krajowy, OZE, straty)",
+      "codeSuffix": "ELEC_GRID_2023",
+      "name": "Energia elektryczna z krajowej sieci elektroenergetycznej - Polska 2023",
       "scope": "SCOPE2",
       "categoryCode": "scope2_electricity",
-      "factorValue": 0.597,
+      "factorValue": 0.7309,
       "factorUnit": "kgCO2e/kWh",
       "region": "PL",
       "regionPriority": 1,
       "activityKind": "electricity_kwh",
       "year": 2023,
-      "tags": "kobize,poland,electricity,consumer,grid",
+      "tags": "electricity,grid,poland,kobize",
       "metadataJson": {
-        "source": "kobize",
-        "kobizeDataYear": 2023,
-        "co2KgPerMwh": 597,
-        "kobizePublicationUrl": "https://www.kobize.pl/pl/file/wskazniki-emisyjnosci/id/211/wskazniki-emisyjnosci-dla-energii-elektrycznej-za-rok-2023-opublikowane-w-grudniu-2024-r",
-        "referenceNote": "597 kg CO2/MWh u odbiorcy końcowego — KOBiZE za 2023; przeliczenie na kWh: /1000."
+        "source": "KOBiZE",
+        "publication": "Wskaznik emisyjnosci dla energii elektrycznej 2023",
+        "unit_kgCO2_per_MWh": 730.9,
+        "note": "Wskaznik emisyjnosci CO2 dla energii elektrycznej w Polsce - rynek krajowy"
       }
     },
     {
-      "codeSuffix": "DISTRICT_HEAT",
-      "name": "Ciepło sieciowe (średnia robocza PL — do weryfikacji z KOBiZE/URE)",
+      "codeSuffix": "ELEC_GRID_2022",
+      "name": "Energia elektryczna z krajowej sieci elektroenergetycznej - Polska 2022",
       "scope": "SCOPE2",
-      "categoryCode": "scope2_district_heat",
-      "factorValue": 0.28,
+      "categoryCode": "scope2_electricity",
+      "factorValue": 0.7685,
       "factorUnit": "kgCO2e/kWh",
       "region": "PL",
       "regionPriority": 1,
-      "activityKind": "district_heat_kwh",
-      "year": 2023,
-      "tags": "kobize,poland,heat,district",
+      "activityKind": "electricity_kwh",
+      "year": 2022,
+      "tags": "electricity,grid,poland,kobize",
       "metadataJson": {
-        "source": "kobize_placeholder",
-        "kobizeDataYear": 2023,
-        "referenceNote": "Wartość robocza (wcześniejsza nakładka). Zaktualizuj z oficjalnych tabel KOBiZE dla ciepła sieciowego."
+        "source": "KOBiZE",
+        "unit_kgCO2_per_MWh": 768.5
+      }
+    },
+    {
+      "codeSuffix": "HEAT_DISTRICT_2023",
+      "name": "Cieplo sieciowe (srednia krajowa) - Polska 2023",
+      "scope": "SCOPE2",
+      "categoryCode": "scope2_district_heat",
+      "factorValue": 0.3248,
+      "factorUnit": "kgCO2e/kWh",
+      "region": "PL",
+      "regionPriority": 1,
+      "activityKind": "heat_kwh",
+      "year": 2023,
+      "tags": "heat,district_heating,poland,kobize",
+      "metadataJson": {
+        "source": "KOBiZE",
+        "note": "Sredni wskaznik emisji ciepla sieciowego dla Polski"
+      }
+    },
+    {
+      "codeSuffix": "NATGAS_2023",
+      "name": "Gaz ziemny wysokometanowy (E) - Polska 2023",
+      "scope": "SCOPE1",
+      "categoryCode": "scope1_fuel_gas",
+      "factorValue": 2.0416,
+      "factorUnit": "kgCO2e/m3",
+      "region": "PL",
+      "regionPriority": 1,
+      "activityKind": "natural_gas_m3",
+      "year": 2023,
+      "tags": "gas,natural_gas,poland,kobize,scope1",
+      "metadataJson": {
+        "source": "KOBiZE",
+        "calorific_value_MJ_per_m3": 34.0
+      }
+    },
+    {
+      "codeSuffix": "DIESEL_2023",
+      "name": "Olej napedowy (diesel, ON) - Polska 2023",
+      "scope": "SCOPE1",
+      "categoryCode": "scope1_fuel",
+      "factorValue": 2.6536,
+      "factorUnit": "kgCO2e/l",
+      "region": "PL",
+      "regionPriority": 1,
+      "activityKind": "diesel_litre",
+      "year": 2023,
+      "tags": "fuel,diesel,poland,kobize,scope1",
+      "metadataJson": {
+        "source": "KOBiZE",
+        "calorific_value_MJ_per_l": 35.86
+      }
+    },
+    {
+      "codeSuffix": "PETROL_PB95_2023",
+      "name": "Benzyna silnikowa PB95 - Polska 2023",
+      "scope": "SCOPE1",
+      "categoryCode": "scope1_fuel",
+      "factorValue": 2.3159,
+      "factorUnit": "kgCO2e/l",
+      "region": "PL",
+      "regionPriority": 2,
+      "activityKind": "petrol_litre",
+      "year": 2023,
+      "tags": "fuel,petrol,pb95,poland,kobize,scope1",
+      "metadataJson": {
+        "source": "KOBiZE"
+      }
+    },
+    {
+      "codeSuffix": "LPG_2023",
+      "name": "Gaz plynny LPG - Polska 2023",
+      "scope": "SCOPE1",
+      "categoryCode": "scope1_fuel",
+      "factorValue": 1.6311,
+      "factorUnit": "kgCO2e/l",
+      "region": "PL",
+      "regionPriority": 2,
+      "activityKind": "lpg_litre",
+      "year": 2023,
+      "tags": "fuel,lpg,poland,kobize,scope1",
+      "metadataJson": {
+        "source": "KOBiZE"
+      }
+    },
+    {
+      "codeSuffix": "COAL_HARD_2023",
+      "name": "Wegiel kamienny (energetyczny) - Polska 2023",
+      "scope": "SCOPE1",
+      "categoryCode": "scope1_fuel",
+      "factorValue": 2.2684,
+      "factorUnit": "kgCO2e/kg",
+      "region": "PL",
+      "regionPriority": 1,
+      "activityKind": "coal_kg",
+      "year": 2023,
+      "tags": "fuel,coal,poland,kobize,scope1",
+      "metadataJson": {
+        "source": "KOBiZE"
       }
     }
   ]

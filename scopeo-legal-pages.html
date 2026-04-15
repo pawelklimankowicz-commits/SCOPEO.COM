@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scopeo — Legal Pages</title>
+  <style>
+    :root {
+      --bg: #f6f4ef;
+      --surface: #fffdf9;
+      --surface-2: #f1ede6;
+      --text: #1f1d19;
+      --muted: #6f6a61;
+      --line: #ddd6cb;
+      --primary: #0f6b68;
+      --primary-dark: #0b4d4b;
+      --accent: #d7ebe9;
+      --danger: #8a2f52;
+      --radius: 18px;
+      --shadow: 0 18px 50px rgba(23, 22, 20, 0.08);
+      --content: 1080px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    a { color: var(--primary-dark); }
+    .shell { display: grid; grid-template-columns: 300px 1fr; min-height: 100vh; }
+    .sidebar {
+      position: sticky; top: 0; height: 100vh; overflow: auto;
+      padding: 28px 22px; border-right: 1px solid var(--line); background: rgba(255,253,249,.85);
+      backdrop-filter: blur(12px);
+    }
+    .brand {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
+      font-weight: 800; letter-spacing: -.02em;
+    }
+    .logo {
+      width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, var(--primary), #7fb7b4);
+      display: grid; place-items: center; color: white; font-weight: 900;
+      box-shadow: var(--shadow);
+    }
+    .tag {
+      display: inline-block; padding: 7px 10px; border-radius: 999px; background: var(--accent); color: var(--primary-dark);
+      font-size: 12px; font-weight: 700; margin-bottom: 18px;
+    }
+    .side-section { margin: 18px 0 26px; }
+    .side-section h4 { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 0 0 10px; }
+    .nav a {
+      display: block; padding: 10px 12px; margin: 4px 0; border-radius: 12px; text-decoration: none; color: var(--text);
+    }
+    .nav a:hover { background: var(--surface-2); }
+    .small { font-size: 13px; color: var(--muted); }
+    .main { padding: 28px; }
+    .hero, .page {
+      max-width: var(--content); margin: 0 auto 26px; background: var(--surface); border: 1px solid var(--line);
+      border-radius: 28px; box-shadow: var(--shadow);
+    }
+    .hero { padding: 42px; }
+    .hero-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 28px; align-items: center; }
+    h1, h2, h3 { line-height: 1.08; letter-spacing: -.03em; margin: 0 0 14px; }
+    h1 { font-size: clamp(38px, 4.5vw, 66px); }
+    h2 { font-size: clamp(28px, 3vw, 42px); }
+    h3 { font-size: 22px; }
+    p { margin: 0 0 14px; max-width: 74ch; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 0 18px; border-radius: 14px;
+      border: 1px solid var(--line); text-decoration: none; font-weight: 700;
+    }
+    .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .btn-secondary { background: white; color: var(--text); }
+    .mock {
+      border-radius: 24px; background: linear-gradient(180deg, #f5fffd, #ecf5f4); border: 1px solid #cfe1df; padding: 20px;
+    }
+    .browser { background: white; border: 1px solid #d6e3e1; border-radius: 20px; overflow: hidden; }
+    .browser-top { padding: 12px 14px; border-bottom: 1px solid #e5eceb; background: #f7fbfb; display: flex; gap: 8px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #c9d4d2; }
+    .browser-body { padding: 18px; }
+    .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
+    .kpi, .tile {
+      background: #fbfdfd; border: 1px solid #d9e7e5; border-radius: 16px; padding: 14px;
+    }
+    .kpi strong { display: block; font-size: 24px; }
+    .tiles { display: grid; grid-template-columns: 1.3fr .7fr; gap: 12px; }
+    .page { padding: 34px; }
+    .page + .page { margin-top: 22px; }
+    .eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--primary); font-weight: 800; margin-bottom: 10px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    .card {
+      background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 20px;
+    }
+    ul { margin: 0; padding-left: 18px; }
+    li { margin: 0 0 10px; }
+    .doc-head {
+      display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; padding-bottom: 18px; border-bottom: 1px solid var(--line); margin-bottom: 20px;
+    }
+    .doc-meta { font-size: 13px; color: var(--muted); }
+    .doc-box {
+      background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 22px; margin: 18px 0;
+    }
+    .notice {
+      background: #fff6f7; border: 1px solid #ecc9d3; color: #6d2340; border-radius: 16px; padding: 16px 18px; margin: 18px 0;
+    }
+    .footer {
+      max-width: var(--content); margin: 28px auto 40px; color: var(--muted); font-size: 13px;
+    }
+    code.inline { background: var(--surface-2); padding: 2px 6px; border-radius: 8px; }
+    @media (max-width: 980px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--line); }
+      .hero-grid, .grid-2, .tiles, .kpis { grid-template-columns: 1fr; }
+      .main { padding: 16px; }
+      .hero, .page { padding: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">S</div>
+        <div>
+          <div>Scopeo</div>
+          <div class="small">Pakiet legal pages</div>
+        </div>
+      </div>
+      <div class="tag">Landing page / sekcja prawna</div>
+
+      <div class="side-section nav">
+        <h4>Widoki</h4>
+        <a href="#start">Start legal hub</a>
+        <a href="#regulamin">Regulamin</a>
+        <a href="#prywatnosc">Polityka prywatności</a>
+        <a href="#cookies">Polityka cookies</a>
+        <a href="#dpa">DPA / Powierzenie</a>
+        <a href="#kontakt">Kontakt i reklamacje</a>
+      </div>
+
+      <div class="side-section">
+        <h4>Co powinno być na landing page</h4>
+        <div class="small">
+          Na landing page Scopeo rekomendowane są osobne adresy URL, np. <code class="inline">/regulamin</code>, <code class="inline">/polityka-prywatnosci</code>, <code class="inline">/cookies</code> oraz <code class="inline">/dpa</code>, bo usługi SaaS świadczone drogą elektroniczną wymagają przejrzystej dokumentacji, a regulamin powinien być udostępniony przed zawarciem umowy. [web:581][web:582][web:541]
+        </div>
+      </div>
+
+      <div class="side-section">
+        <h4>Właściciel</h4>
+        <div class="small">
+          Black Gold Sp. z o.o., Poznań — dane rejestrowe, adres, KRS, NIP, REGON, e-mail i kanały reklamacyjne należy pokazać spójnie we wszystkich dokumentach. [web:579][web:583]
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="hero" id="start">
+        <div class="hero-grid">
+          <div>
+            <div class="eyebrow">Legal hub</div>
+            <h1>Scopeo działa transparentnie — od pierwszego wejścia na landing page.</h1>
+            <p>Ten widok pokazuje, jak może wyglądać kompletna sekcja prawna dla Scopeo: spójna wizualnie, czytelna dla klienta B2B i gotowa do osadzenia jako zestaw podstron na landing page. Regulamin usług elektronicznych jest obowiązkowy przy świadczeniu usług drogą elektroniczną, a polityka prywatności, cookies i DPA są standardowym uzupełnieniem modelu SaaS przetwarzającego dane. [web:581][web:580][web:579]</p>
+            <p>W praktyce taki pakiet powinien budować zaufanie i zmniejszać ryzyko sprzedażowe, bo użytkownik jeszcze przed rejestracją widzi, kto świadczy usługę, jak przetwarzane są dane i na jakich zasadach działa platforma. [web:579][web:583]</p>
+            <div class="cta-row">
+              <a class="btn btn-primary" href="#regulamin">Zobacz regulamin</a>
+              <a class="btn btn-secondary" href="#dpa">Zobacz DPA</a>
+            </div>
+          </div>
+          <div class="mock">
+            <div class="browser">
+              <div class="browser-top"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+              <div class="browser-body">
+                <div class="kpis">
+                  <div class="kpi"><span class="small">Legal pages</span><strong>4</strong><span class="small">Regulamin / RODO / Cookies / DPA</span></div>
+                  <div class="kpi"><span class="small">Język</span><strong>PL</strong><span class="small">Z polskimi znakami</span></div>
+                  <div class="kpi"><span class="small">Model</span><strong>SaaS</strong><span class="small">B2B z onboardingiem online</span></div>
+                </div>
+                <div class="tiles">
+                  <div class="tile">
+                    <strong>Teksty marketingowo-prawne</strong>
+                    <p class="small">„Automatyzujemy raportowanie śladu węglowego, ale nie upraszczamy odpowiedzialności prawnej. Dlatego każdy etap usługi jest opisany jasno, po polsku i przed zawarciem umowy.”</p>
+                  </div>
+                  <div class="tile">
+                    <strong>Footer links</strong>
+                    <ul class="small">
+                      <li>/regulamin</li>
+                      <li>/polityka-prywatnosci</li>
+                      <li>/cookies</li>
+                      <li>/dpa</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="regulamin">
+        <div class="doc-head">
+          <div>
+            <div class="eyebrow">Podstrona 1</div>
+            <h2>Regulamin świadczenia usług drogą elektroniczną</h2>
+          </div>
+          <div class="doc-meta">URL rekomendowany: /regulamin</div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h3>Po co ta strona</h3>
+            <p>Regulamin powinien być dostępny przed zawarciem umowy i opisywać co najmniej rodzaj usług, warunki techniczne, zasady zawierania i rozwiązywania umów oraz zakaz dostarczania treści bezprawnych. Takie wymagania wynikają z art. 8 UŚUDE. [web:581][web:582][web:541]</p>
+          </div>
+          <div class="card">
+            <h3>Hero copy na górze strony</h3>
+            <p><strong>Nagłówek:</strong> „Jasne zasady korzystania z Scopeo.”</p>
+            <p><strong>Lead:</strong> „Poniżej znajdziesz warunki korzystania z platformy Scopeo, w tym zasady rejestracji, licencji, płatności, odpowiedzialności, reklamacji i bezpieczeństwa danych.”</p>
+          </div>
+        </div>
+        <div class="doc-box">
+          <h3>Co użytkownik powinien tu znaleźć</h3>
+          <ul>
+            <li>Dane usługodawcy: Black Gold Sp. z o.o. z siedzibą w Poznaniu, pełne dane rejestrowe i kontaktowe.</li>
+            <li>Opis usługi SaaS: platforma do analizy danych, raportowania śladu węglowego i pracy na danych księgowo-dokumentowych.</li>
+            <li>Zasady rejestracji, logowania, ról użytkowników i kont firmowych.</li>
+            <li>Zakres licencji i ograniczenia korzystania z oprogramowania, co w regulaminie SaaS jest szczególnie istotne. [web:578][web:579]</li>
+            <li>Płatności, subskrypcje, trial, okresy rozliczeniowe, wypowiedzenia, reklamacje i ograniczenia odpowiedzialności. [web:579]</li>
+          </ul>
+        </div>
+        <div class="notice">
+          Tekst marketingowy obok dokumentu: „Scopeo porządkuje dane i obowiązki. Ty skupiasz się na raporcie, my pokazujemy zasady współpracy wprost — bez ukrytych klauzul i bez prawniczego chaosu.”
+        </div>
+      </section>
+
+      <section class="page" id="prywatnosc">
+        <div class="doc-head">
+          <div>
+            <div class="eyebrow">Podstrona 2</div>
+            <h2>Polityka prywatności</h2>
+          </div>
+          <div class="doc-meta">URL rekomendowany: /polityka-prywatnosci</div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h3>Rola tej podstrony</h3>
+            <p>Polityka prywatności powinna realizować obowiązki informacyjne z RODO, w szczególności wskazywać administratora, cele, podstawy prawne, odbiorców danych, okresy retencji, prawa użytkownika oraz informacje o transferach i profilowaniu, jeśli występują. [web:583][web:545][web:557]</p>
+          </div>
+          <div class="card">
+            <h3>Hero copy na górze strony</h3>
+            <p><strong>Nagłówek:</strong> „Prywatność w Scopeo nie jest dodatkiem. To część produktu.”</p>
+            <p><strong>Lead:</strong> „Wyjaśniamy, jakie dane przetwarzamy, po co to robimy, komu je powierzamy i jakie prawa przysługują użytkownikom oraz klientom biznesowym.”</p>
+          </div>
+        </div>
+        <div class="doc-box">
+          <h3>Układ sekcji</h3>
+          <ul>
+            <li>Administrator danych i dane kontaktowe.</li>
+            <li>Zakres danych: leady, użytkownicy, przedstawiciele klientów, logi, dane billingowe, support.</li>
+            <li>Cele i podstawy przetwarzania.</li>
+            <li>Odbiorcy danych i podmioty przetwarzające.</li>
+            <li>Transfery poza EOG, retencja, prawa osób, profilowanie i bezpieczeństwo. [web:545][web:583]</li>
+          </ul>
+        </div>
+        <div class="notice">
+          Tekst marketingowy obok dokumentu: „Twoje dane nie trafiają do czarnej skrzynki. W Scopeo każda rola, integracja i proces przetwarzania mają swoje uzasadnienie, podstawę i opis.”
+        </div>
+      </section>
+
+      <section class="page" id="cookies">
+        <div class="doc-head">
+          <div>
+            <div class="eyebrow">Podstrona 3</div>
+            <h2>Polityka cookies</h2>
+          </div>
+          <div class="doc-meta">URL rekomendowany: /cookies</div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h3>Po co oddzielna strona</h3>
+            <p>Oddzielna polityka cookies ułatwia użytkownikowi zrozumienie, jakie technologie są stosowane, w jakim celu i które z nich są niezbędne, a które zależą od zgody. Dokument powinien opisywać cele stosowania cookies, narzędzia stron trzecich i zasady zarządzania zgodą. [web:555][web:556]</p>
+          </div>
+          <div class="card">
+            <h3>Hero copy na górze strony</h3>
+            <p><strong>Nagłówek:</strong> „Cookies pod kontrolą, nie poza kontrolą.”</p>
+            <p><strong>Lead:</strong> „Sprawdź, które pliki cookies są niezbędne do działania Scopeo, które pomagają nam rozwijać produkt, a które wymagają Twojej zgody.”</p>
+          </div>
+        </div>
+        <div class="doc-box">
+          <h3>Rekomendowane sekcje</h3>
+          <ul>
+            <li>Definicja cookies i technologii podobnych.</li>
+            <li>Podział na cookies niezbędne, funkcjonalne, analityczne i marketingowe.</li>
+            <li>Lista dostawców i czasów przechowywania.</li>
+            <li>Opis banera cookies i możliwości cofnięcia zgody. [web:555][web:556]</li>
+          </ul>
+        </div>
+        <div class="notice">
+          Tekst marketingowy obok dokumentu: „Transparentność zaczyna się od pierwszego kliknięcia. Dlatego Scopeo nie ukrywa narzędzi analitycznych ani zasad działania banera zgód.”
+        </div>
+      </section>
+
+      <section class="page" id="dpa">
+        <div class="doc-head">
+          <div>
+            <div class="eyebrow">Podstrona 4</div>
+            <h2>DPA / Umowa powierzenia przetwarzania danych</h2>
+          </div>
+          <div class="doc-meta">URL rekomendowany: /dpa</div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h3>Kiedy ta strona jest potrzebna</h3>
+            <p>W modelu SaaS, w którym dostawca przetwarza dane klientów w ich imieniu, standardem jest zawarcie umowy powierzenia zgodnej z art. 28 RODO. Taki dokument powinien określać m.in. przedmiot, czas trwania, charakter, cel przetwarzania, rodzaje danych i obowiązki procesora. [web:563][web:569][web:576]</p>
+          </div>
+          <div class="card">
+            <h3>Hero copy na górze strony</h3>
+            <p><strong>Nagłówek:</strong> „Dane Twojej organizacji przetwarzamy na jasnych zasadach.”</p>
+            <p><strong>Lead:</strong> „Jeżeli korzystasz ze Scopeo jako klient biznesowy, tutaj znajdziesz zasady powierzenia przetwarzania danych osobowych oraz model współpracy administrator–procesor.”</p>
+          </div>
+        </div>
+        <div class="doc-box">
+          <h3>Zakres dokumentu</h3>
+          <ul>
+            <li>Role stron: klient jako administrator, Black Gold Sp. z o.o. jako procesor. [web:563][web:576]</li>
+            <li>Instrukcje przetwarzania, subprocesorzy, transfery, audyty, naruszenia, zwrot lub usunięcie danych. [web:569][web:576]</li>
+            <li>Załącznik z listą subprocesorów i środkami bezpieczeństwa.</li>
+          </ul>
+        </div>
+        <div class="notice">
+          Tekst marketingowy obok dokumentu: „Scopeo automatyzuje dane, ale nie zaciera odpowiedzialności. Każdy klient wie, gdzie kończy się jego rola administratora, a gdzie zaczyna się nasza rola procesora.”
+        </div>
+      </section>
+
+      <section class="page" id="kontakt">
+        <div class="doc-head">
+          <div>
+            <div class="eyebrow">Podstrona 5</div>
+            <h2>Kontakt prawny i reklamacje</h2>
+          </div>
+          <div class="doc-meta">URL rekomendowany: /kontakt-prawny lub sekcja w footerze</div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h3>Dlaczego warto dodać osobną stronę</h3>
+            <p>Choć część danych kontaktowych może być już w regulaminie i polityce prywatności, osobna strona lub czytelna sekcja footerowa ułatwia kontakt w sprawach reklamacji, prywatności, naruszeń i żądań dotyczących danych. To poprawia użyteczność i wzmacnia transparentność procesu. [web:583][web:579]</p>
+          </div>
+          <div class="card">
+            <h3>Hero copy na górze strony</h3>
+            <p><strong>Nagłówek:</strong> „Masz pytanie prawne, reklamację albo wniosek RODO? Napisz do właściwego zespołu.”</p>
+            <p><strong>Lead:</strong> „Rozdziel kanały kontaktu tak, aby klient od razu wiedział, gdzie kierować sprawy handlowe, techniczne, reklamacyjne i prywatnościowe.”</p>
+          </div>
+        </div>
+        <div class="doc-box">
+          <h3>Rekomendowany układ danych</h3>
+          <ul>
+            <li>Kontakt ogólny: hello@...</li>
+            <li>Support: support@...</li>
+            <li>Prywatność / RODO: privacy@...</li>
+            <li>Reklamacje: reklamacje@...</li>
+            <li>Adres korespondencyjny i dane rejestrowe.</li>
+          </ul>
+        </div>
+      </section>
+
+      <div class="footer">
+        Ta wizualizacja pokazuje rekomendowany układ legal pages dla Scopeo na landing page w modelu SaaS. Regulamin usług elektronicznych jest obowiązkowy przy świadczeniu usług drogą elektroniczną, a polityka prywatności, cookies i DPA stanowią praktyczne uzupełnienie dokumentacji zgodności dla usług przetwarzających dane użytkowników i klientów. [web:581][web:580][web:563]
+      </div>
+    </main>
+  </div>
+</body>
+</html>
