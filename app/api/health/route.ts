@@ -3,6 +3,10 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   const startedAt = Date.now();
+  const authSecretSet = Boolean(
+    (process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || '').trim()
+  );
+  const nextAuthUrlSet = Boolean((process.env.NEXTAUTH_URL || '').trim());
   try {
     await prisma.$queryRaw`SELECT 1`;
     return NextResponse.json(
@@ -11,6 +15,8 @@ export async function GET() {
         status: 'healthy',
         uptimeSec: Math.round(process.uptime()),
         db: 'ok',
+        authSecretSet,
+        nextAuthUrlSet,
         responseMs: Date.now() - startedAt,
       },
       { status: 200 }
@@ -31,6 +37,8 @@ export async function GET() {
         status: 'unhealthy',
         db: 'error',
         databaseUrlSet,
+        authSecretSet,
+        nextAuthUrlSet,
         errorName: e?.name ?? 'UnknownError',
         errorCode: e?.code ?? null,
         errorMessage: (e?.message || 'Unknown database error').slice(0, 240),
