@@ -23,7 +23,7 @@ export default function MarketingHomePage() {
       <section className="mkt-hero">
         <div className="mkt-inner mkt-hero-grid">
           <div>
-            <p className="mkt-hero-badge">KSeF + GHG Protocol · starter</p>
+            <p className="mkt-hero-badge">KSeF + GHG Protocol · CSRD 2025</p>
             <p className="mkt-kicker">Ślad węglowy operacyjny</p>
             <h1 className="mkt-hero-title">Policz ślad węglowy firmy z danych z KSeF</h1>
             <p className="mkt-hero-sub">
@@ -268,18 +268,19 @@ export default function MarketingHomePage() {
         <div className="mkt-inner">
           <h2 className="mkt-section-title">Cennik — skrót</h2>
           <p className="mkt-section-lead">
-            Progresja według wolumenu faktur. Pełna tabela, przełącznik miesięcznie / rocznie i FAQ
-            cenowe na stronie{' '}
+            Progresja wedlug liczby polaczen KSeF i uzytkownikow — bez limitu faktur. Pelna tabela,
+            przelacznik miesiecznie / rocznie i FAQ cenowe na stronie{' '}
             <Link href="/cennik" className="mkt-link">
               Cennik
             </Link>
             .
           </p>
-          <div className="mkt-grid-3">
+          <div className="mkt-grid-2">
             {[
-              { n: 'Micro', p: '149 zł / mc', d: 'do 50 faktur' },
-              { n: 'Growth', p: '349 zł / mc', d: 'do 200 faktur · polecany', f: true },
-              { n: 'Enterprise', p: 'Wycena', d: 'powyżej 1000 faktur' },
+              { n: 'Mikro', p: '149 zl / mc', d: '1 polaczenie KSeF · 1 uzytkownik' },
+              { n: 'Starter', p: '279 zl / mc', d: '1 polaczenie KSeF · do 5 uzytkownikow' },
+              { n: 'Growth', p: '499 zl / mc', d: '3 polaczenia KSeF · do 15 uzytkownikow · Polecany', f: true },
+              { n: 'Scale', p: '849 zl / mc', d: '10 polaczen KSeF · bez limitu uzytkownikow' },
             ].map((x) => (
               <div
                 key={x.n}
@@ -322,7 +323,11 @@ export default function MarketingHomePage() {
               },
               {
                 q: 'Czy nadaje się dla MŚP?',
-                a: 'Tak — niższe plany są liczone pod mniejszy wolumen faktur.',
+                a: 'Tak — plan Mikro (149 zl/mc) jest przeznaczony dla firm z 1 polaczeniem KSeF i jednym uzytkownikiem. Bez limitu liczby faktur.',
+              },
+              {
+                q: 'Ile kosztuje i od czego zależy cena?',
+                a: 'Cena zalezy od liczby polaczen KSeF i liczby uzytkownikow — nie od liczby faktur. Plany od 149 zl/mc. Szczegoly na stronie Cennik.',
               },
             ].map((x) => (
               <div key={x.q} className="mkt-faq-item">
