@@ -73,6 +73,21 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
+  const subscriptionStatus = typeof token?.subscriptionStatus === 'string' ? token.subscriptionStatus : null;
+  const isDashboardPath = pathname.startsWith('/dashboard');
+  const isBillingAllowedPath =
+    pathname === '/dashboard/billing-required' || pathname === '/dashboard/settings/billing';
+  if (
+    isDashboardPath &&
+    !isBillingAllowedPath &&
+    (subscriptionStatus === 'CANCELED' || subscriptionStatus === 'PAST_DUE')
+  ) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/dashboard/billing-required';
+    redirectUrl.search = '';
+    return NextResponse.redirect(redirectUrl);
+  }
+
   const cspHeader = [
     "default-src 'self'",
     `img-src 'self' data: https:`,

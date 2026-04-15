@@ -110,10 +110,12 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).onboardingCompletedAt = token.onboardingCompletedAt ?? null;
         (session.user as any).onboardingStep = Number(token.onboardingStep ?? 0);
         (session.user as any).organizations = token.organizations ?? [];
+        (session.user as any).subscriptionStatus = token.subscriptionStatus ?? 'CANCELED';
       }
       (session as any).organizationId = token.activeOrganizationId ?? token.organizationId ?? null;
       (session as any).organizations = token.organizations ?? [];
       (session as any).activeOrganizationId = token.activeOrganizationId ?? token.organizationId ?? null;
+      (session as any).subscriptionStatus = token.subscriptionStatus ?? 'CANCELED';
       return session;
     },
     async jwt({ token, user, trigger, session }) {
@@ -154,12 +156,33 @@ export const authOptions: NextAuthOptions = {
         const organizationId =
           (token.activeOrganizationId as string | undefined) ?? (token.organizationId as string | undefined);
         if (organizationId) {
-          const org = await prisma.organization.findUnique({
-            where: { id: organizationId },
-            select: { onboardingCompletedAt: true, onboardingStep: true },
-          });
+          const [org, sub] = await Promise.all([
+            prisma.organization.findUnique({
+              where: { id: organizationId },
+              select: { onboardingCompletedAt: true, onboardingStep: true },
+            }),
+            prisma.subscription.findUnique({
+              where: { organizationId },
+              select: { status: true },
+            }),
+          ]);
           token.onboardingCompletedAt = org?.onboardingCompletedAt?.toISOString() ?? null;
           token.onboardingStep = org?.onboardingStep ?? 0;
+          token.subscriptionStatus = sub?.status ?? 'CANCELED';
+        } else {
+          token.subscriptionStatus = 'CANCELED';
+        }
+      } else if (!token.subscriptionStatus) {
+        const organizationId =
+          (token.activeOrganizationId as string | undefined) ?? (token.organizationId as string | undefined);
+        if (!organizationId) {
+          token.subscriptionStatus = 'CANCELED';
+        } else {
+          const sub = await prisma.subscription.findUnique({
+            where: { organizationId },
+            select: { status: true },
+          });
+          token.subscriptionStatus = sub?.status ?? 'CANCELED';
         }
       }
       return token;

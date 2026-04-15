@@ -5,6 +5,7 @@ declare module 'next-auth' {
   interface Session {
     organizationId?: string | null;
     activeOrganizationId?: string | null;
+    subscriptionStatus?: 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'TRIALING';
     organizations?: { id: string; name: string; slug: string; role: string }[];
     user: {
       id: string;
@@ -28,5 +29,6 @@ declare module 'next-auth/jwt' {
     onboardingStep?: number;
     organizations?: { id: string; name: string; slug: string; role: string }[];
     emailVerified?: string | null | Date;
+    subscriptionStatus?: 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'TRIALING';
   }
 }
