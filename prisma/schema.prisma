@@ -151,6 +151,7 @@ model CarbonProfile {
   id                        String       @id @default(cuid())
   organizationId            String       @unique
   companyName               String
+  taxId                     String?
   reportingYear             Int
   baseYear                  Int
   boundaryApproach          BoundaryApproach
@@ -171,7 +172,7 @@ model Supplier {
   id             String       @id @default(cuid())
   organizationId String
   name           String
-  taxId          String?
+  taxId          String       @default("")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   invoices       Invoice[]
   @@unique([organizationId, name, taxId])

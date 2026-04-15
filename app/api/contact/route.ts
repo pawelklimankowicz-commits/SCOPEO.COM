@@ -109,39 +109,43 @@ export async function POST(req: Request) {
     }
 
     const resend = new Resend(resendKey);
-    const emailResult = await resend.emails.send({
-      from: fromEmail,
-      to: salesInbox,
-      replyTo: lead.email,
-      subject: `Nowy lead demo: ${lead.company}`,
-      text: [
-        `Lead ID: ${createdLead.id}`,
-        `Imię i nazwisko: ${lead.name}`,
-        `Email: ${lead.email}`,
-        `Telefon: ${lead.phone ?? '-'}`,
-        `Firma: ${lead.company}`,
-        `Liczba faktur: ${lead.invoices}`,
-        `Zgoda RODO: ${lead.acceptPrivacy ? 'tak' : 'nie'}`,
-        `Marketing email: ${lead.marketingEmail ? 'tak' : 'nie'}`,
-        `Marketing telefon: ${lead.marketingPhone ? 'tak' : 'nie'}`,
-        `Wersja zgód: ${lead.consentVersion}`,
-        `Źródło formularza: ${lead.pagePath ?? '-'}`,
-        `IP: ${ipAddress ?? '-'}`,
-        `Wiadomość: ${lead.message ?? '-'}`,
-      ].join('\n'),
-    });
-
-    if (emailResult.error) {
-      logger.error({
-        context: 'contact',
-        message: 'Failed to send lead notification',
-        error: emailResult.error.message,
+    void resend.emails
+      .send({
+        from: fromEmail,
+        to: salesInbox,
+        replyTo: lead.email,
+        subject: `Nowy lead demo: ${lead.company}`,
+        text: [
+          `Lead ID: ${createdLead.id}`,
+          `Imię i nazwisko: ${lead.name}`,
+          `Email: ${lead.email}`,
+          `Telefon: ${lead.phone ?? '-'}`,
+          `Firma: ${lead.company}`,
+          `Liczba faktur: ${lead.invoices}`,
+          `Zgoda RODO: ${lead.acceptPrivacy ? 'tak' : 'nie'}`,
+          `Marketing email: ${lead.marketingEmail ? 'tak' : 'nie'}`,
+          `Marketing telefon: ${lead.marketingPhone ? 'tak' : 'nie'}`,
+          `Wersja zgód: ${lead.consentVersion}`,
+          `Źródło formularza: ${lead.pagePath ?? '-'}`,
+          `IP: ${ipAddress ?? '-'}`,
+          `Wiadomość: ${lead.message ?? '-'}`,
+        ].join('\n'),
+      })
+      .then((emailResult) => {
+        if (!emailResult.error) return;
+        logger.error({
+          context: 'contact',
+          message: 'Failed to send lead notification',
+          error: emailResult.error.message,
+        });
+      })
+      .catch((error: unknown) => {
+        logger.error({
+          context: 'contact',
+          message: 'Failed to send lead notification',
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
       });
-      return NextResponse.json(
-        { error: 'Lead saved, but failed to send notification email.' },
-        { status: 502 }
-      );
-    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {

@@ -4,9 +4,27 @@ function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function fetchWithTimeout(
+  input: Parameters<typeof fetch>[0],
+  init: RequestInit,
+  timeoutMs: number
+) {
+  const abortController = new AbortController();
+  const timeout = setTimeout(() => abortController.abort(), timeoutMs);
+  try {
+    return await fetch(input, {
+      ...init,
+      signal: abortController.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function fetchKsefInvoiceXml(input: {
   token: string;
   referenceNumber: string;
+  contextNip: string;
 }): Promise<string> {
   const baseUrl = (
     process.env.KSEF_API_BASE_URL?.trim() || 'https://ksef-test.mf.gov.pl/api'
@@ -22,14 +40,17 @@ export async function fetchKsefInvoiceXml(input: {
   // Keep single-job runtime bounded so worker can process multiple jobs within ~52s budget.
   const maxAttempts = Number(process.env.KSEF_FETCH_MAX_ATTEMPTS ?? '2');
   const timeoutMs = Number(process.env.KSEF_FETCH_TIMEOUT_MS ?? '10000');
-  const contextNip = (process.env.KSEF_CONTEXT_NIP || '9462761086').trim();
+  const contextNip = input.contextNip.trim();
+  if (!contextNip) {
+    throw new Error('KSeF contextNip (NIP organizacji) is required');
+  }
   let lastError: Error | null = null;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    const abortController = new AbortController();
-    const timeout = setTimeout(() => abortController.abort(), timeoutMs);
     try {
-      const sessionInitRes = await fetch(initUrl, {
+      const sessionInitRes = await fetchWithTimeout(
+        initUrl,
+        {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,8 +64,9 @@ export async function fetchKsefInvoiceXml(input: {
           },
         }),
         cache: 'no-store',
-        signal: abortController.signal,
-      });
+        },
+        timeoutMs
+      );
       if (!sessionInitRes.ok) {
         throw new Error(`KSeF InitToken failed with status ${sessionInitRes.status}`);
       }
@@ -57,15 +79,18 @@ export async function fetchKsefInvoiceXml(input: {
         throw new Error('KSeF InitToken response did not contain sessionToken');
       }
 
-      const response = await fetch(invoiceUrl, {
+      const response = await fetchWithTimeout(
+        invoiceUrl,
+        {
         method: 'GET',
         headers: {
           SessionToken: sessionToken,
           Accept: 'application/xml, text/xml, application/octet-stream',
         },
         cache: 'no-store',
-        signal: abortController.signal,
-      });
+        },
+        timeoutMs
+      );
 
       if (!response.ok) {
         const body = await response.text().catch(() => '');
@@ -93,18 +118,20 @@ export async function fetchKsefInvoiceXml(input: {
       if (!xml || !xml.includes('<')) {
         throw new Error('KSeF API response did not contain XML payload');
       }
-      await fetch(terminateUrl, {
+      await fetchWithTimeout(
+        terminateUrl,
+        {
         method: 'DELETE',
         headers: {
           SessionToken: sessionToken,
           Accept: 'application/json',
         },
         cache: 'no-store',
-      }).catch(() => null);
-      clearTimeout(timeout);
+        },
+        timeoutMs
+      ).catch(() => null);
       return xml;
     } catch (error) {
-      clearTimeout(timeout);
       lastError = error instanceof Error ? error : new Error('Unknown KSeF fetch error');
       if (attempt < maxAttempts) {
         await wait(Math.min(1000 * 2 ** (attempt - 1), 10_000));

@@ -32,6 +32,12 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const parsed = importInvoicesSchema.parse(body);
+    if (parsed.xml && Buffer.byteLength(parsed.xml, 'utf8') > 2 * 1024 * 1024) {
+      return NextResponse.json(
+        { ok: false, error: 'XML payload too large (max 2MB)' },
+        { status: 413 }
+      );
+    }
     if (parsed.ksefReferenceNumber && !parsed.xml) {
       const job = await prisma.ksefImportJob.create({
         data: {

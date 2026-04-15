@@ -22,6 +22,17 @@ export function taxIdSegmentForExternalId(sellerTaxId: string | undefined | null
   return raw.replace(/\s+/g, '').replace(/[^0-9A-Za-z]/g, '');
 }
 
+function sellerNameSegmentForExternalId(sellerName: string | undefined | null): string {
+  const raw = String(sellerName ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+  if (!raw) return 'UNKNOWN_SELLER';
+  return raw.slice(0, 48);
+}
+
 export async function parseKsefFa3Xml(xml: string) {
   if (FORBIDDEN_XML_PATTERNS.some((pattern) => pattern.test(xml))) {
     throw new Error('XML contains forbidden DTD or ENTITY declarations');
@@ -40,6 +51,10 @@ export async function parseKsefFa3Xml(xml: string) {
   const lines = rowList.map((row: any, idx: number) => ({ description: firstText(pick(row, ['P_7', 'NazwaTowaruUslugi', 'Description'])) || `Line ${idx+1}`, quantity: num(pick(row, ['P_8A', 'Ilosc', 'Quantity'])), unit: firstText(pick(row, ['P_8B', 'JednostkaMiary', 'Unit'])), netValue: num(pick(row, ['P_11', 'WartoscNetto', 'NetValue'])) || 0, currency }));
   const netValue = num(pick(fa, ['P_13_1', 'WartoscNetto', 'NetTotal'])) || lines.reduce((a,b)=>a+b.netValue,0);
   const grossValue = num(pick(fa, ['P_15', 'WartoscBrutto', 'GrossTotal'])) || netValue;
-  const externalId = `${taxIdSegmentForExternalId(sellerTaxId)}-${number}-${issueDate}`;
+  const taxIdSegment = taxIdSegmentForExternalId(sellerTaxId);
+  const externalId =
+    taxIdSegment === 'NO_TAX_ID'
+      ? `${taxIdSegment}-${sellerNameSegmentForExternalId(sellerName)}-${number}-${issueDate}`
+      : `${taxIdSegment}-${number}-${issueDate}`;
   return { externalId, number, issueDate, sellerName, sellerTaxId, currency, netValue, grossValue, lines, rawPayload: xml };
 }

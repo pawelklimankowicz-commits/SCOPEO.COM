@@ -27,7 +27,40 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const parsed = onboardingSchema.parse(body);
     const encryptedToken = encryptKsefToken(parsed.ksefToken);
-    const profile = await prisma.carbonProfile.upsert({ where: { organizationId: orgId }, update: { companyName: parsed.companyName, reportingYear: parsed.reportingYear, baseYear: parsed.baseYear, boundaryApproach: parsed.boundaryApproach, industry: parsed.industry, ksefTokenMasked: `${parsed.ksefToken.slice(0, 4)}...${parsed.ksefToken.slice(-4)}`, ksefTokenEncrypted: encryptedToken, supportsMarketBased: parsed.supportsMarketBased, hasGreenContracts: parsed.hasGreenContracts, businessTravelIncluded: parsed.businessTravelIncluded, employeeCommutingIncluded: parsed.employeeCommutingIncluded, notes: parsed.notes }, create: { organizationId: orgId, companyName: parsed.companyName, reportingYear: parsed.reportingYear, baseYear: parsed.baseYear, boundaryApproach: parsed.boundaryApproach, industry: parsed.industry, ksefTokenMasked: `${parsed.ksefToken.slice(0, 4)}...${parsed.ksefToken.slice(-4)}`, ksefTokenEncrypted: encryptedToken, supportsMarketBased: parsed.supportsMarketBased, hasGreenContracts: parsed.hasGreenContracts, businessTravelIncluded: parsed.businessTravelIncluded, employeeCommutingIncluded: parsed.employeeCommutingIncluded, notes: parsed.notes } });
+    const profile = await prisma.carbonProfile.upsert({
+      where: { organizationId: orgId },
+      update: {
+        companyName: parsed.companyName,
+        taxId: parsed.taxId || null,
+        reportingYear: parsed.reportingYear,
+        baseYear: parsed.baseYear,
+        boundaryApproach: parsed.boundaryApproach,
+        industry: parsed.industry,
+        ksefTokenMasked: `${parsed.ksefToken.slice(0, 4)}...${parsed.ksefToken.slice(-4)}`,
+        ksefTokenEncrypted: encryptedToken,
+        supportsMarketBased: parsed.supportsMarketBased,
+        hasGreenContracts: parsed.hasGreenContracts,
+        businessTravelIncluded: parsed.businessTravelIncluded,
+        employeeCommutingIncluded: parsed.employeeCommutingIncluded,
+        notes: parsed.notes,
+      },
+      create: {
+        organizationId: orgId,
+        companyName: parsed.companyName,
+        taxId: parsed.taxId || null,
+        reportingYear: parsed.reportingYear,
+        baseYear: parsed.baseYear,
+        boundaryApproach: parsed.boundaryApproach,
+        industry: parsed.industry,
+        ksefTokenMasked: `${parsed.ksefToken.slice(0, 4)}...${parsed.ksefToken.slice(-4)}`,
+        ksefTokenEncrypted: encryptedToken,
+        supportsMarketBased: parsed.supportsMarketBased,
+        hasGreenContracts: parsed.hasGreenContracts,
+        businessTravelIncluded: parsed.businessTravelIncluded,
+        employeeCommutingIncluded: parsed.employeeCommutingIncluded,
+        notes: parsed.notes,
+      },
+    });
     await prisma.organization.update({ where: { id: orgId }, data: { regionCode: 'PL' } });
     return NextResponse.json({ ok: true, profile });
   } catch (error) {

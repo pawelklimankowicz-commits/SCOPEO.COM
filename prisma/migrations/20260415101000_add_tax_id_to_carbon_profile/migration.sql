@@ -1,0 +1,2 @@
+ALTER TABLE "CarbonProfile"
+ADD COLUMN IF NOT EXISTS "taxId" TEXT;

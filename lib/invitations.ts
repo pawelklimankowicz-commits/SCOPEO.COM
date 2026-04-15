@@ -15,12 +15,12 @@ export async function sendInvitationEmail(input: {
   email: string;
   token: string;
 }) {
-  const appUrl = process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL;
   const resendKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.LEADS_FROM_EMAIL;
   if (!appUrl || !resendKey || !fromEmail) {
     throw new Error(
-      'Email service not configured: missing NEXTAUTH_URL, RESEND_API_KEY, or LEADS_FROM_EMAIL'
+      'Email service not configured: missing NEXT_PUBLIC_APP_URL/NEXTAUTH_URL, RESEND_API_KEY, or LEADS_FROM_EMAIL'
     );
   }
   const inviteUrl = `${appUrl.replace(/\/$/, '')}/login?inviteToken=${encodeURIComponent(input.token)}`;

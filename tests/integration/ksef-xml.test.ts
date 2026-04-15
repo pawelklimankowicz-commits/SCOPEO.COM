@@ -42,6 +42,22 @@ test('parseKsefFa3Xml extracts header, seller, line and externalId', async () =>
   assert.equal(r.rawPayload, minimalFaXml);
 });
 
+test('parseKsefFa3Xml includes seller name in externalId when NIP is missing', async () => {
+  const xmlWithoutTaxId = `<?xml version="1.0" encoding="UTF-8"?>
+<Faktura>
+  <Fa>
+    <P_2>FV/2024/001</P_2>
+    <P_1>2024-01-15</P_1>
+  </Fa>
+  <Podmiot1>
+    <Nazwa>Jan Kowalski Usługi</Nazwa>
+  </Podmiot1>
+</Faktura>`;
+
+  const r = await parseKsefFa3Xml(xmlWithoutTaxId);
+  assert.equal(r.externalId, 'NO_TAX_ID-JAN_KOWALSKI_USLUGI-FV/2024/001-2024-01-15');
+});
+
 test('parseKsefFa3Xml rejects DTD / ENTITY', async () => {
   const evil = `<!DOCTYPE foo [<!ENTITY xxe "x">]><Faktura><Fa><P_2>a</P_2><P_1>2024-01-01</P_1></Fa></Faktura>`;
   await assert.rejects(() => parseKsefFa3Xml(evil), /forbidden/i);

@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET() {
+function canViewHealthDiagnostics(req?: Request): boolean {
+  const secret = process.env.HEALTH_CHECK_SECRET?.trim();
+  if (!secret) return false;
+  const provided = req?.headers.get('x-health-secret')?.trim();
+  return Boolean(provided && provided === secret);
+}
+
+export async function GET(req?: Request) {
   const startedAt = Date.now();
-  const authSecretSet = Boolean(
-    (process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || '').trim()
-  );
-  const nextAuthUrlSet = Boolean((process.env.NEXTAUTH_URL || '').trim());
+  const includeDiagnostics = canViewHealthDiagnostics(req);
   try {
     await prisma.$queryRaw`SELECT 1`;
     return NextResponse.json(
@@ -15,8 +19,14 @@ export async function GET() {
         status: 'healthy',
         uptimeSec: Math.round(process.uptime()),
         db: 'ok',
-        authSecretSet,
-        nextAuthUrlSet,
+        ...(includeDiagnostics
+          ? {
+              authSecretSet: Boolean(
+                (process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || '').trim()
+              ),
+              nextAuthUrlSet: Boolean((process.env.NEXTAUTH_URL || '').trim()),
+            }
+          : {}),
         responseMs: Date.now() - startedAt,
       },
       { status: 200 }
@@ -29,19 +39,23 @@ export async function GET() {
           message?: string;
         }
       | undefined;
-    const databaseUrlSet = Boolean((process.env.DATABASE_URL || '').trim());
-
     return NextResponse.json(
       {
         ok: false,
         status: 'unhealthy',
         db: 'error',
-        databaseUrlSet,
-        authSecretSet,
-        nextAuthUrlSet,
-        errorName: e?.name ?? 'UnknownError',
-        errorCode: e?.code ?? null,
-        errorMessage: (e?.message || 'Unknown database error').slice(0, 240),
+        ...(includeDiagnostics
+          ? {
+              databaseUrlSet: Boolean((process.env.DATABASE_URL || '').trim()),
+              authSecretSet: Boolean(
+                (process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || '').trim()
+              ),
+              nextAuthUrlSet: Boolean((process.env.NEXTAUTH_URL || '').trim()),
+              errorName: e?.name ?? 'UnknownError',
+              errorCode: e?.code ?? null,
+              errorMessage: (e?.message || 'Unknown database error').slice(0, 240),
+            }
+          : {}),
         responseMs: Date.now() - startedAt,
       },
       { status: 503 }

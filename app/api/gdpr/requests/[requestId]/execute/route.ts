@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { writeProcessingRecord } from '@/lib/privacy-register';
 import { Resend } from 'resend';
+import { logger } from '@/lib/logger';
 
 function canManage(role?: string | null) {
   return role === 'OWNER' || role === 'ADMIN';
@@ -70,7 +71,7 @@ export async function POST(
     const localPart = email.split('@')[0] ?? '';
     const shouldAnonymizeInvoices = process.env.GDPR_ERASURE_ANONYMIZE_INVOICES === 'true';
     if (shouldAnonymizeInvoices && localPart.length >= 3) {
-      const supplierUpdate = await prisma.supplier.updateMany({
+      const suppliersToAnonymize = await prisma.supplier.findMany({
         where: {
           organizationId,
           OR: [
@@ -78,23 +79,27 @@ export async function POST(
             { name: { contains: localPart, mode: 'insensitive' } },
           ],
         },
-        data: { name: 'Deleted Supplier', taxId: null },
+        select: { id: true },
+      });
+      const supplierIds = suppliersToAnonymize.map((s) => s.id);
+
+      const supplierUpdate = await prisma.supplier.updateMany({
+        where: {
+          id: { in: supplierIds },
+        },
+        data: { name: 'Deleted Supplier', taxId: '' },
       });
       affectedSuppliers = supplierUpdate.count;
 
-      const lines = await prisma.invoiceLine.findMany({
-        where: {
-          invoice: { organizationId, supplier: { name: 'Deleted Supplier' } },
-        },
-        select: { id: true },
-      });
-      for (const line of lines) {
-        await prisma.invoiceLine.update({
-          where: { id: line.id },
+      if (supplierIds.length > 0) {
+        const lineUpdate = await prisma.invoiceLine.updateMany({
+          where: {
+            invoice: { organizationId, supplierId: { in: supplierIds } },
+          },
           data: { description: '[ANONYMIZED]' },
         });
+        affectedInvoiceLines = lineUpdate.count;
       }
-      affectedInvoiceLines = lines.length;
     }
   }
 
@@ -128,15 +133,33 @@ export async function POST(
   const fromEmail = process.env.LEADS_FROM_EMAIL;
   if (resendKey && fromEmail && request.subjectEmail) {
     const resend = new Resend(resendKey);
-    await resend.emails.send({
-      from: fromEmail,
-      to: request.subjectEmail,
-      subject: 'Potwierdzenie realizacji wniosku RODO - Scopeo',
-      text:
-        request.type === 'ERASURE'
-          ? `Informujemy, ze Twoj wniosek o usuniecie danych osobowych (nr ${request.id}) zostal zrealizowany. Twoje dane zostaly zanonimizowane zgodnie z wymogami RODO.`
-          : `Informujemy, ze Twoj wniosek o dostep do danych osobowych (nr ${request.id}) zostal zrealizowany. Skontaktuj sie z nami, jesli masz pytania.`,
-    });
+    void resend.emails
+      .send({
+        from: fromEmail,
+        to: request.subjectEmail,
+        subject: 'Potwierdzenie realizacji wniosku RODO - Scopeo',
+        text:
+          request.type === 'ERASURE'
+            ? `Informujemy, ze Twoj wniosek o usuniecie danych osobowych (nr ${request.id}) zostal zrealizowany. Twoje dane zostaly zanonimizowane zgodnie z wymogami RODO.`
+            : `Informujemy, ze Twoj wniosek o dostep do danych osobowych (nr ${request.id}) zostal zrealizowany. Skontaktuj sie z nami, jesli masz pytania.`,
+      })
+      .then((emailResult) => {
+        if (!emailResult.error) return;
+        logger.warn({
+          context: 'gdpr_execute',
+          message: 'Failed to send GDPR completion confirmation',
+          requestId: request.id,
+          error: emailResult.error.message,
+        });
+      })
+      .catch((error: unknown) => {
+        logger.warn({
+          context: 'gdpr_execute',
+          message: 'Failed to send GDPR completion confirmation',
+          requestId: request.id,
+          error: error instanceof Error ? error.message : 'Unknown resend error',
+        });
+      });
   }
 
   return NextResponse.json({

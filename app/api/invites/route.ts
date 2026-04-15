@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { createInvitationToken, sendInvitationEmail } from '@/lib/invitations';
+import { checkRateLimit, getClientIp } from '@/lib/security';
 
 const createInviteSchema = z.object({
   email: z.string().email(),
@@ -49,6 +50,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
   }
   const organizationId = (session.user as any).organizationId as string;
+  const userId = session.user.id as string;
+  const ip = getClientIp(req.headers);
+  const limit = await checkRateLimit(`invites-create:${organizationId}:${userId}:${ip}`, {
+    windowMs: 60 * 60 * 1000,
+    maxRequests: 30,
+  });
+  if (!limit.ok) {
+    return NextResponse.json(
+      { ok: false, error: 'Too many invite requests' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfterSec) } }
+    );
+  }
+
   const body = await req.json();
   const parsed = createInviteSchema.parse(body);
   const { token, tokenHash } = createInvitationToken();

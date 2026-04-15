@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import type { EmissionFactor, EmissionSource } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { buildKobizeParsedFactors } from '@/lib/kobize-pl-factors';
+import { writeProcessingRecord } from '@/lib/privacy-register';
 
 /** Domyślne URL-e (UK Gov / EPA zmieniają pliki co roku — ustaw env, patrz README i .env.example). */
 const DEFAULT_UK_FLAT_XLSX_URL =
@@ -367,6 +368,26 @@ export async function importExternalFactors(organizationId: string, actorUserId?
   const kobizeFactors = buildKobizeParsedFactors(cfg.overlayYear);
   const kobizeCount = await persistFactors(organizationId, plSource.id, kobizeFactors as ParsedFactor[]);
   results.push({ source: 'KOBIZE_PL', ok: true, importedCount: kobizeCount, issues: [] });
+  const importedCount = results.reduce(
+    (sum, item) => sum + (typeof item.importedCount === 'number' ? item.importedCount : 0),
+    0
+  );
+  await writeProcessingRecord({
+    organizationId,
+    actorUserId: actorUserId ?? null,
+    eventType: 'FACTOR_IMPORT',
+    subjectRef: 'external_factors',
+    legalBasis: 'art. 6 ust. 1 lit. b RODO',
+    payload: {
+      importedCount,
+      sources: results.map((item) => ({
+        source: item.source,
+        ok: item.ok,
+        importedCount: typeof item.importedCount === 'number' ? item.importedCount : 0,
+        issueCount: Array.isArray(item.issues) ? item.issues.length : 0,
+      })),
+    },
+  });
   return { results };
 }
 

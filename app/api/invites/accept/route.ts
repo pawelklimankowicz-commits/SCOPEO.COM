@@ -4,15 +4,28 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { hashInvitationToken } from '@/lib/invitations';
 import { BCRYPT_SALT_ROUNDS } from '@/lib/password-hash';
+import { checkRateLimit, getClientIp } from '@/lib/security';
 
 const acceptInviteSchema = z.object({
   inviteToken: z.string().min(16),
   name: z.string().min(2).optional(),
   email: z.string().email(),
-  password: z.string().min(8).optional(),
+  password: z.string().min(12).max(128).optional(),
 });
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req.headers);
+  const limit = await checkRateLimit(`invites-accept:${ip}`, {
+    windowMs: 60_000,
+    maxRequests: 12,
+  });
+  if (!limit.ok) {
+    return NextResponse.json(
+      { ok: false, error: 'Too many requests' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfterSec) } }
+    );
+  }
+
   const body = await req.json();
   const parsed = acceptInviteSchema.parse(body);
   const tokenHash = hashInvitationToken(parsed.inviteToken);
@@ -41,9 +54,9 @@ export async function POST(req: NextRequest) {
     // User already exists — never overwrite their password from invite flow.
     userId = existingUser.id;
   } else {
-    if (!parsed.password || typeof parsed.password !== 'string' || parsed.password.length < 8) {
+    if (!parsed.password || typeof parsed.password !== 'string' || parsed.password.length < 12) {
       return NextResponse.json(
-        { ok: false, error: 'Password must be at least 8 characters' },
+        { ok: false, error: 'Password must be at least 12 characters' },
         { status: 400 }
       );
     }

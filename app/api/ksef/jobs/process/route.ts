@@ -62,10 +62,15 @@ export async function POST(req: Request) {
       if (!profile?.ksefTokenEncrypted) {
         throw new Error('Missing encrypted KSeF token');
       }
+      const contextNip = profile.taxId?.trim() || process.env.KSEF_CONTEXT_NIP?.trim() || '';
+      if (!contextNip) {
+        throw new Error('Missing NIP context for KSeF session (CarbonProfile.taxId)');
+      }
       const token = decryptKsefToken(profile.ksefTokenEncrypted);
       const xmlPayload = await fetchKsefInvoiceXml({
         token,
         referenceNumber: job.referenceNumber,
+        contextNip,
       });
       const imported = await importKsefXmlForOrganization({
         organizationId: job.organizationId,
