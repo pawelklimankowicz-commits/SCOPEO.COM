@@ -15,9 +15,9 @@
     "test:ci": "node --test --experimental-test-coverage tests/unit/*.test.mjs && npm run test:integration",
     "coverage:summary": "node tests/unit/coverage-summary.mjs",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:migrate:deploy": "prisma migrate deploy",
-    "prisma:migrate:status": "prisma migrate status",
+    "prisma:migrate": "node scripts/run-prisma.cjs migrate dev",
+    "prisma:migrate:deploy": "node scripts/run-prisma.cjs migrate deploy",
+    "prisma:migrate:status": "node scripts/run-prisma.cjs migrate status",
     "db:push": "echo \"Use prisma:migrate or prisma:migrate:deploy instead of db push\" && exit 1",
     "repair": "rm -rf node_modules .next && npm cache clean --force && npm install"
   },
