@@ -15,12 +15,25 @@ export async function GET() {
       },
       { status: 200 }
     );
-  } catch {
+  } catch (error: unknown) {
+    const e = error as
+      | {
+          name?: string;
+          code?: string;
+          message?: string;
+        }
+      | undefined;
+    const databaseUrlSet = Boolean((process.env.DATABASE_URL || '').trim());
+
     return NextResponse.json(
       {
         ok: false,
         status: 'unhealthy',
         db: 'error',
+        databaseUrlSet,
+        errorName: e?.name ?? 'UnknownError',
+        errorCode: e?.code ?? null,
+        errorMessage: (e?.message || 'Unknown database error').slice(0, 240),
         responseMs: Date.now() - startedAt,
       },
       { status: 503 }
