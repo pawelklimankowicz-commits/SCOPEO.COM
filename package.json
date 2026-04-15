@@ -58,7 +58,7 @@
     "fast-check": "^3.23.2",
     "prisma": "6.6.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.8.2",
+    "typescript": "^6.0.2",
     "vitest": "^4.1.4"
   }
 }
