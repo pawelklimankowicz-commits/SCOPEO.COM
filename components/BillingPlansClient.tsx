@@ -182,11 +182,11 @@ export default function BillingPlansClient({ snapshot }: { snapshot: BillingSnap
       {snapshot.status === 'TRIALING' ? (
         <div className="card section" style={{ borderColor: '#facc15', background: '#1f2937', marginBottom: 18 }}>
           <strong style={{ color: '#fde68a' }}>
-            Twoj bezplatny trial konczy sie za {trialDaysLeft} dni. Dodaj karte, aby zachowac dostep.
+            Twój bezpłatny trial kończy się za {trialDaysLeft} dni. Dodaj kartę, aby zachować dostęp.
           </strong>
           <div style={{ marginTop: 12 }}>
             <button className="btn btn-primary" onClick={() => void startCheckout('GROWTH')} disabled={loadingPlan === 'GROWTH'}>
-              Aktywuj subskrypcje
+              Aktywuj subskrypcję
             </button>
           </div>
         </div>
@@ -199,18 +199,18 @@ export default function BillingPlansClient({ snapshot }: { snapshot: BillingSnap
           {snapshot.currentPeriodEnd ? ` · Odnowienie: ${new Date(snapshot.currentPeriodEnd).toLocaleDateString('pl-PL')}` : ''}
         </p>
         <p className="app-muted" style={{ marginTop: 0 }}>
-          Uzytkownicy: {snapshot.usedUsers}/{snapshot.userLimit} · Polaczenia KSeF: {snapshot.usedKsefConnections}/{snapshot.ksefLimit}
+          Użytkownicy: {snapshot.usedUsers}/{snapshot.userLimit} · Połączenia KSeF: {snapshot.usedKsefConnections}/{snapshot.ksefLimit}
         </p>
         {snapshot.status !== 'TRIALING' ? (
           <button className="btn btn-secondary" onClick={() => void openPortal()} disabled={loadingPlan === 'portal'}>
-            Zarzadzaj subskrypcja
+            Zarządzaj subskrypcją
           </button>
         ) : null}
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         <button className={`btn ${interval === 'MONTHLY' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setInterval('MONTHLY')}>
-          Miesiecznie
+          Miesięcznie
         </button>
         <button className={`btn ${interval === 'ANNUAL' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setInterval('ANNUAL')}>
           Rocznie (-20%)
@@ -234,13 +234,13 @@ export default function BillingPlansClient({ snapshot }: { snapshot: BillingSnap
                 <h3 style={{ margin: 0 }}>{plan.name}</h3>
                 {plan.recommended ? <span className="badge">Polecany</span> : null}
               </div>
-              <p className="app-muted">KSeF: {plan.ksef} · Uzytkownicy: {plan.users}</p>
+              <p className="app-muted">KSeF: {plan.ksef} · Użytkownicy: {plan.users}</p>
               <p style={{ fontSize: 24, fontWeight: 700 }}>
                 {plan.monthly === null
                   ? 'Wycena indywidualna'
                   : interval === 'MONTHLY'
-                    ? `${plan.monthly} zl / mc`
-                    : `${plan.annualMonthly} zl / mc (rocznie)`}
+                    ? `${plan.monthly} zł / mc`
+                    : `${plan.annualMonthly} zł / mc (rocznie)`}
               </p>
               <ul style={{ paddingLeft: 18 }}>
                 {plan.features.map(([name, enabled]) => (
@@ -251,11 +251,11 @@ export default function BillingPlansClient({ snapshot }: { snapshot: BillingSnap
               </ul>
               {plan.code === 'ENTERPRISE' ? (
                 <a className="btn btn-secondary" href="/kontakt">
-                  Porozmawiaj o wdrozeniu
+                  Porozmawiaj o wdrożeniu
                 </a>
               ) : isCurrent ? (
                 <button className="btn btn-secondary" disabled>
-                  Twoj plan
+                  Twój plan
                 </button>
               ) : (
                 <button
@@ -263,7 +263,7 @@ export default function BillingPlansClient({ snapshot }: { snapshot: BillingSnap
                   onClick={() => void startCheckout(plan.code)}
                   disabled={loadingPlan === plan.code}
                 >
-                  {loadingPlan === plan.code ? 'Ladowanie...' : 'Wybierz plan'}
+                  {loadingPlan === plan.code ? 'Ładowanie...' : 'Wybierz plan'}
                 </button>
               )}
             </div>
