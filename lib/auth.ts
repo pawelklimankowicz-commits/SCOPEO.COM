@@ -27,7 +27,7 @@ type SessionOrganization = {
 
 async function loadUserOrganizations(userId: string): Promise<SessionOrganization[]> {
   const memberships = await prisma.membership.findMany({
-    where: { userId },
+    where: { userId, status: 'ACTIVE' },
     include: {
       organization: { select: { id: true, name: true, slug: true } },
     },
@@ -129,7 +129,10 @@ export const authOptions: NextAuthOptions = {
       }
 
       const shouldRefreshOrganizations =
-        Boolean(user) || trigger === 'update' || !Array.isArray(token.organizations);
+        Boolean(user) ||
+        trigger === 'update' ||
+        !Array.isArray(token.organizations) ||
+        (token.organizations as any[]).length === 0;
       if (token.sub && shouldRefreshOrganizations) {
         const organizations = await loadUserOrganizations(String(token.sub));
         token.organizations = organizations;
@@ -147,14 +150,17 @@ export const authOptions: NextAuthOptions = {
         token.role = active?.role ?? null;
       }
 
-      const organizationId = (token.activeOrganizationId as string | undefined) ?? (token.organizationId as string | undefined);
-      if (organizationId) {
-        const org = await prisma.organization.findUnique({
-          where: { id: organizationId },
-          select: { onboardingCompletedAt: true, onboardingStep: true },
-        });
-        token.onboardingCompletedAt = org?.onboardingCompletedAt?.toISOString() ?? null;
-        token.onboardingStep = org?.onboardingStep ?? 0;
+      if (Boolean(user) || trigger === 'update') {
+        const organizationId =
+          (token.activeOrganizationId as string | undefined) ?? (token.organizationId as string | undefined);
+        if (organizationId) {
+          const org = await prisma.organization.findUnique({
+            where: { id: organizationId },
+            select: { onboardingCompletedAt: true, onboardingStep: true },
+          });
+          token.onboardingCompletedAt = org?.onboardingCompletedAt?.toISOString() ?? null;
+          token.onboardingStep = org?.onboardingStep ?? 0;
+        }
       }
       return token;
     },

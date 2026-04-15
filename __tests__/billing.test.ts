@@ -4,6 +4,10 @@ import { canAccessReviewWorkflow } from '@/lib/billing-features';
 import { checkUserLimit, getPriceId, isTrialActive, planLimits } from '@/lib/billing';
 import { prisma } from '@/lib/prisma';
 
+vi.mock('@/lib/notifications', () => ({
+  createNotification: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     subscription: {

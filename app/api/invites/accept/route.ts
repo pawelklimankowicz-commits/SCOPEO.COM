@@ -81,6 +81,7 @@ export async function POST(req: NextRequest) {
         userId,
         organizationId: invite.organizationId,
         role: invite.role,
+        status: 'ACTIVE',
       },
     });
   }

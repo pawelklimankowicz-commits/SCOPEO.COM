@@ -9,7 +9,7 @@ export async function GET() {
   }
 
   const memberships = await prisma.membership.findMany({
-    where: { userId: session.user.id },
+    where: { userId: session.user.id, status: 'ACTIVE' },
     include: {
       organization: { select: { id: true, name: true, slug: true } },
     },

@@ -55,12 +55,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: 'Brak skonfigurowanej ceny Stripe dla planu.' }, { status: 400 });
     }
 
-    const previousSubscriptions = await stripe.subscriptions.list({
-      customer: customerId,
-      status: 'all',
-      limit: 1,
-    });
-    const canUseTrial = previousSubscriptions.data.length === 0;
+    const canUseTrial =
+      !subscription?.stripeSubscriptionId &&
+      Boolean(subscription?.trialEndsAt && subscription.trialEndsAt.getTime() > Date.now());
 
     const checkout = await stripe.checkout.sessions.create({
       mode: 'subscription',
@@ -81,7 +78,7 @@ export async function POST(req: NextRequest) {
         },
         ...(canUseTrial ? { trial_period_days: TRIAL_DAYS } : {}),
       },
-      payment_method_collection: 'if_required',
+      payment_method_collection: canUseTrial ? 'if_required' : 'always',
     });
 
     return NextResponse.json({ ok: true, url: checkout.url });

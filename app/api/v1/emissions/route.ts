@@ -14,6 +14,7 @@ export async function GET(req: Request) {
           }
         : undefined;
 
+    const maxLines = 10_000;
     const lines = await prisma.invoiceLine.findMany({
       where: {
         invoice: {
@@ -23,10 +24,13 @@ export async function GET(req: Request) {
         ...(scope ? { scope: scope as any } : {}),
       },
       include: { emissionFactor: true },
+      take: maxLines + 1,
     });
+    const truncated = lines.length > maxLines;
+    const safeLines = truncated ? lines.slice(0, maxLines) : lines;
 
     const grouped = new Map<string, { category: string; scope: string; totalKgCO2e: number; lineCount: number }>();
-    for (const line of lines) {
+    for (const line of safeLines) {
       const category = line.overrideCategoryCode ?? line.categoryCode;
       const factorValue = line.emissionFactor?.factorValue ?? 0;
       const kg =
@@ -59,6 +63,7 @@ export async function GET(req: Request) {
         organizationId,
         year: Number.isFinite(year) ? year : null,
         generatedAt: new Date().toISOString(),
+        truncated,
       },
     });
   });

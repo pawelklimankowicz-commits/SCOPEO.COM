@@ -23,21 +23,58 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const parsed = onboardingKsefSchema.parse(body);
+    const normalizedContextNip = parsed.contextNip.replace(/\D/g, '');
 
     if (!parsed.skip) {
-      const existingProfile = await prisma.carbonProfile.findUnique({
-        where: { organizationId },
-        select: { taxId: true },
+      const existingConnection = await prisma.ksefConnection.findFirst({
+        where: { organizationId, taxId: normalizedContextNip },
+        select: { id: true },
       });
-      const creatingNewConnection = !existingProfile?.taxId;
-      if (creatingNewConnection) {
+      const legacyProfile = !existingConnection
+        ? await prisma.carbonProfile.findUnique({
+            where: { organizationId },
+            select: { taxId: true, ksefTokenEncrypted: true },
+          })
+        : null;
+      const sameLegacyConnection =
+        Boolean(legacyProfile?.ksefTokenEncrypted) &&
+        (legacyProfile?.taxId ?? '').replace(/\D/g, '') === normalizedContextNip;
+      if (!existingConnection && !sameLegacyConnection) {
         await requireKsefCapacity(organizationId);
       }
       const encryptedToken = encryptKsefToken(parsed.ksefToken);
+      await prisma.$transaction(async (tx) => {
+        await tx.ksefConnection.upsert({
+          where: {
+            organizationId_taxId: {
+              organizationId,
+              taxId: normalizedContextNip,
+            },
+          },
+          update: {
+            label: 'Polaczenie onboarding',
+            tokenEncrypted: encryptedToken,
+            tokenMasked: `${parsed.ksefToken.slice(0, 4)}...${parsed.ksefToken.slice(-4)}`,
+          },
+          create: {
+            organizationId,
+            label: 'Polaczenie onboarding',
+            taxId: normalizedContextNip,
+            tokenEncrypted: encryptedToken,
+            tokenMasked: `${parsed.ksefToken.slice(0, 4)}...${parsed.ksefToken.slice(-4)}`,
+            isDefault: true,
+          },
+        });
+        await tx.ksefConnection.updateMany({
+          where: { organizationId, NOT: { taxId: normalizedContextNip } },
+          data: { isDefault: false },
+        });
+      });
       await prisma.carbonProfile.upsert({
         where: { organizationId },
         update: {
-          taxId: parsed.contextNip,
+          taxId: normalizedContextNip,
+          // Legacy fallback fields (deprecated)
           ksefTokenEncrypted: encryptedToken,
           ksefTokenMasked: `${parsed.ksefToken.slice(0, 4)}...${parsed.ksefToken.slice(-4)}`,
         },
@@ -48,7 +85,8 @@ export async function POST(req: NextRequest) {
           baseYear: new Date().getFullYear(),
           boundaryApproach: 'operational_control',
           industry: 'Unspecified',
-          taxId: parsed.contextNip,
+          taxId: normalizedContextNip,
+          // Legacy fallback fields (deprecated)
           ksefTokenEncrypted: encryptedToken,
           ksefTokenMasked: `${parsed.ksefToken.slice(0, 4)}...${parsed.ksefToken.slice(-4)}`,
         },

@@ -4,11 +4,9 @@ import { PLANS, TRIAL_DAYS, stripe } from '@/lib/stripe';
 import { createNotification } from '@/lib/notifications';
 
 export function planLimits(plan: SubscriptionPlan) {
-  if (plan === 'STARTER') return { ksefConnectionLimit: 1, userLimit: 5 };
-  if (plan === 'GROWTH') return { ksefConnectionLimit: 3, userLimit: 15 };
-  if (plan === 'SCALE') return { ksefConnectionLimit: 10, userLimit: 999 };
-  if (plan === 'ENTERPRISE') return { ksefConnectionLimit: 999, userLimit: 999 };
-  return { ksefConnectionLimit: 1, userLimit: 1 };
+  const definition = PLANS[plan as keyof typeof PLANS];
+  if (!definition) return { ksefConnectionLimit: 1, userLimit: 1 };
+  return { ksefConnectionLimit: definition.ksefLimit, userLimit: definition.userLimit };
 }
 
 export async function getOrCreateStripeCustomer(organizationId: string): Promise<string> {
@@ -56,30 +54,25 @@ export function isTrialActive(sub: Subscription): boolean {
 }
 
 export async function checkKsefLimit(organizationId: string): Promise<{ allowed: boolean; used: number; limit: number }> {
-  const [sub, profile] = await Promise.all([
+  const [sub, connectionCount, legacyProfile] = await Promise.all([
     prisma.subscription.findUnique({ where: { organizationId }, select: { ksefConnectionLimit: true } }),
-    prisma.carbonProfile.findUnique({ where: { organizationId }, select: { taxId: true } }),
+    prisma.ksefConnection.count({ where: { organizationId } }),
+    prisma.carbonProfile.findUnique({
+      where: { organizationId },
+      select: { ksefTokenEncrypted: true },
+    }),
   ]);
+  const used = connectionCount > 0 ? connectionCount : legacyProfile?.ksefTokenEncrypted ? 1 : 0;
   const limit = sub?.ksefConnectionLimit ?? 1;
-  const used = profile?.taxId ? 1 : 0;
   if (limit > 0 && used >= Math.ceil(limit * 0.8)) {
-    const existing = await prisma.notification.findFirst({
-      where: {
-        organizationId,
-        type: 'INVOICE_LIMIT_WARNING',
-        createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-      },
-      select: { id: true },
+    await createNotification({
+      organizationId,
+      type: 'KSEF_LIMIT_WARNING',
+      title: 'Zblizasz sie do limitu polaczen KSeF',
+      body: `Wykorzystano ${used}/${limit} polaczen KSeF. Rozwaz zmiane planu.`,
+      link: '/dashboard/settings/billing',
+      deduplicateWithinHours: 24,
     });
-    if (!existing) {
-      await createNotification({
-        organizationId,
-        type: 'INVOICE_LIMIT_WARNING',
-        title: 'Wysokie wykorzystanie limitu KSeF',
-        body: `Wykorzystano ${used}/${limit} limitu polaczen KSeF.`,
-        link: '/dashboard/settings/billing',
-      });
-    }
   }
   return { allowed: used < limit, used, limit };
 }
@@ -87,27 +80,18 @@ export async function checkKsefLimit(organizationId: string): Promise<{ allowed:
 export async function checkUserLimit(organizationId: string): Promise<{ allowed: boolean; used: number; limit: number }> {
   const [sub, used] = await Promise.all([
     prisma.subscription.findUnique({ where: { organizationId }, select: { userLimit: true } }),
-    prisma.membership.count({ where: { organizationId } }),
+    prisma.membership.count({ where: { organizationId, status: 'ACTIVE' } }),
   ]);
   const limit = sub?.userLimit ?? 1;
   if (limit > 0 && used >= Math.ceil(limit * 0.8)) {
-    const existing = await prisma.notification.findFirst({
-      where: {
-        organizationId,
-        type: 'INVOICE_LIMIT_WARNING',
-        createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-      },
-      select: { id: true },
+    await createNotification({
+      organizationId,
+      type: 'USER_LIMIT_WARNING',
+      title: 'Zblizasz sie do limitu uzytkownikow',
+      body: `Wykorzystano ${used}/${limit} miejsc w planie. Rozwaz zmiane planu.`,
+      link: '/dashboard/settings/billing',
+      deduplicateWithinHours: 24,
     });
-    if (!existing) {
-      await createNotification({
-        organizationId,
-        type: 'INVOICE_LIMIT_WARNING',
-        title: 'Wysokie wykorzystanie limitu uzytkownikow',
-        body: `Wykorzystano ${used}/${limit} miejsc w planie.`,
-        link: '/dashboard/settings/billing',
-      });
-    }
   }
   return { allowed: used < limit, used, limit };
 }

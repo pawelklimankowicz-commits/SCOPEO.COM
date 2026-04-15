@@ -8,7 +8,22 @@ export async function createNotification(input: {
   title: string;
   body: string;
   link?: string;
+  deduplicateWithinHours?: number;
 }): Promise<void> {
+  if (input.deduplicateWithinHours) {
+    const cutoff = new Date(Date.now() - input.deduplicateWithinHours * 60 * 60 * 1000);
+    const existing = await prisma.notification.findFirst({
+      where: {
+        organizationId: input.organizationId,
+        type: input.type,
+        ...(input.userId ? { userId: input.userId } : {}),
+        createdAt: { gte: cutoff },
+      },
+      select: { id: true },
+    });
+    if (existing) return;
+  }
+
   if (input.userId) {
     await prisma.notification.create({
       data: {
@@ -27,6 +42,7 @@ export async function createNotification(input: {
     where: {
       organizationId: input.organizationId,
       role: { in: ['OWNER', 'ADMIN'] },
+      status: 'ACTIVE',
     },
     select: { userId: true },
   });

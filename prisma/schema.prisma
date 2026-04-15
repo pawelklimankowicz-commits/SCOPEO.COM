@@ -59,11 +59,18 @@ enum NotificationType {
   REVIEW_SUBMITTED
   REVIEW_APPROVED
   REVIEW_REJECTED
+  KSEF_LIMIT_WARNING
+  USER_LIMIT_WARNING
   INVOICE_LIMIT_WARNING
   GDPR_REQUEST_RECEIVED
   FACTOR_IMPORT_DONE
   MEMBER_JOINED
   MEMBER_ROLE_CHANGED
+}
+
+enum MembershipStatus {
+  ACTIVE
+  SUSPENDED
 }
 
 enum ReviewStatus {
@@ -194,6 +201,7 @@ model Organization {
   subscription         Subscription?
   notifications        Notification[]
   apiKeys              ApiKey[]
+  ksefConnections      KsefConnection[]
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
 }
@@ -253,13 +261,16 @@ model ApiKey {
 }
 
 model Membership {
-  id             String       @id @default(cuid())
+  id             String           @id @default(cuid())
   userId         String
   organizationId String
-  role           Role         @default(OWNER)
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role           Role             @default(OWNER)
+  status         MembershipStatus @default(ACTIVE)
+  createdAt      DateTime         @default(now())
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   @@unique([userId, organizationId])
+  @@index([organizationId, status])
 }
 
 model CarbonProfile {
@@ -292,6 +303,23 @@ model Supplier {
   invoices       Invoice[]
   categoryHints  SupplierCategoryHint[]
   @@unique([organizationId, name, taxId])
+}
+
+model KsefConnection {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  label          String
+  taxId          String
+  tokenEncrypted String?
+  tokenMasked    String
+  isDefault      Boolean      @default(false)
+  lastUsedAt     DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organizationId, taxId])
+  @@index([organizationId])
 }
 
 model Invoice {

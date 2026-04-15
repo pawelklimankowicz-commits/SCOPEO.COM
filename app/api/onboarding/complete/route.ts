@@ -25,5 +25,5 @@ export async function POST(_req: NextRequest) {
     },
   });
 
-  return NextResponse.json({ ok: true, redirectTo: '/dashboard' });
+  return NextResponse.json({ ok: true, redirectTo: '/dashboard', requiresSessionRefresh: true });
 }

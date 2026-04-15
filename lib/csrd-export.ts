@@ -53,6 +53,7 @@ function factorSourceLabel(code: string | null | undefined, year: number | null 
 export async function generateCsrdReport(organizationId: string, year: number): Promise<CsrdReportData> {
   const from = new Date(`${year}-01-01T00:00:00.000Z`);
   const to = new Date(`${year + 1}-01-01T00:00:00.000Z`);
+  const maxLines = 10_000;
 
   const [profile, lines] = await Promise.all([
     prisma.carbonProfile.findUnique({
@@ -70,8 +71,10 @@ export async function generateCsrdReport(organizationId: string, year: number): 
         invoice: true,
         emissionFactor: { include: { emissionSource: true } },
       },
+      take: maxLines + 1,
     }),
   ]);
+  const safeLines = lines.length > maxLines ? lines.slice(0, maxLines) : lines;
 
   const categoryMap = new Map<
     string,
@@ -80,9 +83,9 @@ export async function generateCsrdReport(organizationId: string, year: number): 
   let scope1Total = 0;
   let scope2Total = 0;
   let scope3Total = 0;
-  let allCalculated = lines.length > 0;
+  let allCalculated = safeLines.length > 0;
 
-  for (const line of lines) {
+  for (const line of safeLines) {
     const category = line.overrideCategoryCode ?? line.categoryCode;
     const factor = line.emissionFactor;
     const factorValue = factor?.factorValue ?? 0;
@@ -190,7 +193,9 @@ export function toEsrsXml(report: CsrdReportData): string {
   <esrs:E1-6_GrossScope3GHGEmissions decimals="3" unitRef="tCO2e">${report.scope3Total}</esrs:E1-6_GrossScope3GHGEmissions>
   <esrs:E1-6_TotalGHGEmissions decimals="3" unitRef="tCO2e">${report.totalGhg}</esrs:E1-6_TotalGHGEmissions>
   <esrs:methodology>${safe(report.methodology)}</esrs:methodology>
+  <esrs:dataQuality>${safe(report.dataQuality)}</esrs:dataQuality>
   <esrs:boundaryApproach>Operational Control</esrs:boundaryApproach>
   <esrs:generatedAt>${safe(report.generatedAt)}</esrs:generatedAt>
+  <esrs:generatedBy>Scopeo SaaS</esrs:generatedBy>
 </esrs:Report>`;
 }

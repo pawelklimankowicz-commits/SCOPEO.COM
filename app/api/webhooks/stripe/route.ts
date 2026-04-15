@@ -50,9 +50,73 @@ async function sendBillingEmail(to: string, subject: string, text: string) {
   });
 }
 
+async function persistSubscription(input: {
+  organizationId: string;
+  stripeCustomerId: string;
+  stripeSubscriptionId: string | null;
+  plan: 'MIKRO' | 'STARTER' | 'GROWTH' | 'SCALE' | 'ENTERPRISE';
+  billingInterval: 'MONTHLY' | 'ANNUAL';
+  status: 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'TRIALING';
+  trialEndsAt?: Date | null;
+  currentPeriodEnd?: Date | null;
+  cancelAtPeriodEnd?: boolean;
+}) {
+  const limits = planLimits(input.plan);
+  if (input.stripeSubscriptionId) {
+    const existingByStripe = await prisma.subscription.findUnique({
+      where: { stripeSubscriptionId: input.stripeSubscriptionId },
+      select: { id: true },
+    });
+    if (existingByStripe) {
+      await prisma.subscription.update({
+        where: { id: existingByStripe.id },
+        data: {
+          organizationId: input.organizationId,
+          stripeCustomerId: input.stripeCustomerId,
+          stripeSubscriptionId: input.stripeSubscriptionId,
+          plan: input.plan,
+          billingInterval: input.billingInterval,
+          status: input.status,
+          trialEndsAt: input.trialEndsAt ?? null,
+          currentPeriodEnd: input.currentPeriodEnd ?? null,
+          cancelAtPeriodEnd: Boolean(input.cancelAtPeriodEnd),
+          ...limits,
+        },
+      });
+      return;
+    }
+  }
+  await prisma.subscription.upsert({
+    where: { organizationId: input.organizationId },
+    update: {
+      stripeCustomerId: input.stripeCustomerId,
+      stripeSubscriptionId: input.stripeSubscriptionId,
+      plan: input.plan,
+      billingInterval: input.billingInterval,
+      status: input.status,
+      trialEndsAt: input.trialEndsAt ?? null,
+      currentPeriodEnd: input.currentPeriodEnd ?? null,
+      cancelAtPeriodEnd: Boolean(input.cancelAtPeriodEnd),
+      ...limits,
+    },
+    create: {
+      organizationId: input.organizationId,
+      stripeCustomerId: input.stripeCustomerId,
+      stripeSubscriptionId: input.stripeSubscriptionId,
+      plan: input.plan,
+      billingInterval: input.billingInterval,
+      status: input.status,
+      trialEndsAt: input.trialEndsAt ?? null,
+      currentPeriodEnd: input.currentPeriodEnd ?? null,
+      cancelAtPeriodEnd: Boolean(input.cancelAtPeriodEnd),
+      ...limits,
+    },
+  });
+}
+
 async function ownerEmails(organizationId: string) {
   const members = await prisma.membership.findMany({
-    where: { organizationId, role: { in: ['OWNER', 'ADMIN'] } },
+    where: { organizationId, role: { in: ['OWNER', 'ADMIN'] }, status: 'ACTIVE' },
     include: { user: true },
   });
   return members.map((m) => m.user.email).filter(Boolean);
@@ -79,28 +143,25 @@ export async function POST(req: NextRequest) {
       const organizationId =
         session.metadata?.organizationId || (await findOrganizationIdByCustomer(customerId));
       if (customerId && organizationId) {
+        const stripeSubscriptionId = typeof session.subscription === 'string' ? session.subscription : null;
+        if (stripeSubscriptionId) {
+          const alreadyHandled = await prisma.subscription.findUnique({
+            where: { stripeSubscriptionId },
+            select: { id: true },
+          });
+          if (alreadyHandled) {
+            return NextResponse.json({ ok: true });
+          }
+        }
         const plan = normalizePlan(session.metadata?.plan);
         const interval = normalizeInterval(session.metadata?.interval);
-        const limits = planLimits(plan);
-        await prisma.subscription.upsert({
-          where: { organizationId },
-          update: {
-            stripeCustomerId: customerId,
-            stripeSubscriptionId: typeof session.subscription === 'string' ? session.subscription : null,
-            plan,
-            billingInterval: interval,
-            status: session.subscription ? 'ACTIVE' : 'TRIALING',
-            ...limits,
-          },
-          create: {
-            organizationId,
-            stripeCustomerId: customerId,
-            stripeSubscriptionId: typeof session.subscription === 'string' ? session.subscription : null,
-            plan,
-            billingInterval: interval,
-            status: session.subscription ? 'ACTIVE' : 'TRIALING',
-            ...limits,
-          },
+        await persistSubscription({
+          organizationId,
+          stripeCustomerId: customerId,
+          stripeSubscriptionId,
+          plan,
+          billingInterval: interval,
+          status: session.subscription ? 'ACTIVE' : 'TRIALING',
         });
       }
     }
@@ -114,32 +175,16 @@ export async function POST(req: NextRequest) {
       if (organizationId) {
         const plan = normalizePlan(subscription.metadata?.plan);
         const interval = normalizeInterval(subscription.metadata?.interval);
-        const limits = planLimits(plan);
-        await prisma.subscription.upsert({
-          where: { organizationId },
-          update: {
-            stripeCustomerId: customerId,
-            stripeSubscriptionId: subscription.id,
-            plan,
-            billingInterval: interval,
-            status: statusFromStripe(subscription.status),
-            trialEndsAt: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
-            currentPeriodEnd: currentPeriodEndEpoch > 0 ? new Date(currentPeriodEndEpoch * 1000) : null,
-            cancelAtPeriodEnd: Boolean(subscription.cancel_at_period_end),
-            ...limits,
-          },
-          create: {
-            organizationId,
-            stripeCustomerId: customerId,
-            stripeSubscriptionId: subscription.id,
-            plan,
-            billingInterval: interval,
-            status: statusFromStripe(subscription.status),
-            trialEndsAt: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
-            currentPeriodEnd: currentPeriodEndEpoch > 0 ? new Date(currentPeriodEndEpoch * 1000) : null,
-            cancelAtPeriodEnd: Boolean(subscription.cancel_at_period_end),
-            ...limits,
-          },
+        await persistSubscription({
+          organizationId,
+          stripeCustomerId: customerId,
+          stripeSubscriptionId: subscription.id,
+          plan,
+          billingInterval: interval,
+          status: statusFromStripe(subscription.status),
+          trialEndsAt: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
+          currentPeriodEnd: currentPeriodEndEpoch > 0 ? new Date(currentPeriodEndEpoch * 1000) : null,
+          cancelAtPeriodEnd: Boolean(subscription.cancel_at_period_end),
         });
       }
     }

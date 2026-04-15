@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = schema.parse(await req.json());
     const membership = await prisma.membership.findFirst({
-      where: { userId: session.user.id, organizationId: body.organizationId },
+      where: { userId: session.user.id, organizationId: body.organizationId, status: 'ACTIVE' },
       select: { organizationId: true, role: true },
     });
     if (!membership) {

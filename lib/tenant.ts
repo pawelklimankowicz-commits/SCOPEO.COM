@@ -9,7 +9,10 @@ export async function requireTenantMembership() {
     ((session as any).organizationId as string | undefined) ||
     ((session.user as any).organizationId as string | undefined);
   if (!organizationId) redirect('/login');
-  const membership = await prisma.membership.findFirst({ where: { userId: session.user.id as string, organizationId }, include: { organization: true } });
+  const membership = await prisma.membership.findFirst({
+    where: { userId: session.user.id as string, organizationId, status: 'ACTIVE' },
+    include: { organization: true },
+  });
   if (!membership) redirect('/login');
   return { session, membership, organizationId };
 }

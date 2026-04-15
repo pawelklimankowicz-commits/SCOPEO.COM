@@ -57,22 +57,37 @@ export async function POST(req: Request) {
         where: { id: job.id },
         data: { status: 'IN_PROGRESS', startedAt: new Date(), attemptCount: { increment: 1 } },
       });
-      const profile = await prisma.carbonProfile.findUnique({
-        where: { organizationId: job.organizationId },
+      const defaultConnection = await prisma.ksefConnection.findFirst({
+        where: { organizationId: job.organizationId, isDefault: true },
+        select: { id: true, taxId: true, tokenEncrypted: true },
       });
-      if (!profile?.ksefTokenEncrypted) {
+      const profile = !defaultConnection
+        ? await prisma.carbonProfile.findUnique({
+            where: { organizationId: job.organizationId },
+            select: { taxId: true, ksefTokenEncrypted: true },
+          })
+        : null;
+      const encryptedToken = defaultConnection?.tokenEncrypted || profile?.ksefTokenEncrypted || null;
+      if (!encryptedToken) {
         throw new Error('Missing encrypted KSeF token');
       }
-      const contextNip = profile.taxId?.trim() || process.env.KSEF_CONTEXT_NIP?.trim() || '';
+      const contextNip =
+        defaultConnection?.taxId?.trim() || profile?.taxId?.trim() || process.env.KSEF_CONTEXT_NIP?.trim() || '';
       if (!contextNip) {
-        throw new Error('Missing NIP context for KSeF session (CarbonProfile.taxId)');
+        throw new Error('Missing NIP context for KSeF session (KsefConnection.taxId)');
       }
-      const token = decryptKsefToken(profile.ksefTokenEncrypted);
+      const token = decryptKsefToken(encryptedToken);
       const xmlPayload = await fetchKsefInvoiceXml({
         token,
         referenceNumber: job.referenceNumber,
         contextNip,
       });
+      if (defaultConnection) {
+        await prisma.ksefConnection.update({
+          where: { id: defaultConnection.id },
+          data: { lastUsedAt: new Date() },
+        });
+      }
       const imported = await importKsefXmlForOrganization({
         organizationId: job.organizationId,
         xmlPayload,

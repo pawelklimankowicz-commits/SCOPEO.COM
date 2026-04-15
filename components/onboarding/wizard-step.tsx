@@ -43,7 +43,9 @@ const REPORTING_YEARS = [2023, 2024, 2025, 2026];
 type InviteDraft = { email: string; role: 'ANALYST' | 'REVIEWER' | 'APPROVER' | 'ADMIN' };
 
 async function parseJson(res: Response) {
-  const data = (await res.json().catch(() => null)) as { ok?: boolean; error?: string; redirectTo?: string } | null;
+  const data = (await res.json().catch(() => null)) as
+    | { ok?: boolean; error?: string; redirectTo?: string; requiresSessionRefresh?: boolean }
+    | null;
   if (!res.ok || !data?.ok) {
     throw new Error(data?.error || 'Wystapil blad zapisu');
   }
@@ -64,7 +66,7 @@ export default function OnboardingWizardStep({ step, organizationName, initial }
     setBusy(true);
     setMessage('');
     try {
-      await parseJson(
+      const data = await parseJson(
         await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

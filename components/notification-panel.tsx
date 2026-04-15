@@ -10,6 +10,11 @@ type NotificationItem = {
   createdAt: string;
 };
 
+const TYPE_LABELS: Record<string, string> = {
+  KSEF_LIMIT_WARNING: 'Limit polaczen KSeF',
+  USER_LIMIT_WARNING: 'Limit uzytkownikow',
+};
+
 function relativeTime(date: string) {
   const diffMs = Date.now() - new Date(date).getTime();
   const minutes = Math.max(1, Math.floor(diffMs / 60_000));
@@ -72,7 +77,12 @@ export default function NotificationPanel({
               cursor: 'pointer',
             }}
           >
-            <div style={{ fontWeight: 600 }}>{item.title}</div>
+            <div style={{ fontWeight: 600 }}>
+              {item.title}
+              {TYPE_LABELS[item.type] ? (
+                <span style={{ marginLeft: 6, fontSize: 11, color: '#93c5fd' }}>({TYPE_LABELS[item.type]})</span>
+              ) : null}
+            </div>
             <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>{item.body}</div>
             <div style={{ fontSize: 11, color: '#64748b', marginTop: 6 }}>{relativeTime(item.createdAt)}</div>
           </button>
