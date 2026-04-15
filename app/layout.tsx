@@ -25,7 +25,13 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   await connection();
 
-  const session = await auth();
+  let session: Awaited<ReturnType<typeof auth>> | null = null;
+  try {
+    session = await auth();
+  } catch {
+    // If auth/DB is temporarily unavailable, keep marketing pages renderable.
+    session = null;
+  }
   let serverAnalyticsCookies: boolean | null = null;
   if (session?.user?.id) {
     try {
