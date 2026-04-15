@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prisma validate
+        run: npx prisma validate
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Audit vulnerabilities
+        run: |
+          echo "::group::Remediation hints (npm audit fix --dry-run)"
+          npm audit fix --dry-run || true
+          echo "::endgroup::"
+          npm audit --audit-level=high
+
+  # Applies migrations to an ephemeral Postgres so SQL files are valid and `migrate status` matches.
+  # Production still requires a separate `prisma migrate deploy` (Vercel build does not run it).
+  migrations:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: scopeo
+          POSTGRES_PASSWORD: scopeo
+          POSTGRES_DB: scopeo_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U scopeo -d scopeo_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://scopeo:scopeo@localhost:5432/scopeo_ci
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prisma migrate deploy
+        run: npx prisma migrate deploy
+
+      - name: Prisma migrate status
+        run: npx prisma migrate status
+
+      - name: API health integration (requires migrated DB)
+        run: node --import tsx --test tests/integration/api-health.test.ts
