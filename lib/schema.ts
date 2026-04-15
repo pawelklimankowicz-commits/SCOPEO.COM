@@ -8,6 +8,12 @@ export const registerSchema = z.object({
     .max(128, 'Hasło może mieć maksymalnie 128 znaków.'),
   organizationName: z.string().min(2),
   slug: z.string().min(2).regex(/^[a-z0-9-]+$/),
+  acceptRegulations: z.literal(true, {
+    errorMap: () => ({ message: 'Akceptacja regulaminu jest wymagana.' }),
+  }),
+  acceptPrivacy: z.literal(true, {
+    errorMap: () => ({ message: 'Potwierdzenie polityki prywatnosci jest wymagane.' }),
+  }),
 });
 export const onboardingSchema = z.object({
   companyName: z.string().min(1),

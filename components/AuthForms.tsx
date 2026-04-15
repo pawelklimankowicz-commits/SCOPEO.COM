@@ -32,6 +32,8 @@ export default function AuthForms() {
       password: String(formData.get('password') || ''),
       organizationName: String(formData.get('organizationName') || ''),
       slug: String(formData.get('slug') || ''),
+      acceptRegulations: formData.get('acceptRegulations') === 'on',
+      acceptPrivacy: formData.get('acceptPrivacy') === 'on',
     };
     const res = await fetch('/api/auth/register', {
       method: 'POST',
@@ -121,8 +123,8 @@ export default function AuthForms() {
             <input name="email" type="email" required autoComplete="email" />
           </div>
           <div style={{ marginTop: 12 }}>
-            <label>Hasło (min. 8 znaków)</label>
-            <input name="password" type="password" required minLength={8} autoComplete="new-password" />
+            <label>Hasło (min. 12 znaków)</label>
+            <input name="password" type="password" required minLength={12} autoComplete="new-password" />
           </div>
           <div style={{ marginTop: 12 }}>
             <label>Nazwa organizacji</label>
@@ -132,6 +134,20 @@ export default function AuthForms() {
             <label>Slug organizacji</label>
             <input name="slug" required pattern="[a-z0-9-]+" placeholder="np. moja-firma" />
           </div>
+          <label style={{ display: 'block', marginTop: 12, fontSize: 13 }}>
+            <input name="acceptRegulations" type="checkbox" required /> Akceptuje{' '}
+            <Link href="/regulamin" target="_blank">
+              Regulamin
+            </Link>
+            .
+          </label>
+          <label style={{ display: 'block', marginTop: 8, fontSize: 13 }}>
+            <input name="acceptPrivacy" type="checkbox" required /> Potwierdzam zapoznanie z{' '}
+            <Link href="/polityka-prywatnosci" target="_blank">
+              Polityka prywatnosci
+            </Link>
+            .
+          </label>
           <button className="btn btn-primary" type="submit" style={{ marginTop: 18 }}>
             Utwórz konto i tenant
           </button>

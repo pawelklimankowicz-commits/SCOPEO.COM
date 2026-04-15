@@ -124,15 +124,60 @@ export default function RegulaminPage() {
             umowa nie stanowi inaczej. Nieuregulowanie należności może skutkować ograniczeniem dostępu po
             uprzednim wezwaniu — zgodnie z umową.
           </p>
+          <ul>
+            <li>
+              <strong>Mikro:</strong> 149 PLN netto/mies. lub 119 PLN netto/mies. przy platnosci rocznej
+              (rozliczenie roczne, rabat 20%).
+            </li>
+            <li>
+              <strong>Starter:</strong> 279 PLN netto/mies. lub 223 PLN netto/mies. przy platnosci rocznej.
+            </li>
+            <li>
+              <strong>Growth:</strong> 499 PLN netto/mies. lub 399 PLN netto/mies. przy platnosci rocznej.
+            </li>
+            <li>
+              <strong>Scale:</strong> 849 PLN netto/mies. lub 679 PLN netto/mies. przy platnosci rocznej.
+            </li>
+            <li>
+              <strong>Enterprise:</strong> cena ustalana indywidualnie.
+            </li>
+          </ul>
+          <p>
+            Wszystkie plany obejmuja bezlimitowa liczbe faktur; limity dotycza liczby polaczen KSeF i uzytkownikow
+            zgodnie z cennikiem publikowanym na stronie.
+          </p>
+          <p>
+            Kazdy nowy Klient otrzymuje 7-dniowy bezplatny trial. Po zakonczeniu trialu dalszy dostep wymaga
+            aktywacji subskrypcji.
+          </p>
+          <p>
+            Dostawca korzysta ze zwolnienia z VAT na podstawie art. 113 ustawy o VAT, o ile w danym okresie
+            rozliczeniowym spelnione sa ustawowe przeslanki zwolnienia.
+          </p>
 
-          <h2>§8 Dostępność Usługi</h2>
+          <h2>§8 Odstapienie, zwroty i rezygnacja</h2>
+          <p>
+            Klient moze zrezygnowac z subskrypcji w dowolnym momencie w panelu billing. Rezygnacja powoduje
+            zakonczenie automatycznego odnawiania na koniec biezacego okresu rozliczeniowego.
+          </p>
+          <p>
+            Scopeo stosuje 14-dniowa polityke zwrotu bez podawania przyczyny liczona od daty pierwszej platnosci
+            po trialu. Zwrot realizowany jest na pierwotna metode platnosci.
+          </p>
+          <p>
+            Po 14 dniach od pierwszej platnosci oplaty za rozpoczetty okres rozliczeniowy co do zasady nie
+            podlegaja zwrotowi, z wyjatkiem przypadkow wymaganych przez bezwzglednie obowiazujace przepisy prawa
+            lub indywidualnych ustalen umownych.
+          </p>
+
+          <h2>§9 Dostępność Usługi</h2>
           <p>
             Dostawca dokłada staranności, aby Usługa działała zgodnie z opisem, jednak nie gwarantuje
             nieprzerwanego działania bez przerw serwisowych i prac konserwacyjnych — z wyłączeniem gwarancji
             wynikających z odrębnej umowy SLA.
           </p>
 
-          <h2>§9 Reklamacje</h2>
+          <h2>§10 Reklamacje</h2>
           <p>
             Reklamacje dotyczące działania Usługi można kierować na adres wskazany w{' '}
             <Link href="/kontakt-prawny" className="mkt-link">
@@ -142,7 +187,7 @@ export default function RegulaminPage() {
             dni roboczych od otrzymania kompletnego zgłoszenia.
           </p>
 
-          <h2>§10 Postanowienia końcowe</h2>
+          <h2>§11 Postanowienia końcowe</h2>
           <p>
             Prawem właściwym dla umów z przedsiębiorcami jest prawo polskie. Spory rozstrzygane będą przez sąd
             właściwy dla siedziby Dostawcy, o ile umowa nie stanowi inaczej. Dostawca może zmienić regulamin z
