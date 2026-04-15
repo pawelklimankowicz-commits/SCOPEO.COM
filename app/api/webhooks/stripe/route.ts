@@ -4,6 +4,7 @@ import type Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 import { planLimits } from '@/lib/billing';
 import { stripe } from '@/lib/stripe';
+import { paymentFailedEmail, trialEndingEmail } from '@/lib/email-templates';
 
 function statusFromStripe(status: Stripe.Subscription.Status): 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'TRIALING' {
   if (status === 'trialing') return 'TRIALING';
@@ -38,7 +39,7 @@ async function findOrganizationIdByCustomer(customerId: string): Promise<string 
   return fromMetadata || null;
 }
 
-async function sendBillingEmail(to: string, subject: string, text: string) {
+async function sendBillingEmail(to: string, subject: string, text: string, html?: string) {
   const resendKey = process.env.RESEND_API_KEY;
   if (!resendKey) return;
   const resend = new Resend(resendKey);
@@ -46,6 +47,7 @@ async function sendBillingEmail(to: string, subject: string, text: string) {
     from: process.env.LEADS_FROM_EMAIL ?? 'noreply@scopeo.com',
     to,
     subject,
+    html,
     text,
   });
 }
@@ -112,14 +114,6 @@ async function persistSubscription(input: {
       ...limits,
     },
   });
-}
-
-async function ownerEmails(organizationId: string) {
-  const members = await prisma.membership.findMany({
-    where: { organizationId, role: { in: ['OWNER', 'ADMIN'] }, status: 'ACTIVE' },
-    include: { user: true },
-  });
-  return members.map((m) => m.user.email).filter(Boolean);
 }
 
 export async function POST(req: NextRequest) {
@@ -193,15 +187,18 @@ export async function POST(req: NextRequest) {
       const subscription = event.data.object as Stripe.Subscription;
       const organizationId = await findOrganizationIdByCustomer(String(subscription.customer));
       if (organizationId) {
-        const recipients = await ownerEmails(organizationId);
+        const recipients = await prisma.membership.findMany({
+          where: { organizationId, role: { in: ['OWNER', 'ADMIN'] }, status: 'ACTIVE' },
+          include: { user: true },
+        });
+        const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL ?? '').replace(/\/$/, '');
+        const billingUrl = `${appUrl}/dashboard/settings/billing`;
+        const daysLeft = 3;
         await Promise.all(
-          recipients.map((email) =>
-            sendBillingEmail(
-              email,
-              'Trial Scopeo konczy sie za 3 dni',
-              'Twoj trial Scopeo konczy sie za 3 dni. Dodaj karte platnicza w panelu billing, aby zachowac dostep.'
-            )
-          )
+          recipients.map(({ user }) => {
+            const email = trialEndingEmail(user.name ?? 'zespole', daysLeft, billingUrl);
+            return sendBillingEmail(user.email, email.subject, email.text, email.html);
+          })
         );
       }
     }
@@ -220,15 +217,17 @@ export async function POST(req: NextRequest) {
           where: { organizationId },
           data: { status: 'PAST_DUE' },
         });
-        const recipients = await ownerEmails(organizationId);
+        const recipients = await prisma.membership.findMany({
+          where: { organizationId, role: { in: ['OWNER', 'ADMIN'] }, status: 'ACTIVE' },
+          include: { user: true },
+        });
+        const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL ?? '').replace(/\/$/, '');
+        const portalUrl = `${appUrl}/dashboard/settings/billing`;
         await Promise.all(
-          recipients.map((email) =>
-            sendBillingEmail(
-              email,
-              'Platnosc za Scopeo nie powiodla sie',
-              'Nie udalo sie pobrac platnosci za subskrypcje Scopeo. Zaktualizuj metode platnosci w portalu billing.'
-            )
-          )
+          recipients.map(({ user }) => {
+            const email = paymentFailedEmail(user.name ?? 'zespole', portalUrl);
+            return sendBillingEmail(user.email, email.subject, email.text, email.html);
+          })
         );
       }
     }

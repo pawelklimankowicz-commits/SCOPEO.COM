@@ -7,6 +7,7 @@ import { checkRateLimit, getClientIp } from '@/lib/security';
 import { BCRYPT_SALT_ROUNDS } from '@/lib/password-hash';
 import { Resend } from 'resend';
 import crypto from 'crypto';
+import { verificationEmail } from '@/lib/email-templates';
 
 export async function POST(req: NextRequest) {
   try {
@@ -62,13 +63,15 @@ export async function POST(req: NextRequest) {
     });
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL ?? '').replace(/\/$/, '');
     const verifyUrl = `${appUrl}/api/auth/verify-email?token=${encodeURIComponent(rawToken)}`;
+    const email = verificationEmail(parsed.name, verifyUrl);
     const resend = new Resend(process.env.RESEND_API_KEY);
     void resend.emails
       .send({
         from: process.env.LEADS_FROM_EMAIL ?? 'noreply@scopeo.com',
         to: parsed.email.toLowerCase(),
-        subject: 'Potwierdź adres email — Scopeo',
-        text: `Witaj ${parsed.name},\n\nAby dokończyć rejestrację, potwierdź swój adres email:\n\n${verifyUrl}\n\nLink ważny przez 24 godziny.`,
+        subject: email.subject,
+        html: email.html,
+        text: email.text,
       })
       .catch(console.error);
     return NextResponse.json({ ok: true, userId: user.id });
