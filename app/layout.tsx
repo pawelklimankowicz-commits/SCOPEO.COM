@@ -28,11 +28,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const session = await auth();
   let serverAnalyticsCookies: boolean | null = null;
   if (session?.user?.id) {
-    const row = await prisma.userConsent.findUnique({
-      where: { userId: session.user.id },
-    });
-    if (row?.consentVersion === COOKIE_CONSENT_VERSION) {
-      serverAnalyticsCookies = row.analyticsCookies;
+    try {
+      const row = await prisma.userConsent.findUnique({
+        where: { userId: session.user.id },
+      });
+      if (row?.consentVersion === COOKIE_CONSENT_VERSION) {
+        serverAnalyticsCookies = row.analyticsCookies;
+      }
+    } catch {
+      /* Brak migracji / chwilowy błąd DB — baner pokaże się po stronie klienta, aplikacja ma działać. */
+      serverAnalyticsCookies = null;
     }
   }
 

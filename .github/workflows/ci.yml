@@ -23,6 +23,9 @@ jobs:
 
       - name: Prisma validate
         run: npx prisma validate
+        env:
+          # Schema uses env("DATABASE_URL"); validate only parses config (no TCP). Not set globally so integration tests skip DB without a real server.
+          DATABASE_URL: postgresql://scopeo:scopeo@127.0.0.1:5432/ci_placeholder
 
       - name: Type check
         run: npx tsc --noEmit
