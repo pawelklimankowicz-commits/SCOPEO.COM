@@ -19,7 +19,7 @@ export function middleware(request: NextRequest) {
     `media-src 'self' https://*.public.blob.vercel-storage.com`,
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ''}`,
     "style-src 'self' 'unsafe-inline'",
-    `connect-src 'self' https:`,
+    `connect-src 'self' https://o*.ingest.sentry.io https://*.sentry.io`,
     `frame-ancestors 'none'`,
     `base-uri 'self'`,
     `form-action 'self'`,

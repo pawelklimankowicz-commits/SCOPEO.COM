@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { writeProcessingRecord } from '@/lib/privacy-register';
+import { checkRateLimit } from '@/lib/security';
 
 const createRequestSchema = z.object({
   subjectEmail: z.string().email(),
@@ -33,7 +34,18 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   const organizationId = (session.user as any).organizationId as string;
+  const userId = session.user.id as string;
   const role = (session.user as any).role as string | null | undefined;
+  const rateLimit = await checkRateLimit(
+    `gdpr-request:organizationId:${organizationId}:userId:${userId}`,
+    { windowMs: 60 * 60 * 1000, maxRequests: 5 }
+  );
+  if (!rateLimit.ok) {
+    return NextResponse.json(
+      { ok: false, error: 'Too many GDPR requests' },
+      { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfterSec) } }
+    );
+  }
 
   const body = await req.json();
   const parsed = createRequestSchema.parse(body);

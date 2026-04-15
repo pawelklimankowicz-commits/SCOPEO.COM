@@ -1,5 +1,14 @@
 import { z } from 'zod';
-export const registerSchema = z.object({ name: z.string().min(2), email: z.string().email(), password: z.string().min(8), organizationName: z.string().min(2), slug: z.string().min(2).regex(/^[a-z0-9-]+$/) });
+export const registerSchema = z.object({
+  name: z.string().min(2),
+  email: z.string().email(),
+  password: z
+    .string()
+    .min(12, 'Hasło musi mieć co najmniej 12 znaków.')
+    .max(128, 'Hasło może mieć maksymalnie 128 znaków.'),
+  organizationName: z.string().min(2),
+  slug: z.string().min(2).regex(/^[a-z0-9-]+$/),
+});
 export const onboardingSchema = z.object({ companyName: z.string().min(1), reportingYear: z.number().int().min(2020), baseYear: z.number().int().min(2020), boundaryApproach: z.enum(['operational_control', 'financial_control', 'equity_share']), industry: z.string().min(1), ksefToken: z.string().min(10), supportsMarketBased: z.boolean(), hasGreenContracts: z.boolean(), businessTravelIncluded: z.boolean(), employeeCommutingIncluded: z.boolean(), notes: z.string().optional().nullable() });
 export const importInvoicesSchema = z
   .object({

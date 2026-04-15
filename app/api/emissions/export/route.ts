@@ -3,7 +3,10 @@ import { auth } from '@/lib/auth';
 import { calculateOrganizationEmissions } from '@/lib/emissions';
 import { checkRateLimit, getClientIp } from '@/lib/security';
 import ExcelJS from 'exceljs';
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import * as fontkit from '@pdf-lib/fontkit';
+import { PDFDocument, rgb } from 'pdf-lib';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
 function toCsv(result: Awaited<ReturnType<typeof calculateOrganizationEmissions>>) {
   const headers = [
@@ -40,8 +43,12 @@ async function toXlsx(result: Awaited<ReturnType<typeof calculateOrganizationEmi
 async function toPdf(result: Awaited<ReturnType<typeof calculateOrganizationEmissions>>) {
   const rows = result.calculations;
   const pdfDoc = await PDFDocument.create();
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  pdfDoc.registerFontkit(fontkit);
+  const fontBytes = await fs.readFile(
+    path.join(process.cwd(), 'assets', 'fonts', 'NotoSans-Regular.ttf')
+  );
+  const font = await pdfDoc.embedFont(fontBytes, { subset: true });
+  const boldFont = font;
 
   const PAGE_HEIGHT = 841.89; // A4
   const PAGE_WIDTH = 595.28;
@@ -137,12 +144,23 @@ export async function GET(req: NextRequest) {
     );
   }
   const format = (req.nextUrl.searchParams.get('format') ?? 'csv').toLowerCase();
+  const requestedMaxLines = Number(req.nextUrl.searchParams.get('maxLines'));
+  const exportMaxLines =
+    Number.isFinite(requestedMaxLines) && requestedMaxLines > 0
+      ? Math.min(Math.floor(requestedMaxLines), 10000)
+      : 10000;
   const reportYear = Number(req.nextUrl.searchParams.get('year'));
   const validReportYear =
     Number.isFinite(reportYear) && reportYear >= 2000 && reportYear <= 2100 ? reportYear : undefined;
   const result = await calculateOrganizationEmissions(organizationId, validReportYear, {
     persist: false,
+    maxLines: exportMaxLines,
   });
+  const exportMetaHeaders = {
+    'X-Export-Max-Lines': String(result.maxLines ?? exportMaxLines),
+    'X-Export-Line-Count': String(result.lineCount ?? result.calculations.length),
+    'X-Export-Truncated': String(Boolean(result.truncated)),
+  };
 
   if (format === 'xlsx') {
     const file = await toXlsx(result);
@@ -151,6 +169,7 @@ export async function GET(req: NextRequest) {
         'Content-Type':
           'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'Content-Disposition': 'attachment; filename="emissions.xlsx"',
+        ...exportMetaHeaders,
       },
     });
   }
@@ -161,6 +180,7 @@ export async function GET(req: NextRequest) {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="emissions.pdf"',
+        ...exportMetaHeaders,
       },
     });
   }
@@ -170,6 +190,7 @@ export async function GET(req: NextRequest) {
     headers: {
       'Content-Type': 'text/csv; charset=utf-8',
       'Content-Disposition': 'attachment; filename="emissions.csv"',
+      ...exportMetaHeaders,
     },
   });
 }

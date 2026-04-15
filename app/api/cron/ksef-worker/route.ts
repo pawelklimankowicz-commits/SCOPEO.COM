@@ -21,10 +21,11 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
 
-  const workerUrl = new URL(
-    '/api/ksef/jobs/process',
-    process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
-  );
+  const workerBaseUrl =
+    process.env.INTERNAL_WORKER_URL?.trim() ||
+    process.env.NEXTAUTH_URL?.trim() ||
+    'http://localhost:3000';
+  const workerUrl = new URL('/api/ksef/jobs/process', workerBaseUrl);
 
   const timeoutMs = getKsefCronInnerFetchTimeoutMs();
   const controller = new AbortController();

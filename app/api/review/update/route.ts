@@ -65,28 +65,39 @@ export async function POST(req: NextRequest) {
     const fromEmail = process.env.LEADS_FROM_EMAIL;
     if (resendKey && workflowRecipient && fromEmail) {
       const resend = new Resend(resendKey);
-      const emailResult = await resend.emails.send({
-        from: fromEmail,
-        to: workflowRecipient,
-        subject: `Scopeo review: ${before.status} -> ${after.status}`,
-        text: [
-          `Organization ID: ${organizationId}`,
-          `Line ID: ${line.id}`,
-          `Description: ${line.description}`,
-          `Action: ${reviewActionFromStatus(parsed.status as any)}`,
-          `From status: ${before.status}`,
-          `To status: ${after.status}`,
-          `Comment: ${parsed.comment ?? '-'}`,
-        ].join('\n'),
-      });
-      if (emailResult.error) {
-        logger.warn({
-          context: 'review_update',
-          message: 'Workflow email send failed',
-          organizationId,
-          error: emailResult.error.message,
+      void resend.emails
+        .send({
+          from: fromEmail,
+          to: workflowRecipient,
+          subject: `Scopeo review: ${before.status} -> ${after.status}`,
+          text: [
+            `Organization ID: ${organizationId}`,
+            `Line ID: ${line.id}`,
+            `Description: ${line.description}`,
+            `Action: ${reviewActionFromStatus(parsed.status as any)}`,
+            `From status: ${before.status}`,
+            `To status: ${after.status}`,
+            `Comment: ${parsed.comment ?? '-'}`,
+          ].join('\n'),
+        })
+        .then((emailResult) => {
+          if (emailResult.error) {
+            logger.warn({
+              context: 'review_update',
+              message: 'Workflow email send failed',
+              organizationId,
+              error: emailResult.error.message,
+            });
+          }
+        })
+        .catch((sendError) => {
+          logger.warn({
+            context: 'review_update',
+            message: 'Workflow email send threw error',
+            organizationId,
+            error: sendError instanceof Error ? sendError.message : 'Unknown resend error',
+          });
         });
-      }
     }
     logger.info({ context: 'review_update', message: 'Review updated', organizationId, lineId: line.id });
     return NextResponse.json({ ok: true, line: updatedLine, decision: updatedDecision, diff });

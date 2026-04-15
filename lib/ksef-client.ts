@@ -14,13 +14,15 @@ export async function fetchKsefInvoiceXml(input: {
   if (!baseUrl) {
     throw new Error('KSEF_API_BASE_URL is missing');
   }
-  const initUrl = `${baseUrl}/online/Session/InitSigned`;
+  const initUrl = `${baseUrl}/online/Session/InitToken`;
   const invoiceUrl = `${baseUrl}/online/Invoice/KSeF?ksefReferenceNumber=${encodeURIComponent(
     input.referenceNumber
   )}`;
   const terminateUrl = `${baseUrl}/online/Session/Terminate`;
-  const maxAttempts = Number(process.env.KSEF_FETCH_MAX_ATTEMPTS ?? '4');
-  const timeoutMs = Number(process.env.KSEF_FETCH_TIMEOUT_MS ?? '15000');
+  // Keep single-job runtime bounded so worker can process multiple jobs within ~52s budget.
+  const maxAttempts = Number(process.env.KSEF_FETCH_MAX_ATTEMPTS ?? '2');
+  const timeoutMs = Number(process.env.KSEF_FETCH_TIMEOUT_MS ?? '10000');
+  const contextNip = (process.env.KSEF_CONTEXT_NIP || '9462761086').trim();
   let lastError: Error | null = null;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
@@ -30,28 +32,35 @@ export async function fetchKsefInvoiceXml(input: {
       const sessionInitRes = await fetch(initUrl, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${input.token}`,
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: JSON.stringify({}),
+        body: JSON.stringify({
+          authToken: input.token,
+          contextIdentifier: {
+            type: 'onip',
+            identifier: contextNip,
+          },
+        }),
         cache: 'no-store',
         signal: abortController.signal,
       });
       if (!sessionInitRes.ok) {
-        throw new Error(`KSeF session init failed with status ${sessionInitRes.status}`);
+        throw new Error(`KSeF InitToken failed with status ${sessionInitRes.status}`);
       }
       const sessionPayload = (await sessionInitRes.json().catch(() => ({}))) as Record<string, any>;
       const sessionToken =
-        sessionPayload.sessionToken ||
-        sessionPayload.referenceNumber ||
-        sessionPayload.token ||
-        input.token;
+        (typeof sessionPayload.sessionToken === 'string'
+          ? sessionPayload.sessionToken
+          : sessionPayload.sessionToken?.token) || sessionPayload.token;
+      if (!sessionToken) {
+        throw new Error('KSeF InitToken response did not contain sessionToken');
+      }
 
       const response = await fetch(invoiceUrl, {
         method: 'GET',
         headers: {
-          Authorization: `Bearer ${sessionToken}`,
+          SessionToken: sessionToken,
           Accept: 'application/xml, text/xml, application/octet-stream',
         },
         cache: 'no-store',
@@ -87,7 +96,7 @@ export async function fetchKsefInvoiceXml(input: {
       await fetch(terminateUrl, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${sessionToken}`,
+          SessionToken: sessionToken,
           Accept: 'application/json',
         },
         cache: 'no-store',

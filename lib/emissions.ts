@@ -47,8 +47,23 @@ function emissionPersistFingerprint(
 export async function calculateOrganizationEmissions(
   organizationId: string,
   reportYear?: number,
-  options: { persist?: boolean } = { persist: false }
+  options: { persist?: boolean; maxLines?: number; pageSize?: number } = { persist: false }
 ) {
+  const maxLines = Math.max(
+    1,
+    Math.min(
+      Math.floor(
+        Number(
+          options.maxLines ??
+            process.env.EMISSIONS_MAX_LINES ??
+            // Safety default for API responses/exports.
+            '10000'
+        )
+      ) || 10000,
+      10000
+    )
+  );
+  const pageSize = Math.max(100, Math.min(Math.floor(Number(options.pageSize) || 1000), 5000));
   const dateFilter =
     reportYear && Number.isInteger(reportYear)
       ? {
@@ -56,7 +71,37 @@ export async function calculateOrganizationEmissions(
           lt: new Date(`${reportYear + 1}-01-01T00:00:00.000Z`),
         }
       : undefined;
-  const lines = await prisma.invoiceLine.findMany({ where: { invoice: { organizationId, ...(dateFilter ? { issueDate: dateFilter } : {}) } }, include: { emissionFactor: { include: { emissionSource: true } }, mappingDecision: true, invoice: true } });
+  const lines: any[] = [];
+  let cursorId: string | null = null;
+  while (lines.length < maxLines) {
+    const remaining = maxLines - lines.length;
+    const batch: any[] = await prisma.invoiceLine.findMany({
+      where: { invoice: { organizationId, ...(dateFilter ? { issueDate: dateFilter } : {}) } },
+      include: {
+        emissionFactor: { include: { emissionSource: true } },
+        mappingDecision: true,
+        invoice: true,
+      },
+      orderBy: { id: 'asc' },
+      ...(cursorId ? { cursor: { id: cursorId }, skip: 1 } : {}),
+      take: Math.min(pageSize, remaining),
+    });
+    if (batch.length === 0) break;
+    lines.push(...batch);
+    cursorId = batch[batch.length - 1]?.id ?? null;
+    if (batch.length < Math.min(pageSize, remaining)) break;
+  }
+
+  const truncated =
+    lines.length === maxLines &&
+    Boolean(
+      await prisma.invoiceLine.findFirst({
+        where: { invoice: { organizationId, ...(dateFilter ? { issueDate: dateFilter } : {}) } },
+        orderBy: { id: 'asc' },
+        ...(cursorId ? { cursor: { id: cursorId }, skip: 1 } : {}),
+        select: { id: true },
+      })
+    );
   const overrideFactorIds = Array.from(
     new Set(lines.map((line) => line.overrideFactorId).filter((id): id is string => Boolean(id)))
   );
@@ -147,6 +192,9 @@ export async function calculateOrganizationEmissions(
     totalKg,
     byCategory,
     calculations,
+    lineCount: lines.length,
+    maxLines,
+    truncated,
     reportYear: reportYear ?? null,
     snapshot,
   };

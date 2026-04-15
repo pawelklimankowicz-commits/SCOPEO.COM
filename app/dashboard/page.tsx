@@ -21,32 +21,63 @@ export default async function DashboardPage({
   const yearParam = Number(params?.year ?? '');
   const selectedYear = Number.isFinite(yearParam) && yearParam >= 2000 && yearParam <= 2100 ? yearParam : undefined;
   const skip = (page - 1) * invoicePageSize;
-  const profile = await prisma.carbonProfile.findUnique({ where: { organizationId } });
-  const org = await prisma.organization.findUnique({ where: { id: organizationId } });
   const issueDateFilter = selectedYear
     ? {
         gte: new Date(`${selectedYear}-01-01T00:00:00.000Z`),
         lt: new Date(`${selectedYear + 1}-01-01T00:00:00.000Z`),
       }
     : undefined;
-  const invoicesTotal = await prisma.invoice.count({
-    where: { organizationId, ...(issueDateFilter ? { issueDate: issueDateFilter } : {}) },
-  });
-  const invoices = await prisma.invoice.findMany({
-    where: { organizationId, ...(issueDateFilter ? { issueDate: issueDateFilter } : {}) },
-    include: {
-      supplier: true,
-      lines: {
-        include: {
-          emissionFactor: { include: { emissionSource: true } },
-          mappingDecision: true,
+  const [
+    profile,
+    org,
+    invoicesTotal,
+    invoices,
+    factorCount,
+    sources,
+    importRuns,
+    history,
+    latestCalculation,
+  ] = await Promise.all([
+    prisma.carbonProfile.findUnique({ where: { organizationId } }),
+    prisma.organization.findUnique({ where: { id: organizationId } }),
+    prisma.invoice.count({
+      where: { organizationId, ...(issueDateFilter ? { issueDate: issueDateFilter } : {}) },
+    }),
+    prisma.invoice.findMany({
+      where: { organizationId, ...(issueDateFilter ? { issueDate: issueDateFilter } : {}) },
+      include: {
+        supplier: true,
+        lines: {
+          include: {
+            emissionFactor: { include: { emissionSource: true } },
+            mappingDecision: true,
+          },
         },
       },
-    },
-    orderBy: { issueDate: 'desc' },
-    skip,
-    take: invoicePageSize,
-  });
+      orderBy: { issueDate: 'desc' },
+      skip,
+      take: invoicePageSize,
+    }),
+    prisma.emissionFactor.count({ where: { organizationId } }),
+    prisma.emissionSource.findMany({
+      where: { organizationId },
+      orderBy: { code: 'asc' },
+    }),
+    prisma.factorImportRun.findMany({
+      where: { organizationId },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+    }),
+    prisma.reviewEvent.findMany({
+      where: { organizationId },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    }),
+    prisma.emissionCalculation.findFirst({
+      where: { organizationId },
+      orderBy: { createdAt: 'desc' },
+    }),
+  ]);
   const lines = invoices.flatMap((i) => i.lines);
   const emissionMap = new Map<string, { categoryCode: string; scope: string; totalCo2eKg: number }>();
   for (const line of lines) {
@@ -70,7 +101,6 @@ export default async function DashboardPage({
   }
   const emissions = Array.from(emissionMap.values());
   const totalPages = Math.max(1, Math.ceil(invoicesTotal / invoicePageSize));
-  const factorCount = await prisma.emissionFactor.count({ where: { organizationId } });
   const lineCategoryCodes = [
     ...new Set(lines.map((l) => l.overrideCategoryCode ?? l.categoryCode).filter(Boolean)),
   ];
@@ -83,24 +113,6 @@ export default async function DashboardPage({
     include: { emissionSource: true },
     orderBy: [{ regionPriority: 'asc' }, { year: 'desc' }],
     take: 200,
-  });
-  const sources = await prisma.emissionSource.findMany({
-    where: { organizationId },
-    orderBy: { code: 'asc' },
-  });
-  const importRuns = await prisma.factorImportRun.findMany({
-    where: { organizationId },
-    orderBy: { createdAt: 'desc' },
-    take: 20,
-  });
-  const history = await prisma.reviewEvent.findMany({
-    where: { organizationId },
-    orderBy: { createdAt: 'desc' },
-    take: 50,
-  });
-  const latestCalculation = await prisma.emissionCalculation.findFirst({
-    where: { organizationId },
-    orderBy: { createdAt: 'desc' },
   });
 
   const email = (session.user as { email?: string | null }).email;
@@ -276,20 +288,38 @@ export default async function DashboardPage({
         ) : null}
       </div>
       <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
-        <Link
-          className="btn btn-secondary"
-          href={`/dashboard?page=${Math.max(1, page - 1)}${selectedYear ? `&year=${selectedYear}` : ''}`}
-          aria-disabled={page <= 1}
-        >
-          Poprzednia strona
-        </Link>
-        <Link
-          className="btn btn-secondary"
-          href={`/dashboard?page=${Math.min(totalPages, page + 1)}${selectedYear ? `&year=${selectedYear}` : ''}`}
-          aria-disabled={page >= totalPages}
-        >
-          Następna strona
-        </Link>
+        {page <= 1 ? (
+          <span
+            className="btn btn-secondary"
+            aria-disabled="true"
+            style={{ opacity: 0.55, cursor: 'not-allowed' }}
+          >
+            Poprzednia strona
+          </span>
+        ) : (
+          <Link
+            className="btn btn-secondary"
+            href={`/dashboard?page=${Math.max(1, page - 1)}${selectedYear ? `&year=${selectedYear}` : ''}`}
+          >
+            Poprzednia strona
+          </Link>
+        )}
+        {page >= totalPages ? (
+          <span
+            className="btn btn-secondary"
+            aria-disabled="true"
+            style={{ opacity: 0.55, cursor: 'not-allowed' }}
+          >
+            Następna strona
+          </span>
+        ) : (
+          <Link
+            className="btn btn-secondary"
+            href={`/dashboard?page=${Math.min(totalPages, page + 1)}${selectedYear ? `&year=${selectedYear}` : ''}`}
+          >
+            Następna strona
+          </Link>
+        )}
       </div>
 
       <div className="card section" style={{ marginTop: 24 }}>

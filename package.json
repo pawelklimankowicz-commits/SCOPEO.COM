@@ -22,6 +22,7 @@
     "repair": "rm -rf node_modules .next && npm cache clean --force && npm install"
   },
   "dependencies": {
+    "@pdf-lib/fontkit": "^1.1.1",
     "@prisma/client": "6.6.0",
     "@sentry/nextjs": "^10.48.0",
     "@swc/helpers": "0.5.17",

@@ -21,6 +21,9 @@ export type KobizeFactorsFile = {
   factors: KobizeFactorRow[];
 };
 
+/** Memoized cache to avoid repeated disk reads in a single process. */
+let cachedFile: KobizeFactorsFile | null = null;
+
 /** Parsed factor row compatible with `lib/factor-import` `ParsedFactor`. */
 export type KobizeParsedFactor = {
   code: string;
@@ -38,11 +41,22 @@ export type KobizeParsedFactor = {
 };
 
 export function loadKobizeFactorsFile(): KobizeFactorsFile {
+  if (cachedFile) return cachedFile;
   const customPath = process.env.KOBIZE_FACTORS_JSON_PATH?.trim();
   const defaultPath = path.join(process.cwd(), 'data', 'kobize-pl-factors.json');
   const filePath = customPath || defaultPath;
-  const raw = fs.readFileSync(filePath, 'utf8');
-  return JSON.parse(raw) as KobizeFactorsFile;
+  try {
+    const raw = fs.readFileSync(filePath, 'utf8');
+    cachedFile = JSON.parse(raw) as KobizeFactorsFile;
+    return cachedFile;
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === 'ENOENT') {
+      // Graceful degradation: allow import pipeline to continue even if local overlay is missing.
+      return { schemaVersion: 1, factors: [] };
+    }
+    throw error;
+  }
 }
 
 /**

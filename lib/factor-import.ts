@@ -1,4 +1,5 @@
 import ExcelJS from 'exceljs';
+import { Prisma } from '@prisma/client';
 import type { EmissionFactor, EmissionSource } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { buildKobizeParsedFactors } from '@/lib/kobize-pl-factors';
@@ -227,9 +228,64 @@ async function upsertSource(organizationId: string, source: any) {
   return prisma.emissionSource.upsert({ where: { organizationId_code_version: { organizationId, code: source.code, version: source.version } }, update: source, create: { organizationId, ...source } });
 }
 async function persistFactors(organizationId: string, emissionSourceId: string, factors: ParsedFactor[]) {
-  let count = 0;
-  for (const f of factors) { await prisma.emissionFactor.upsert({ where: { organizationId_code_year: { organizationId, code: f.code, year: f.year } }, update: { ...f, emissionSourceId }, create: { organizationId, emissionSourceId, ...f } }); count += 1; }
-  return count;
+  if (factors.length === 0) return 0;
+  const chunkSize = 300;
+  for (let i = 0; i < factors.length; i += chunkSize) {
+    const chunk = factors.slice(i, i + chunkSize);
+    const values = chunk.map((f) => {
+      const metadataJson = JSON.stringify(f.metadataJson ?? null);
+      return Prisma.sql`(
+        ${organizationId},
+        ${emissionSourceId},
+        ${f.code},
+        ${f.name},
+        ${f.scope},
+        ${f.categoryCode},
+        ${f.factorValue},
+        ${f.factorUnit},
+        ${f.region},
+        ${f.regionPriority},
+        ${f.activityKind ?? null},
+        ${f.year},
+        ${f.tags ?? null},
+        CAST(${metadataJson} AS jsonb)
+      )`;
+    });
+
+    await prisma.$executeRaw(Prisma.sql`
+      INSERT INTO "EmissionFactor" (
+        "organizationId",
+        "emissionSourceId",
+        "code",
+        "name",
+        "scope",
+        "categoryCode",
+        "factorValue",
+        "factorUnit",
+        "region",
+        "regionPriority",
+        "activityKind",
+        "year",
+        "tags",
+        "metadataJson"
+      )
+      VALUES ${Prisma.join(values)}
+      ON CONFLICT ("organizationId", "code", "year")
+      DO UPDATE SET
+        "emissionSourceId" = EXCLUDED."emissionSourceId",
+        "name" = EXCLUDED."name",
+        "scope" = EXCLUDED."scope",
+        "categoryCode" = EXCLUDED."categoryCode",
+        "factorValue" = EXCLUDED."factorValue",
+        "factorUnit" = EXCLUDED."factorUnit",
+        "region" = EXCLUDED."region",
+        "regionPriority" = EXCLUDED."regionPriority",
+        "activityKind" = EXCLUDED."activityKind",
+        "tags" = EXCLUDED."tags",
+        "metadataJson" = EXCLUDED."metadataJson"
+    `);
+  }
+  return factors.length;
 }
 
 export async function importExternalFactors(organizationId: string, actorUserId?: string | null) {
