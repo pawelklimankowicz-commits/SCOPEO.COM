@@ -21,22 +21,22 @@ const steps = [
   {
     title: 'Mapowanie do Scope 1, 2 i 3',
     body:
-      'System automatycznie przypisuje każdą linię faktury do kategorii emisji (Scope 1 — paliwa, Scope 2 — energia, Scope 3 — zakupione usługi, transport, odpady itd.) na podstawie współczynników KOBiZE. Pewność przypisania jest widoczna — pozycje z niskim confidence trafiają do review.',
+      'System automatycznie przypisuje każdą linię faktury do kategorii emisji (Scope 1 — paliwa, Scope 2 — energia, Scope 3 — zakupione usługi, transport, odpady itd.) na podstawie współczynników KOBiZE. Poziom pewności przypisania jest widoczny w aplikacji — pozycje wątpliwe trafiają do kolejki weryfikacji.',
   },
   {
     title: 'Workflow akceptacji',
     body:
-      'Linie przypisane automatycznie z niską pewnością, lub te wymagające weryfikacji, trafiają do kolejki review. Analityk sprawdza przypisanie, może je zmienić i dodać uzasadnienie. Każda decyzja jest zapisywana z datą i użytkownikiem.',
+      'Linie przypisane automatycznie z niską pewnością lub wymagające weryfikacji trafiają do kolejki akceptacji. Analityk sprawdza przypisanie, może je zmienić i dodać uzasadnienie. Każda decyzja jest zapisywana z datą i użytkownikiem.',
   },
   {
     title: 'Override i korekty z kontrolą',
     body:
-      'Zmiana kategorii emisji lub współczynnika jest zawsze rejestrowana jako świadoma decyzja — z polem na komentarz i statusem "overridden". Audytor widzi co zmieniono, przez kogo i dlaczego. Nie ma cichych poprawek.',
+      'Zmiana kategorii emisji lub współczynnika jest zawsze rejestrowana jako świadoma decyzja — z polem na komentarz i statusem nadpisania (override). Audytor widzi, co zmieniono, przez kogo i dlaczego. Nie ma cichych poprawek.',
   },
   {
     title: 'Raport i eksport',
     body:
-      'Dashboard pokazuje agregaty Scope 1–3 z podziałem na kategorie i trendy. Z jednego miejsca generujesz raport PDF (GHG Protocol), eksport CSV lub plik XML zgodny z CSRD/ESRS. Każdy eksport ma timestamp i informację o zakresie danych.',
+      'Dashboard pokazuje agregaty Scope 1–3 z podziałem na kategorie i trendy. Z jednego miejsca generujesz raport PDF (GHG Protocol), eksport CSV lub plik XML zgodny z CSRD/ESRS. Każdy eksport ma znacznik czasu i informację o zakresie danych.',
   },
 ];
 
@@ -96,7 +96,7 @@ export default function JakDzialaPage() {
               },
               {
                 q: 'Co się dzieje z fakturami, których nie da się automatycznie przypisać?',
-                a: 'Trafiają do kolejki review z oznaczeniem niskiej pewności. Analityk może ręcznie przypisać kategorię, dodać uzasadnienie i oznaczyć pozycję jako zweryfikowaną. Wszystko jest zapisywane w audit trail.',
+                a: 'Trafiają do kolejki akceptacji z oznaczeniem niskiej pewności. Analityk może ręcznie przypisać kategorię, dodać uzasadnienie i oznaczyć pozycję jako zweryfikowaną. Wszystko jest zapisywane w audit trail.',
               },
               {
                 q: 'Czy mogę zmienić przypisanie kategorii po akceptacji?',

@@ -6,7 +6,7 @@ import PricingTable from '@/components/marketing/PricingTable';
 export const metadata: Metadata = {
   title: 'Cennik — Scopeo',
   description:
-    'Plany Micro, Starter, Growth, Scale, Plus i Enterprise. Rozliczenie miesięczne lub roczne z 10% rabatem.',
+    'Plany Mikro, Starter, Growth, Scale i Enterprise. Rozliczenie miesięcznie lub rocznie (−10%). Bez limitu faktur — limity wg połączeń KSeF i użytkowników. 7-dniowy trial.',
 };
 
 export default function CennikPage() {
@@ -15,10 +15,11 @@ export default function CennikPage() {
       <div className="mkt-page-head mkt-page-head--dark">
         <div className="mkt-inner">
           <p className="mkt-kicker mkt-kicker--on-dark">Cennik</p>
-          <h1>Proste plany według wolumenu faktur</h1>
+          <h1>Proste plany — bez limitu faktur</h1>
           <p>
-            Opłata zależy od liczby faktur miesięcznie. Przełącz rozliczenie roczne, aby uzyskać 10%
-            rabatu względem sumy miesięcznej.
+            Płacisz za liczbę połączeń KSeF i użytkowników w organizacji, a nie za wolumen faktur.
+            Przy jednorazowej opłacie za 12 miesięcy otrzymujesz rabat 10%. Każdy plan obejmuje
+            7-dniowy bezpłatny trial (bez karty kredytowej).
           </p>
         </div>
       </div>
@@ -44,20 +45,20 @@ export default function CennikPage() {
           <div>
             {[
               {
-                q: 'Co się dzieje po przekroczeniu limitu faktur?',
-                a: 'Informujemy o przekroczeniu i proponujemy wyższy plan lub pakiet Enterprise — szczegóły w umowie.',
+                q: 'Czy jest limit faktur?',
+                a: 'Nie — liczba faktur z KSeF nie wpływa na cenę. Limity dotyczą wyłącznie połączeń KSeF i liczby aktywnych użytkowników w planie.',
               },
               {
-                q: 'Czy jest okres próbny?',
-                a: 'Decyzja commercial — typowo demo i pilotaż zamiast „anonimowego trial” przy danych KSeF.',
+                q: 'Jak działa trial?',
+                a: 'Po rejestracji masz 7 dni bezpłatnego dostępu do funkcji wybranego planu. Nie potrzebujesz karty kredytowej, aby rozpocząć.',
               },
               {
                 q: 'Czy cena obejmuje wdrożenie?',
-                a: 'Wdrożenie i szkolenia mogą być wycenione osobno w zależności od skali.',
+                a: 'Standardowo płacisz za subskrypcję SaaS. Szkolenie zespołu lub wdrożenie pod dużą skalę (np. grupa spółek) możemy wycenić osobno — napisz na kontakt.',
               },
               {
                 q: 'Waluta i VAT',
-                a: 'Ceny netto w PLN; faktura VAT zgodnie z prawem.',
+                a: 'Ceny na stronie są podane netto w PLN. Dokument sprzedaży i status VAT zależą od Twojej sytuacji podatkowej i rozliczenia ze Stripe — szczegóły w regulaminie.',
               },
             ].map((x) => (
               <div key={x.q} className="mkt-faq-item">
@@ -66,8 +67,11 @@ export default function CennikPage() {
               </div>
             ))}
           </div>
-          <p style={{ marginTop: 24 }}>
-            <Link href="/kontakt#demo" className="mkt-btn mkt-btn--primary">
+          <p style={{ marginTop: 24, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <Link href="/register" className="mkt-btn mkt-btn--primary">
+              Zacznij bezpłatny trial
+            </Link>
+            <Link href="/kontakt#demo" className="mkt-btn mkt-btn--secondary">
               Umów demo
             </Link>
           </p>

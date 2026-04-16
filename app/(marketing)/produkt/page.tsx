@@ -21,11 +21,11 @@ const modules = [
   },
   {
     title: 'Workflow akceptacji',
-    body: 'Kolejka pozycji wymagających weryfikacji, przypisanie do reviewerów, statusy (Pending, In Review, Approved, Rejected, Overridden). Każda decyzja z datą i użytkownikiem.',
+    body: 'Kolejka pozycji wymagających weryfikacji, przypisanie do recenzentów, statusy w aplikacji (m.in. oczekuje, w recenzji, zatwierdzono, odrzucono, nadpisano). Każda decyzja z datą i użytkownikiem.',
   },
   {
     title: 'Audit trail',
-    body: 'Chronologiczny log każdej zmiany: kategoria, współczynnik, status, autor. Eksportowalny, filtrowany po zakresie dat i użytkowniku. Niezbędny przy weryfikacji zewnętrznej.',
+    body: 'Chronologiczny log każdej zmiany: kategoria, współczynnik, status, autor. Log można filtrować i eksportować po zakresie dat i użytkowniku. Niezbędny przy weryfikacji zewnętrznej.',
   },
   {
     title: 'Import z KSeF',
@@ -33,7 +33,7 @@ const modules = [
   },
   {
     title: 'Eksport i raportowanie',
-    body: 'Raport GHG Protocol w PDF, eksport CSRD/ESRS (XML, JSON, CSV), eksport surowych danych do dalszej analizy. Każdy eksport z timestampem i zakresem danych.',
+    body: 'Raport GHG Protocol w PDF, eksport CSRD/ESRS (XML, JSON, CSV), eksport surowych danych do dalszej analizy. Każdy eksport ze znacznikiem czasu i zakresem danych.',
   },
   {
     title: 'Role i uprawnienia',
@@ -83,10 +83,10 @@ export default function ProduktPage() {
         <div className="mkt-inner mkt-showcase-grid">
           <div>
             <h2 className="mkt-section-title" style={{ fontSize: '1.25rem' }}>
-              Kolejka review i role
+              Kolejka akceptacji i role
             </h2>
             <p className="mkt-section-lead" style={{ marginBottom: 20 }}>
-              Pozycje wymagające decyzji trafiają do odpowiedniej osoby. Reviewer widzi kontekst,
+              Pozycje wymagające decyzji trafiają do odpowiedniej osoby. Recenzent widzi kontekst,
               może zmienić kategorię i dodać uzasadnienie. Cała historia w jednym miejscu.
             </p>
             <ReviewQueueMock />
@@ -108,11 +108,11 @@ export default function ProduktPage() {
         <div className="mkt-inner mkt-showcase-grid">
           <div>
             <h2 className="mkt-section-title" style={{ fontSize: '1.25rem' }}>
-              Widok zmiany — before / after
+              Widok zmiany — przed i po
             </h2>
             <p className="mkt-section-lead" style={{ marginBottom: 20 }}>
-              Kiedy reviewer zmienia kategorię lub współczynnik, system pokazuje dokładnie co
-              się zmieniło. Override z uzasadnieniem — bez ukrytych poprawek.
+              Kiedy recenzent zmienia kategorię lub współczynnik, system pokazuje dokładnie co
+              się zmieniło. Nadpisanie (override) z uzasadnieniem — bez ukrytych poprawek.
             </p>
             <DiffMock />
           </div>
@@ -122,7 +122,8 @@ export default function ProduktPage() {
             </h2>
             <p className="mkt-section-lead" style={{ marginBottom: 20 }}>
               Status importu w czasie rzeczywistym. Liczniki przetworzonych faktur, błędów
-              i pozycji czekających na review. Pełna przejrzystość bez konieczności sprawdzania logów.
+              i pozycji oczekujących w kolejce akceptacji. Pełna przejrzystość bez konieczności
+              sprawdzania logów.
             </p>
             <ImportOverviewMock />
           </div>

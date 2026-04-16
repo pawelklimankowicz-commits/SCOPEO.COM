@@ -30,11 +30,15 @@ export default function MarketingHomePage() {
             </h1>
             <p className="mkt-hero-sub">
               Scopeo automatycznie importuje faktury z Krajowego Systemu e-Faktur, przypisuje linie
-              do kategorii emisji Scope 1, 2 i 3 oraz prowadzi workflow akceptacji z pełnym audit
-              trail. Twoje dane są gotowe dla CFO, działu ESG i zewnętrznego audytora.
+              do kategorii emisji Scope 1, 2 i 3 oraz prowadzi workflow akceptacji z pełnym śladem
+              audytowym (audit trail). Twoje dane są gotowe dla CFO, działu ESG i zewnętrznego
+              audytora.
             </p>
             <ul className="mkt-bullets">
-              <li>Bez ręcznego przepisywania faktur do Excela — import z KSeF działa automatycznie. Oszczędzasz czas oraz minimalizujesz do 0 możliwość kosztownej pomyłki.</li>
+              <li>
+                Bez ręcznego przepisywania faktur do Excela — import z KSeF działa automatycznie.
+                Oszczędzasz czas i znacząco ograniczasz ryzyko kosztownej pomyłki.
+              </li>
               <li>Każda decyzja o kategorii emisji zostaje zapisana, dzięki temu obrona przed audytorem trwa kilka sekund.</li>
               <li>Scope 3 z danych transakcyjnych, nie z szacunków z kolumny H Excel&apos;a.</li>
             </ul>
@@ -154,7 +158,7 @@ export default function MarketingHomePage() {
               <h3 style={{ margin: '0 0 8px', fontSize: '1rem' }}>Mapowanie do Scope 1, 2 i 3</h3>
               <p style={{ margin: 0, fontSize: '0.875rem', color: '#64748b', lineHeight: 1.6 }}>
                 System automatycznie przypisuje linie faktur do kategorii emisji na podstawie
-                współczynników KOBiZE. Wyjątki trafiają do kolejki review — z możliwością
+                współczynników KOBiZE. Wyjątki trafiają do kolejki akceptacji — z możliwością
                 korekty i zapisanym uzasadnieniem.
               </p>
             </div>
@@ -162,7 +166,7 @@ export default function MarketingHomePage() {
               <div className="mkt-step-num">3</div>
               <h3 style={{ margin: '0 0 8px', fontSize: '1rem' }}>Raport gotowy na audyt</h3>
               <p style={{ margin: 0, fontSize: '0.875rem', color: '#64748b', lineHeight: 1.6 }}>
-                Dashboard z podziałem na Scope i kategorie. Export do PDF, CSV lub XML (CSRD/ESRS).
+                Dashboard z podziałem na Scope i kategorie. Eksport do PDF, CSV lub XML (CSRD/ESRS).
                 Pełny audit trail — każda zmiana z datą, użytkownikiem i uzasadnieniem.
               </p>
             </div>
@@ -210,8 +214,8 @@ export default function MarketingHomePage() {
           <div className="mkt-grid-3">
             {[
               {
-                t: 'Błąd ludzki zredukowany do zera',
-                d: 'Automatyczny import i algorytmiczne mapowanie eliminują ręczne przepisywanie. Nie ma człowieka w pętli kopiowania — nie ma pomyłki.',
+                t: 'Znacznie mniej błędów ludzkich',
+                d: 'Automatyczny import i mapowanie eliminują ręczne przepisywanie. Im mniej kopiowania między plikami, tym mniejsze ryzyko pomyłki przy raporcie.',
               },
               {
                 t: 'Mniej czasu na przygotowanie raportu',
@@ -314,7 +318,7 @@ export default function MarketingHomePage() {
               },
               {
                 q: 'Co to jest CSRD i czy moja firma musi raportować?',
-                a: 'Dyrektywa CSRD nakłada obowiązek raportowania danych ESG, w tym emisji GHG, na firmy w UE. Duże przedsiębiorstwa od 2025 r., MŚP notowane od 2026 r. Scopeo pomaga zebrać dane emisyjne z faktur KSeF i przygotować je do raportu.',
+                a: 'Dyrektywa CSRD rozszerza raportowanie niefinansowe, w tym emisje GHG, na wiele podmiotów w UE. Konkretny harmonogram zależy od wielkości, notowania na giełdzie i łańcucha dostaw — warto to zweryfikować z doradcą prawnym. Scopeo pomaga zebrać dane emisyjne z KSeF i przygotować je do raportu, gdy obowiązek już na Ciebie dotyczy.',
               },
               {
                 q: 'Czy obejmuje Scope 1, 2 i 3?',
@@ -322,7 +326,7 @@ export default function MarketingHomePage() {
               },
               {
                 q: 'Jak wygląda trial?',
-                a: 'Po rejestracji masz 7 dni bezpłatnego dostępu do wszystkich funkcji. Po trialu wybierasz plan — bez zobowiązań, jeśli zdecydujesz się odejść.',
+                a: 'Po rejestracji masz 7 dni na przetestowanie produktu na swoich danych — bez karty kredytowej. Po zakończeniu okresu próbnego wybierasz plan albo rezygnujesz bez zobowiązań.',
               },
               {
                 q: 'Czy dane z KSeF są bezpieczne?',

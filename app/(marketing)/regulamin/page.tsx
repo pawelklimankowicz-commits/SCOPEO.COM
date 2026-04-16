@@ -85,7 +85,7 @@ export default function RegulaminPage() {
           <h2>§3 Opis Usługi</h2>
           <p>
             Scopeo to platforma SaaS służąca m.in. do importu i przetwarzania danych z KSeF (OCR tam, gdzie
-            przewidziano), mapowania do kategorii emisji (w tym Scope 1, 2 i 3), workflow review, nadpisań z
+            przewidziano), mapowania do kategorii emisji (w tym Scope 1, 2 i 3), workflow akceptacji, nadpisań z
             kontrolą oraz rejestrowania historii zmian (audit trail). Zakres konkretnych modułów zależy od
             planu i konfiguracji wdrożenia.
           </p>
@@ -126,17 +126,17 @@ export default function RegulaminPage() {
           </p>
           <ul>
             <li>
-              <strong>Mikro:</strong> 149 PLN netto/mies. lub 119 PLN netto/mies. przy platnosci rocznej
-              (rozliczenie roczne, rabat 20%).
+              <strong>Mikro:</strong> 149 PLN netto/mies. lub 134 PLN netto/mies. przy jednorazowej płatności za 12 miesięcy
+              (jednorazowa opłata za 12 miesięcy z góry, rabat 10%).
             </li>
             <li>
-              <strong>Starter:</strong> 279 PLN netto/mies. lub 223 PLN netto/mies. przy platnosci rocznej.
+              <strong>Starter:</strong> 279 PLN netto/mies. lub 251 PLN netto/mies. przy jednorazowej płatności za 12 miesięcy.
             </li>
             <li>
-              <strong>Growth:</strong> 499 PLN netto/mies. lub 399 PLN netto/mies. przy platnosci rocznej.
+              <strong>Growth:</strong> 499 PLN netto/mies. lub 449 PLN netto/mies. przy jednorazowej płatności za 12 miesięcy.
             </li>
             <li>
-              <strong>Scale:</strong> 849 PLN netto/mies. lub 679 PLN netto/mies. przy platnosci rocznej.
+              <strong>Scale:</strong> 849 PLN netto/mies. lub 764 PLN netto/mies. przy jednorazowej płatności za 12 miesięcy.
             </li>
             <li>
               <strong>Enterprise:</strong> cena ustalana indywidualnie.

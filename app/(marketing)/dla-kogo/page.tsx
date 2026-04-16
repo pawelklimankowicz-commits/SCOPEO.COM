@@ -37,7 +37,7 @@ const segments = [
     problem:
       'Kilkanaście jednostek, każda z osobnym KSeF i Excelem. Konsolidacja danych na poziomie grupy zajmuje tygodnie i kończy się ręcznym scalaniem plików.',
     value:
-      'Plan Growth i Scale pozwala na wiele połączeń KSeF w jednej organizacji. Jeden panel dla całej grupy — spójny proces, identyczne reguły mapowania, jeden audit trail. Konsolidacja w kilka kliknięć zamiast scalania plików.',
+      'Plany Growth i Scale pozwalają na wiele połączeń KSeF w jednej organizacji. Jeden panel dla całej grupy — spójny proces, identyczne reguły mapowania, jeden audit trail. Konsolidacja w kilka kliknięć zamiast scalania plików.',
     badge: 'Grupy spółek',
   },
   {
@@ -45,7 +45,7 @@ const segments = [
     problem:
       'Obsługa kilku klientów jednocześnie, każdy z innym arkuszem i inną metodologią. Trudno utrzymać powtarzalność i jakość przy rosnącej liczbie zleceń.',
     value:
-      'Jedna platforma do obsługi wielu klientów — każdy z izolowaną przestrzenią danych. Powtarzalny proces importu i review, mniej czasu na konfigurację, więcej na analizę. Możliwość eksportu raportów z brandingiem klienta (plan Scale).',
+      'Jedna platforma do obsługi wielu klientów — każdy z izolowaną przestrzenią danych. Powtarzalny proces importu i akceptacji, mniej czasu na konfigurację, więcej na analizę. Możliwość eksportu raportów z brandingiem klienta (plan Scale).',
     badge: 'Doradcy',
   },
 ];

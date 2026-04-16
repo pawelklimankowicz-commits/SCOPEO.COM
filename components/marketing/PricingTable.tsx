@@ -10,7 +10,7 @@ const PLANS = [
     ksefLimit: '1',
     userLimit: '1',
     monthly: 149,
-    annual: 119,
+    annual: 134,
     features: ['1 połączenie KSeF', '1 użytkownik', 'Scope 1 i 2', 'Raport PDF GHG'],
   },
   {
@@ -19,12 +19,12 @@ const PLANS = [
     ksefLimit: '1',
     userLimit: '5',
     monthly: 279,
-    annual: 223,
+    annual: 251,
     features: [
       '1 połączenie KSeF',
       'do 5 użytkowników',
       'Scope 1, 2 i 3',
-      'Export CSRD/ESRS',
+      'Eksport CSRD/ESRS',
       'Raport PDF GHG',
     ],
   },
@@ -34,14 +34,14 @@ const PLANS = [
     ksefLimit: '3',
     userLimit: '15',
     monthly: 499,
-    annual: 399,
+    annual: 449,
     featured: true,
     features: [
       '3 połączenia KSeF',
       'do 15 użytkowników',
       'Scope 1, 2 i 3',
-      'Export CSRD/ESRS',
-      'Workflow recenzji',
+      'Eksport CSRD/ESRS',
+      'Workflow akceptacji',
       'Public API',
     ],
   },
@@ -51,13 +51,13 @@ const PLANS = [
     ksefLimit: '10',
     userLimit: 'bez limitu',
     monthly: 849,
-    annual: 679,
+    annual: 764,
     features: [
       '10 połączeń KSeF',
       'bez limitu użytkowników',
       'Scope 1, 2 i 3',
-      'Export CSRD/ESRS',
-      'Workflow recenzji',
+      'Eksport CSRD/ESRS',
+      'Workflow akceptacji',
       'Public API',
       'Raporty white-label',
     ],
@@ -96,7 +96,7 @@ export default function PricingTable() {
             className={annual ? 'mkt-toggle--on' : ''}
             onClick={() => setAnnual(true)}
           >
-            Rocznie (−20%)
+            Za rok z góry (−10%)
           </button>
         </div>
       </div>
@@ -127,7 +127,7 @@ export default function PricingTable() {
             </p>
             <div className="mkt-price-amount">
               {formatMoney(p.perMonth)} zł{' '}
-              <small>/ mc {annual ? 'przy płatności rocznej' : 'netto'}</small>
+              <small>/ mc {annual ? 'przy jednorazowej płatności za 12 mies.' : 'netto'}</small>
             </div>
             <ul style={{ margin: '12px 0 0', paddingLeft: 18, color: '#334155', fontSize: '0.875rem' }}>
               {p.features.map((feature) => (
@@ -170,8 +170,8 @@ export default function PricingTable() {
         </div>
       </div>
       <p style={{ marginTop: 16, color: '#64748b', fontSize: '0.875rem' }}>
-        Wszystkie plany zawieraja: import z KSeF, automatyczne obliczanie emisji GHG, panel zarzadzania,
-        wskazniki KOBiZE / UK DESNZ / EPA oraz 7-dniowy bezplatny trial.
+        Wszystkie plany zawierają: import z KSeF, automatyczne obliczanie emisji GHG, panel zarządzania,
+        wskaźniki KOBiZE / UK DESNZ / EPA oraz 7-dniowy bezpłatny trial. Rabat 10% przy jednorazowej płatności za 12 miesięcy.
       </p>
     </div>
   );

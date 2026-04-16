@@ -70,11 +70,15 @@ export default function LeadForm({ variant = 'default', idPrefix = 'lead' }: Pro
         <input id={`${idPrefix}-phone`} name="phone" type="tel" autoComplete="tel" />
       </div>
       <div>
-        <label htmlFor={`${idPrefix}-invoices`}>Szacowana liczba faktur miesięcznie</label>
+        <label htmlFor={`${idPrefix}-invoices`}>
+          Orientacyjny miesięczny wolumen faktur (nie wpływa na cenę — ułatwia nam przygotowanie
+          rozmowy)
+        </label>
         <select id={`${idPrefix}-invoices`} name="invoices" required defaultValue="">
           <option value="" disabled>
             Wybierz przedział
           </option>
+          <option value="unknown">nie mam szacunku / wolę nie podawać</option>
           <option value="0-50">do 50</option>
           <option value="51-100">51–100</option>
           <option value="101-200">101–200</option>
@@ -117,11 +121,11 @@ export default function LeadForm({ variant = 'default', idPrefix = 'lead' }: Pro
         </label>
       </div>
       <button type="submit" className="mkt-btn mkt-btn--primary" disabled={status === 'loading'}>
-        {status === 'loading' ? 'Wysyłanie…' : 'Umów demo'}
+        {status === 'loading' ? 'Wysyłanie…' : 'Wyślij zapytanie'}
       </button>
       {status === 'error' ? (
         <p style={{ margin: 0, fontSize: '0.875rem', color: '#b91c1c' }}>
-          Nie udało się wysłać. Spróbuj ponownie lub napisz na kontakt@scopeo.com
+          Nie udało się wysłać. Spróbuj ponownie lub napisz na kontakt@scopeo.pl
         </p>
       ) : null}
       <p style={{ margin: 0, fontSize: '0.75rem', color: '#94a3b8' }}>

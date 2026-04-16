@@ -57,8 +57,11 @@ export default function SiteHeader() {
           <Link href="/login" className="mkt-btn mkt-btn--secondary mkt-btn--sm">
             Logowanie
           </Link>
-          <Link href="/kontakt#demo" className="mkt-btn mkt-btn--primary mkt-btn--sm">
-            Umów demo
+          <Link href="/register" className="mkt-btn mkt-btn--primary mkt-btn--sm">
+            Trial
+          </Link>
+          <Link href="/kontakt#demo" className="mkt-btn mkt-btn--secondary mkt-btn--sm">
+            Demo
           </Link>
         </div>
       </div>

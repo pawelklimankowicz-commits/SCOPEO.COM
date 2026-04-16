@@ -21,8 +21,8 @@ export default function SiteFooter() {
             Scopeo
           </div>
           <p className="mkt-footer-note">
-            Ślad węglowy z danych KSeF — import, Scope 1–3, review i audit trail w jednym
-            workflow.
+            Ślad węglowy z danych KSeF — import, Scope 1–3, workflow akceptacji i pełny audit trail
+            w jednym miejscu.
           </p>
         </div>
         <div>

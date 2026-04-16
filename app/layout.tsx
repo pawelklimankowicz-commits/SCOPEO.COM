@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     template: '%s · Scopeo',
   },
   description:
-    'Carbon accounting B2B: import z KSeF, Scope 1–3, workflow review i audit trail — zamiast rozproszonego Excela.',
+    'Import z KSeF, Scope 1–3, workflow akceptacji i audit trail — zamiast rozproszonego Excela.',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
