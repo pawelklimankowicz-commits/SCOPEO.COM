@@ -51,9 +51,9 @@ export default async function DashboardPage({
           }}
         >
           ⚠️ Adres email nie jest potwierdzony.{' '}
-          <a href="/api/auth/resend-verification" style={{ color: '#92400e', fontWeight: 600 }}>
+          <Link href="/api/auth/resend-verification" prefetch={false} style={{ color: '#92400e', fontWeight: 600 }}>
             Wyślij ponownie
-          </a>
+          </Link>
         </div>
       )}
 

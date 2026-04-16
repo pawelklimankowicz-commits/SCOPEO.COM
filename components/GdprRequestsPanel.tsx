@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 type GdprRequest = {
   id: string;
@@ -20,16 +20,16 @@ export default function GdprRequestsPanel({ canManage }: { canManage: boolean })
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function loadRequests() {
+  const loadRequests = useCallback(async () => {
     if (!canManage) return;
     const res = await fetch('/api/gdpr/requests', { cache: 'no-store' });
     const data = await res.json();
     if (data.ok) setRequests(data.requests);
-  }
+  }, [canManage]);
 
   useEffect(() => {
-    loadRequests();
-  }, [canManage]);
+    void loadRequests();
+  }, [loadRequests]);
 
   async function createRequest() {
     setLoading(true);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 type Invite = {
   id: string;
@@ -17,16 +17,16 @@ export default function InvitesPanel({ canManage }: { canManage: boolean }) {
   const [invites, setInvites] = useState<Invite[]>([]);
   const [result, setResult] = useState('');
 
-  async function loadInvites() {
+  const loadInvites = useCallback(async () => {
     if (!canManage) return;
     const res = await fetch('/api/invites');
     const data = await res.json();
     if (data.ok) setInvites(data.invites);
-  }
+  }, [canManage]);
 
   useEffect(() => {
-    loadInvites();
-  }, [canManage]);
+    void loadInvites();
+  }, [loadInvites]);
 
   async function createInvite() {
     const res = await fetch('/api/invites', {
