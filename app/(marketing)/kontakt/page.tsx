@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import LeadForm from '@/components/marketing/LeadForm';
+import { LEGAL_EMAIL } from '@/lib/legal';
 
 export const metadata: Metadata = {
-  title: 'Kontakt i demo — Scopeo',
-  description: 'Umów demo Scopeo: krótka rozmowa o KSeF, wolumenie faktur i procesie review.',
+  title: 'Kontakt — Scopeo',
+  description: 'Skontaktuj się z zespołem Scopeo — pytania o produkt, demo, wdrożenie Enterprise lub wsparcie techniczne.',
 };
 
 export default function KontaktPage() {
@@ -12,10 +14,10 @@ export default function KontaktPage() {
       <div className="mkt-page-head">
         <div className="mkt-inner">
           <p className="mkt-kicker">Kontakt</p>
-          <h1>Umów demo</h1>
+          <h1>Porozmawiajmy</h1>
           <p>
-            Zostaw dane — oddzwonimy lub napiszemy w ciągu 1 dnia roboczego. Na spotkaniu pokażemy import,
-            review i audit trail na przykładzie zbliżonym do Twojej organizacji.
+            Masz pytania o produkt, chcesz zobaczyć demo lub rozmawiasz o wdrożeniu Enterprise?
+            Zostaw dane — odezwiemy się w ciągu 1 dnia roboczego.
           </p>
         </div>
       </div>
@@ -24,23 +26,55 @@ export default function KontaktPage() {
         <div className="mkt-inner">
           <div className="mkt-contact-grid">
             <div id="demo">
-              <h2 style={{ margin: '0 0 16px', fontSize: '1.125rem' }}>Formularz</h2>
+              <h2 style={{ margin: '0 0 16px', fontSize: '1.125rem' }}>Formularz kontaktowy</h2>
               <LeadForm idPrefix="contact" />
             </div>
             <div>
-              <h2 style={{ margin: '0 0 16px', fontSize: '1.125rem' }}>Czego oczekiwać</h2>
-              <ul style={{ margin: 0, paddingLeft: '1.1em', color: '#64748b', lineHeight: 1.65, fontSize: '0.9375rem' }}>
-                <li>30–45 minut online z osobą znającą produkt.</li>
-                <li>Pytania o wolumen faktur, strukturę działów i oczekiwania wobec raportowania.</li>
-                <li>Bez presji — jeśli trzeba, drugi krok to oferta lub pilotaż.</li>
-              </ul>
-              <p style={{ marginTop: 24, fontSize: '0.875rem', color: '#94a3b8' }}>
-                Dane kontaktowe ogólne:{' '}
-                <a href="mailto:kontakt@scopeo.com" className="mkt-link">
-                  kontakt@scopeo.com
-                </a>{' '}
-                (adres przykładowy w treści marketingowej — podmień na produkcyjny).
-              </p>
+              <h2 style={{ margin: '0 0 20px', fontSize: '1.125rem' }}>Inne kanały</h2>
+
+              <div style={{ marginBottom: 24 }}>
+                <p style={{ margin: '0 0 4px', fontWeight: 600, fontSize: '0.9375rem', color: '#0f172a' }}>
+                  Wolisz samodzielnie sprawdzić produkt?
+                </p>
+                <p style={{ margin: '0 0 12px', fontSize: '0.875rem', color: '#64748b', lineHeight: 1.6 }}>
+                  Trial trwa 7 dni, bez karty kredytowej. Pierwsze dane masz w 15 minut.
+                </p>
+                <Link href="/register" className="mkt-btn mkt-btn--primary mkt-btn--sm">
+                  Zacznij bezpłatny trial
+                </Link>
+              </div>
+
+              <div style={{ marginBottom: 24 }}>
+                <p style={{ margin: '0 0 4px', fontWeight: 600, fontSize: '0.9375rem', color: '#0f172a' }}>
+                  Email ogólny
+                </p>
+                <a href={`mailto:${LEGAL_EMAIL.general}`} className="mkt-link" style={{ fontSize: '0.875rem' }}>
+                  {LEGAL_EMAIL.general}
+                </a>
+              </div>
+
+              <div style={{ marginBottom: 24 }}>
+                <p style={{ margin: '0 0 4px', fontWeight: 600, fontSize: '0.9375rem', color: '#0f172a' }}>
+                  Wsparcie techniczne
+                </p>
+                <a href={`mailto:${LEGAL_EMAIL.support}`} className="mkt-link" style={{ fontSize: '0.875rem' }}>
+                  {LEGAL_EMAIL.support}
+                </a>
+              </div>
+
+              <div>
+                <p style={{ margin: '0 0 8px', fontSize: '0.875rem', color: '#64748b', lineHeight: 1.6 }}>
+                  Na demo pokazujemy import z KSeF, mapowanie do Scope 1–3, workflow akceptacji
+                  i eksport raportu — na przykładzie zbliżonym do Twojej organizacji.
+                  Spotkanie trwa 30–45 minut, online.
+                </p>
+                <p style={{ margin: 0, fontSize: '0.875rem', color: '#94a3b8' }}>
+                  Pytania prawne i RODO:{' '}
+                  <a href={`mailto:${LEGAL_EMAIL.privacy}`} className="mkt-link">
+                    {LEGAL_EMAIL.privacy}
+                  </a>
+                </p>
+              </div>
             </div>
           </div>
         </div>

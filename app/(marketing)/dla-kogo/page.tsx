@@ -2,41 +2,51 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Dla kogo — Scopeo',
+  title: 'Dla kogo jest Scopeo — segmenty i przypadki użycia',
   description:
-    'MŚP, ESG, finanse, księgowość, doradcy i grupy spółek — Scopeo dla zespołów pracujących na danych z KSeF.',
+    'Scopeo dla działów finansów, ESG managerów, MŚP przygotowujących się do CSRD, grup spółek i biur rachunkowych. Sprawdź czy to narzędzie dla Ciebie.',
 };
 
 const segments = [
   {
-    title: 'Małe i średnie firmy',
-    problem: 'Rosnące wymagania raportowe przy ograniczonym zespole i rozproszonych arkuszach.',
+    title: 'Działy finansów i księgowości',
+    problem:
+      'Te same faktury przetwarzane dwukrotnie — raz „pod podatek", raz „pod ESG". Osobny Excel dla emisji, który rozjeżdża się z danymi z systemu FK.',
     value:
-      'Jedna baza danych z faktur, przejrzysty workflow i mniej ręcznego przepisywania między działami.',
+      'Scopeo korzysta z KSeF — tego samego źródła co Twój system finansowy. Jedno źródło prawdy eliminuje konflikty wersji między działami. Dział finansów konfiguruje raz, ESG korzysta z tych samych danych.',
+    badge: 'Finanse',
   },
   {
     title: 'Zespoły ESG i sustainability',
-    problem: 'Potrzeba liczb zgodnych z księgowością i możliwości obrony metodologii przy pytaniach zarządu.',
+    problem:
+      'Dane emisyjne oparte na szacunkach lub kopiowane z poprzedniego raportu. Zarząd pyta o metodologię — trudno obronić liczby bez historii decyzji.',
     value:
-      'Powiązanie linii z KSeF z kategoriami emisji, statusy review i historia zmian pod audyt.',
+      'Scopeo daje Ci dane transakcyjne z KSeF — nie szacunki. Każda kategoria emisji ma źródło w konkretnej fakturze. Workflow akceptacji z historią zmian sprawia, że każda liczba w raporcie jest obronialna.',
+    badge: 'ESG',
   },
   {
-    title: 'Finanse i księgowość',
-    problem: 'Duplikacja pracy: te same faktury przetwarzane osobno „pod podatek” i „pod ESG”.',
+    title: 'Małe i średnie firmy przygotowujące się do CSRD',
+    problem:
+      'CSRD zbliża się, ale nie masz jeszcze ani budżetu na zewnętrzne doradztwo ESG, ani czasu na wielomiesięczne wdrożenie.',
     value:
-      'Wspólne źródło prawdy z KSeF, mniej konfliktów wersji i jaśniejsze odpowiedzialności.',
+      'Plan Mikro startuje od 149 zł miesięcznie. Połączenie KSeF i pierwsze dane emisyjne w ciągu godziny. Nie potrzebujesz specjalisty ESG do uruchomienia — system jest zaprojektowany dla działu finansowego.',
+    badge: 'MŚP',
   },
   {
-    title: 'Partnerzy doradczy',
-    problem: 'Wdrożenia u klientów wymagają powtarzalnego procesu i narzędzia, które da się utrzymać.',
+    title: 'Grupy spółek i holdingi',
+    problem:
+      'Kilkanaście jednostek, każda z osobnym KSeF i Excelem. Konsolidacja danych na poziomie grupy zajmuje tygodnie i kończy się ręcznym scalaniem plików.',
     value:
-      'Produkt do wielu organizacji z kontrolą dostępu i procesu — mniej custom Excela u klienta.',
+      'Plan Growth i Scale pozwala na wiele połączeń KSeF w jednej organizacji. Jeden panel dla całej grupy — spójny proces, identyczne reguły mapowania, jeden audit trail. Konsolidacja w kilka kliknięć zamiast scalania plików.',
+    badge: 'Grupy spółek',
   },
   {
-    title: 'Grupy spółek',
-    problem: 'Spójność danych między jednostkami i konsolidacja bez chaosu plików.',
+    title: 'Biura rachunkowe i doradcy ESG',
+    problem:
+      'Obsługa kilku klientów jednocześnie, każdy z innym arkuszem i inną metodologią. Trudno utrzymać powtarzalność i jakość przy rosnącej liczbie zleceń.',
     value:
-      'Struktura organizacji i powtarzalny proces importu oraz review na poziomie grupy (zakres Enterprise).',
+      'Jedna platforma do obsługi wielu klientów — każdy z izolowaną przestrzenią danych. Powtarzalny proces importu i review, mniej czasu na konfigurację, więcej na analizę. Możliwość eksportu raportów z brandingiem klienta (plan Scale).',
+    badge: 'Doradcy',
   },
 ];
 
@@ -45,36 +55,68 @@ export default function DlaKogoPage() {
     <>
       <div className="mkt-page-head">
         <div className="mkt-inner">
-          <p className="mkt-kicker">Segmenty</p>
-          <h1>Dla kogo jest Scopeo</h1>
+          <p className="mkt-kicker">Dla kogo</p>
+          <h1>Scopeo dla Twojego zespołu</h1>
           <p>
-            Produkt jest adresowany do organizacji, które muszą połączyć rzeczywiste dane faktur z KSeF z
-            procesem raportowania emisji — bez przenoszenia całej firmy do narracji „klimatycznej”.
+            Scopeo adresuje firmy, które mają faktury w KSeF i muszą z nich zrobić
+            rzetelny raport emisji — bez wielomiesięcznego projektu wdrożeniowego.
           </p>
         </div>
       </div>
 
       <section className="mkt-section">
         <div className="mkt-inner">
-          <div style={{ display: 'grid', gap: 20 }}>
+          <div style={{ display: 'grid', gap: 24 }}>
             {segments.map((s) => (
               <div key={s.title} className="mkt-card">
-                <h2 style={{ margin: '0 0 8px', fontSize: '1.125rem' }}>{s.title}</h2>
-                <p style={{ margin: '0 0 10px', fontSize: '0.875rem', color: '#64748b' }}>
-                  <strong style={{ color: '#0f172a' }}>Problem: </strong>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                  <h2 style={{ margin: 0, fontSize: '1.125rem' }}>{s.title}</h2>
+                  <span
+                    style={{
+                      fontSize: '0.6875rem',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      background: '#f1f5f9',
+                      color: '#475569',
+                      borderRadius: 999,
+                      padding: '3px 10px',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {s.badge}
+                  </span>
+                </div>
+                <p style={{ margin: '0 0 10px', fontSize: '0.875rem', color: '#64748b', lineHeight: 1.6 }}>
+                  <strong style={{ color: '#0f172a' }}>Typowy problem: </strong>
                   {s.problem}
                 </p>
-                <p style={{ margin: 0, fontSize: '0.9375rem', color: '#475569', lineHeight: 1.55 }}>
-                  <strong style={{ color: '#0f766e' }}>Wartość Scopeo: </strong>
+                <p style={{ margin: '0 0 16px', fontSize: '0.9375rem', color: '#475569', lineHeight: 1.6 }}>
+                  <strong style={{ color: '#0f766e' }}>Co zmienia Scopeo: </strong>
                   {s.value}
                 </p>
-                <div style={{ marginTop: 16 }}>
-                  <Link href="/kontakt#demo" className="mkt-btn mkt-btn--primary mkt-btn--sm">
-                    Umów demo
-                  </Link>
-                </div>
+                <Link href="/register" className="mkt-btn mkt-btn--primary mkt-btn--sm">
+                  Zacznij bezpłatny trial
+                </Link>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mkt-section mkt-section--surface">
+        <div className="mkt-inner mkt-cta-band">
+          <h2>Nie jesteś pewny czy Scopeo pasuje do Twojej organizacji?</h2>
+          <p>
+            Zostaw dane — skontaktujemy się i odpowiemy na pytania dotyczące Twojego przypadku.
+          </p>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <Link href="/kontakt" className="mkt-btn mkt-btn--primary">
+              Porozmawiaj z nami
+            </Link>
+            <Link href="/register" className="mkt-btn mkt-btn--secondary">
+              Lub zacznij trial samodzielnie
+            </Link>
           </div>
         </div>
       </section>

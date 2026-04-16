@@ -12,56 +12,51 @@ import {
 } from '@/components/marketing/ProductMockups';
 
 export const metadata: Metadata = {
-  title: 'Scopeo — ślad węglowy z danych KSeF',
+  title: 'Scopeo — ślad węglowy Twojej firmy z faktur KSeF. Automatycznie.',
   description:
-    'Policz i uporządkuj emisje Scope 1–3 z KSeF. Workflow review, audit trail i mniej ręcznej pracy niż w Excelu.',
+    'Import faktur z KSeF, automatyczne mapowanie do Scope 1–3, workflow akceptacji i raport gotowy na audyt. Zacznij bezpłatny trial — 7 dni.',
 };
 
 export default function MarketingHomePage() {
   return (
     <>
+      {/* HERO */}
       <section className="mkt-hero">
         <div className="mkt-inner mkt-hero-grid">
           <div>
-            <p className="mkt-hero-badge">KSeF + GHG Protocol · CSRD 2025</p>
-            <p className="mkt-kicker">Ślad węglowy operacyjny</p>
-            <h1 className="mkt-hero-title">Policz ślad węglowy firmy z danych z KSeF</h1>
+            <p className="mkt-hero-badge">KSeF · Scope 1–3 · CSRD 2026</p>
+            <h1 className="mkt-hero-title">
+              Od Twoich faktur w KSeF<br />do pełnego raportu śladu węglowego
+            </h1>
             <p className="mkt-hero-sub">
-              Automatyczny import danych z KSeF, OCR dokumentów, mapowanie do Scope 1, 2 i 3, workflow
-              review i audit trail — w jednym systemie zamiast rozproszonego Excela.
+              Scopeo automatycznie importuje faktury z Krajowego Systemu e-Faktur, przypisuje linie
+              do kategorii emisji Scope 1, 2 i 3 oraz prowadzi workflow akceptacji z pełnym audit
+              trail. Twoje dane są gotowe dla CFO, działu ESG i zewnętrznego audytora.
             </p>
             <ul className="mkt-bullets">
-              <li>Dane wejściowe z faktur i dokumentów, nie z „szacunków w kolumnie H”.</li>
-              <li>Statusy, override i pełna historia zmian pod audyt.</li>
-              <li>Gotowość do pracy zespołu: ESG, finanse, księgowość.</li>
+              <li>Bez ręcznego przepisywania faktur do Excela — import z KSeF działa automatycznie. Oszczędzasz czas oraz minimalizujesz do 0 możliwość kosztownej pomyłki.</li>
+              <li>Każda decyzja o kategorii emisji zostaje zapisana, dzięki temu obrona przed audytorem trwa kilka sekund.</li>
+              <li>Scope 3 z danych transakcyjnych, nie z szacunków z kolumny H Excel&apos;a.</li>
             </ul>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 8 }}>
-              <Link href="/kontakt#demo" className="mkt-btn mkt-btn--primary">
-                Umów demo
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 24 }}>
+              <Link href="/register" className="mkt-btn mkt-btn--primary">
+                Zacznij bezpłatny trial — 7 dni
               </Link>
               <Link href="/jak-dziala" className="mkt-btn mkt-btn--secondary">
                 Zobacz jak działa
               </Link>
             </div>
             <div className="mkt-trust">
-              <span>
-                <i /> Import KSeF + OCR
-              </span>
-              <span>
-                <i /> Scope 1–3
-              </span>
-              <span>
-                <i /> Review &amp; audit trail
-              </span>
-              <span>
-                <i /> Hosting w UE (dostępność zależna od wdrożenia)
-              </span>
+              <span><i /> Import z KSeF</span>
+              <span><i /> Scope 1–3</span>
+              <span><i /> Audit trail</span>
+              <span><i /> Hosting w UE</span>
             </div>
           </div>
           <div className="mkt-hero-visual">
             <Image
               src="/marketing/hero-scopeo-mint.png"
-              alt="Scopeo — dashboard emisji, workflow i import z KSeF"
+              alt="Scopeo — dashboard emisji, workflow akceptacji i import z KSeF"
               width={1200}
               height={720}
               priority
@@ -73,18 +68,19 @@ export default function MarketingHomePage() {
 
       <LandingVideo />
 
+      {/* PRODUCT OVERVIEW */}
       <section className="mkt-section mkt-section--dark">
         <div className="mkt-inner">
           <p className="mkt-kicker mkt-kicker--on-dark">Widok produktu</p>
-          <h2 className="mkt-section-title">Workflow, dashboard i import — jedna aplikacja</h2>
+          <h2 className="mkt-section-title">Jeden system zamiast czterech arkuszy</h2>
           <p className="mkt-section-lead">
-            Przełączaj się między dashboardem emisji, kolejką review oraz importem z KSeF (i plików
-            pomocniczych), z pełnym audit trail.
+            Dashboard emisji, kolejka akceptacji, audit trail i import z KSeF — w jednym narzędziu
+            dostępnym dla całego zespołu. ESG, finanse i księgowość pracują na tych samych danych.
           </p>
           <div className="mkt-dark-shot" style={{ marginTop: 8 }}>
             <Image
               src="/marketing/section-product-dark.png"
-              alt="Scopeo — widoki produktu: workflow review, dashboard emisji, audit trail"
+              alt="Scopeo — dashboard emisji, workflow akceptacji, audit trail"
               width={1200}
               height={640}
               sizes="(max-width: 960px) 100vw, min(1120px, 100vw)"
@@ -93,35 +89,37 @@ export default function MarketingHomePage() {
         </div>
       </section>
 
+      {/* PROBLEM */}
       <section className="mkt-section mkt-section--surface">
         <div className="mkt-inner">
           <p className="mkt-kicker">Problem</p>
-          <h2 className="mkt-section-title">Excel nie skaluje się do pracy nad emisjami</h2>
+          <h2 className="mkt-section-title">Excel nie był projektowany do raportowania emisji</h2>
           <p className="mkt-section-lead">
-            Arkusze rozproszone po zespołach, ręczne mapowanie linii do kategorii, brak jednej historii
-            zmian i trudny przegląd między księgowością a ESG. To kosztuje czas i podnosi ryzyko błędu
-            przy raportowaniu.
+            Większość firm próbuje liczyć ślad węglowy w arkuszach — przepisując faktury ręcznie,
+            tworząc osobne pliki dla każdego działu i tracąc historię decyzji przy każdej aktualizacji.
+            Kiedy pojawia się audytor lub zarząd pyta o metodologię, zaczyna się panika.
           </p>
           <div className="mkt-split">
             <div className="mkt-card">
-              <span className="mkt-pill-bad">Stan obecny</span>
-              <p style={{ margin: 0, fontSize: '0.9375rem', color: '#64748b', lineHeight: 1.55 }}>
-                Wiele plików, kopiowanie współczynników, niejasne „kto zatwierdził liczbę”, brak
-                spójnego audit trailu. Trudno odtworzyć decyzje sprzed kwartału.
+              <span className="mkt-pill-bad">Teraz — bez Scopeo</span>
+              <p style={{ margin: 0, fontSize: '0.9375rem', color: '#64748b', lineHeight: 1.6 }}>
+                Faktury z KSeF pobierane ręcznie, dane kopiowane między plikami, różne wersje
+                w ESG i księgowości, brak historii kto i kiedy zmienił kategorię. Przygotowanie
+                raportu zajmuje tygodnie i kończy się kompromisem z audytorem.
               </p>
             </div>
             <div className="mkt-card">
               <span className="mkt-pill-good">Z Scopeo</span>
-              <p style={{ margin: 0, fontSize: '0.9375rem', color: '#64748b', lineHeight: 1.55 }}>
-                Jedna baza danych z KSeF (i dokumentów), mapowanie do Scope 1–3, kolejka review,
-                statusy i zapis zmian — tak, by dało się to uzasadnić wobec zarządu i audytora.
+              <p style={{ margin: 0, fontSize: '0.9375rem', color: '#64748b', lineHeight: 1.6 }}>
+                KSeF podłączony raz — faktury importują się automatycznie. Każda linia
+                przypisana do kategorii Scope 1–3. Workflow akceptacji z rolami. Pełny audit trail.
+                Raport generowany w minuty, nie tygodnie.
               </p>
             </div>
           </div>
-          <p style={{ marginTop: 28, marginBottom: 0, fontSize: '0.9375rem', color: '#64748b', lineHeight: 1.6 }}>
-            Na rynku popularne są też szkolenia, przewodniki i proste kalkulatory — dobry start merytoryczny.
-            Scopeo jest następnym krokiem:{' '}
-            <strong>operacyjny system</strong> z KSeF i audytowalnym procesem, gdy Excel przestaje wystarczać.{' '}
+          <p style={{ marginTop: 28, fontSize: '0.9375rem', color: '#64748b', lineHeight: 1.6 }}>
+            Szkolenia ESG i proste kalkulatory to dobry punkt startowy do zrozumienia metodyki.
+            Scopeo to kolejny krok — operacyjny system z audytowalnym procesem, kiedy Excel przestaje wystarczać.{' '}
             <Link href="/wiedza/rynek-i-metodyka" className="mkt-link">
               Rynek i metodyka →
             </Link>
@@ -129,65 +127,62 @@ export default function MarketingHomePage() {
         </div>
       </section>
 
+      {/* HOW IT WORKS */}
       <section className="mkt-section">
         <div className="mkt-inner">
-          <p className="mkt-kicker">Transformacja</p>
-          <h2 className="mkt-section-title">Od faktur w KSeF do uporządkowanych danych emisyjnych</h2>
+          <p className="mkt-kicker">Proces</p>
+          <h2 className="mkt-section-title">Trzy kroki od faktury do raportu</h2>
           <p className="mkt-section-lead">
-            Scopeo wiąże dane źródłowe z procesem: import, normalizacja, przypisanie do emisji,
-            przejście przez review i zamknięcie okresu z czytelnym śladem.
+            Scopeo nie wymaga wielomiesięcznego wdrożenia ani dedykowanego specjalisty ESG.
+            Pierwsze dane emisyjne możesz mieć jeszcze tego samego dnia.
           </p>
           <div className="mkt-showcase-grid">
             <ImportOverviewMock />
             <ReviewQueueMock />
           </div>
-        </div>
-      </section>
-
-      <section className="mkt-section mkt-section--surface">
-        <div className="mkt-inner">
-          <p className="mkt-kicker">Proces</p>
-          <h2 className="mkt-section-title">Jak to działa — trzy kroki</h2>
-          <div className="mkt-steps">
+          <div className="mkt-steps" style={{ marginTop: 32 }}>
             <div className="mkt-card">
               <div className="mkt-step-num">1</div>
-              <h3 style={{ margin: '0 0 8px', fontSize: '1rem' }}>Połącz dane z KSeF</h3>
-              <p style={{ margin: 0, fontSize: '0.875rem', color: '#64748b', lineHeight: 1.55 }}>
-                Import faktur i dokumentów, OCR tam, gdzie potrzeba, synchronizacja i statusy
-                przetwarzania.
+              <h3 style={{ margin: '0 0 8px', fontSize: '1rem' }}>Połącz konto KSeF</h3>
+              <p style={{ margin: 0, fontSize: '0.875rem', color: '#64748b', lineHeight: 1.6 }}>
+                Jednorazowa konfiguracja tokenu KSeF. Scopeo automatycznie pobiera faktury —
+                historyczne i bieżące. Jedno połączenie na plan Mikro, do 10 na Scale.
               </p>
             </div>
             <div className="mkt-card">
               <div className="mkt-step-num">2</div>
-              <h3 style={{ margin: '0 0 8px', fontSize: '1rem' }}>Mapuj do Scope 1, 2 i 3</h3>
-              <p style={{ margin: 0, fontSize: '0.875rem', color: '#64748b', lineHeight: 1.55 }}>
-                Przypisanie linii do kategorii emisji, współczynniki i reguły — z kontrolą jakości
-                danych.
+              <h3 style={{ margin: '0 0 8px', fontSize: '1rem' }}>Mapowanie do Scope 1, 2 i 3</h3>
+              <p style={{ margin: 0, fontSize: '0.875rem', color: '#64748b', lineHeight: 1.6 }}>
+                System automatycznie przypisuje linie faktur do kategorii emisji na podstawie
+                współczynników KOBiZE. Wyjątki trafiają do kolejki review — z możliwością
+                korekty i zapisanym uzasadnieniem.
               </p>
             </div>
             <div className="mkt-card">
               <div className="mkt-step-num">3</div>
-              <h3 style={{ margin: '0 0 8px', fontSize: '1rem' }}>Review i wynik</h3>
-              <p style={{ margin: 0, fontSize: '0.875rem', color: '#64748b', lineHeight: 1.55 }}>
-                Akceptacje, override z uzasadnieniem, audit trail — gotowość do dalszego raportowania.
+              <h3 style={{ margin: '0 0 8px', fontSize: '1rem' }}>Raport gotowy na audyt</h3>
+              <p style={{ margin: 0, fontSize: '0.875rem', color: '#64748b', lineHeight: 1.6 }}>
+                Dashboard z podziałem na Scope i kategorie. Export do PDF, CSV lub XML (CSRD/ESRS).
+                Pełny audit trail — każda zmiana z datą, użytkownikiem i uzasadnieniem.
               </p>
             </div>
           </div>
           <p style={{ marginTop: 24, textAlign: 'center' }}>
             <Link href="/jak-dziala" className="mkt-link">
-              Pełny opis procesu →
+              Szczegółowy opis procesu →
             </Link>
           </p>
         </div>
       </section>
 
-      <section className="mkt-section">
+      {/* PRODUCT SCREENS */}
+      <section className="mkt-section mkt-section--surface">
         <div className="mkt-inner">
           <p className="mkt-kicker">Produkt</p>
-          <h2 className="mkt-section-title">Widoki, które zobaczą CFO, ESG i księgowość</h2>
+          <h2 className="mkt-section-title">Co widzą CFO, ESG manager i audytor</h2>
           <p className="mkt-section-lead">
-            Poniżej przykładowe ekrany systemowe — uproszczone wizualnie, ale odzwierciedlające logikę
-            produktu: dashboard, kolejka review, audit trail i porównanie zmian.
+            Każda rola ma widok dopasowany do swoich potrzeb — od dashboardu z agregatami po
+            szczegółowy log zmian per linia faktury.
           </p>
           <div className="mkt-showcase-grid">
             <DashboardEmissionsMock />
@@ -199,31 +194,36 @@ export default function MarketingHomePage() {
           </div>
           <p style={{ marginTop: 24, textAlign: 'center' }}>
             <Link href="/produkt" className="mkt-link">
-              Moduły produktu →
+              Wszystkie moduły produktu →
             </Link>
           </p>
         </div>
       </section>
 
-      <section className="mkt-section mkt-section--surface">
+      {/* BUSINESS OUTCOMES */}
+      <section className="mkt-section">
         <div className="mkt-inner">
-          <h2 className="mkt-section-title">Efekty biznesowe</h2>
+          <h2 className="mkt-section-title">Wymierne efekty dla organizacji</h2>
           <p className="mkt-section-lead">
-            Mniej ręcznej pracy, szybsza analiza, większa kontrola i spójność danych między działami.
+            Konkretne usprawnienie operacyjne — nie obietnica bez pokrycia.
           </p>
           <div className="mkt-grid-3">
             {[
               {
-                t: 'Mniej pracy ręcznej',
-                d: 'Mniej kopiowania między arkuszami — więcej reguł i przepływu w systemie.',
+                t: 'Błąd ludzki zredukowany do zera',
+                d: 'Automatyczny import i algorytmiczne mapowanie eliminują ręczne przepisywanie. Nie ma człowieka w pętli kopiowania — nie ma pomyłki.',
               },
               {
-                t: 'Większa kontrola',
-                d: 'Statusy, role i historia zmian w jednym miejscu.',
+                t: 'Mniej czasu na przygotowanie raportu',
+                d: 'Import z KSeF eliminuje ręczne przepisywanie faktur. Raport, który zajmował tygodnie, generujesz w ciągu dnia.',
               },
               {
-                t: 'Szybszy proces',
-                d: 'Kolejka review i priorytety zamiast mailowania plików XLSX.',
+                t: 'Dane, które możesz obronić',
+                d: 'Każda kategoria emisji ma źródło w konkretnej fakturze i historię decyzji. Audytor i zarząd widzą to samo co Ty.',
+              },
+              {
+                t: 'Jeden proces dla całego zespołu',
+                d: 'ESG, finanse i księgowość pracują na tych samych danych — bez konfliktów wersji i mailowania plików.',
               },
             ].map((x) => (
               <div key={x.t} className="mkt-card">
@@ -235,21 +235,21 @@ export default function MarketingHomePage() {
         </div>
       </section>
 
-      <section className="mkt-section">
+      {/* FOR WHOM */}
+      <section className="mkt-section mkt-section--surface">
         <div className="mkt-inner">
           <p className="mkt-kicker">Dla kogo</p>
-          <h2 className="mkt-section-title">Od MŚP po grupy kapitałowe</h2>
+          <h2 className="mkt-section-title">Dla firm, które mają KSeF i muszą raportować emisje</h2>
           <p className="mkt-section-lead">
-            Scopeo adresuje zespoły, które muszą połączyć dane finansowe z KSeF z raportowaniem
-            emisji — bez przenoszenia całej organizacji do „klimatycznego marketingu”.
+            Od MŚP przygotowujących się do CSRD po grupy spółek wymagające spójnego procesu w wielu jednostkach.
           </p>
           <div className="mkt-grid-2">
             {[
-              'Małe i średnie firmy przygotowujące się do raportowania',
-              'Zespoły ESG i sustainability',
-              'Finanse i księgowość',
-              'Partnerzy doradczy i wdrożeniowi',
-              'Grupy spółek wymagające spójnego procesu',
+              'Działy finansów i księgowości — jedno źródło danych dla podatków i ESG',
+              'Zespoły ESG i sustainability — dane z faktur zamiast szacunków',
+              'Małe i średnie firmy — start od planu Mikro bez specjalisty ESG',
+              'Grupy spółek — wiele połączeń KSeF, jeden spójny proces',
+              'Biura rachunkowe — obsługa kilku klientów z jednej platformy',
             ].map((t) => (
               <div key={t} className="mkt-card">
                 <p style={{ margin: 0, fontWeight: 600 }}>{t}</p>
@@ -258,29 +258,26 @@ export default function MarketingHomePage() {
           </div>
           <p style={{ marginTop: 20 }}>
             <Link href="/dla-kogo" className="mkt-link">
-              Segmenty →
+              Szczegóły per segment →
             </Link>
           </p>
         </div>
       </section>
 
-      <section className="mkt-section mkt-section--surface">
+      {/* PRICING SUMMARY */}
+      <section className="mkt-section">
         <div className="mkt-inner">
-          <h2 className="mkt-section-title">Cennik — skrót</h2>
+          <h2 className="mkt-section-title">Cennik — przejrzysty i bez limitów faktur</h2>
           <p className="mkt-section-lead">
-            Progresja wedlug liczby polaczen KSeF i uzytkownikow — bez limitu faktur. Pelna tabela,
-            przelacznik miesiecznie / rocznie i FAQ cenowe na stronie{' '}
-            <Link href="/cennik" className="mkt-link">
-              Cennik
-            </Link>
-            .
+            Płacisz za liczbę połączeń KSeF i użytkowników — nie za liczbę faktur.
+            Każdy plan zawiera 7-dniowy bezpłatny trial. Rabat 10% przy jednorazowej płatności za 12 miesięcy.
           </p>
-          <div className="mkt-grid-2">
+          <div className="mkt-grid-3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
             {[
-              { n: 'Mikro', p: '149 zl / mc', d: '1 polaczenie KSeF · 1 uzytkownik' },
-              { n: 'Starter', p: '279 zl / mc', d: '1 polaczenie KSeF · do 5 uzytkownikow' },
-              { n: 'Growth', p: '499 zl / mc', d: '3 polaczenia KSeF · do 15 uzytkownikow · Polecany', f: true },
-              { n: 'Scale', p: '849 zl / mc', d: '10 polaczen KSeF · bez limitu uzytkownikow' },
+              { n: 'Mikro', p: '149 zł / mc', d: '1 połączenie KSeF · 1 użytkownik' },
+              { n: 'Starter', p: '279 zł / mc', d: '1 połączenie KSeF · do 5 użytkowników' },
+              { n: 'Growth', p: '499 zł / mc', d: '3 połączenia KSeF · do 15 użytkowników', f: true },
+              { n: 'Scale', p: '849 zł / mc', d: '10 połączeń KSeF · bez limitu użytkowników' },
             ].map((x) => (
               <div
                 key={x.n}
@@ -290,9 +287,7 @@ export default function MarketingHomePage() {
                 {x.f ? <span className="mkt-badge">Polecany</span> : null}
                 <div className="mkt-price-name">{x.n}</div>
                 <p className="mkt-price-desc">{x.d}</p>
-                <div className="mkt-price-amount" style={{ fontSize: '1.25rem' }}>
-                  {x.p}
-                </div>
+                <div className="mkt-price-amount" style={{ fontSize: '1.25rem' }}>{x.p}</div>
                 <div style={{ marginTop: 16 }}>
                   <Link href="/cennik" className="mkt-btn mkt-btn--secondary" style={{ width: '100%' }}>
                     Pełny cennik
@@ -301,33 +296,41 @@ export default function MarketingHomePage() {
               </div>
             ))}
           </div>
+          <p style={{ marginTop: 16, fontSize: '0.875rem', color: '#64748b', textAlign: 'center' }}>
+            Plan Enterprise z indywidualną wyceną — dla grup spółek, SSO i dedykowanego SLA.
+          </p>
         </div>
       </section>
 
-      <section className="mkt-section">
+      {/* FAQ */}
+      <section className="mkt-section mkt-section--surface">
         <div className="mkt-inner">
           <h2 className="mkt-section-title">Najczęstsze pytania</h2>
           <div>
             {[
               {
-                q: 'Czy Scopeo liczy wyłącznie z danych z KSeF?',
-                a: 'KSeF jest głównym źródłem faktur. Dokumenty spoza KSeF można włączyć przez OCR i ręczne przypisanie — w ramach konfiguracji wdrożenia.',
+                q: 'Czy Scopeo działa z każdą firmą podłączoną do KSeF?',
+                a: 'Tak — Scopeo łączy się z API KSeF przy użyciu tokenu autoryzacyjnego Twojej firmy. Wystarczy jednorazowa konfiguracja i faktury zaczynają się importować automatycznie.',
+              },
+              {
+                q: 'Co to jest CSRD i czy moja firma musi raportować?',
+                a: 'Dyrektywa CSRD nakłada obowiązek raportowania danych ESG, w tym emisji GHG, na firmy w UE. Duże przedsiębiorstwa od 2025 r., MŚP notowane od 2026 r. Scopeo pomaga zebrać dane emisyjne z faktur KSeF i przygotować je do raportu.',
               },
               {
                 q: 'Czy obejmuje Scope 1, 2 i 3?',
-                a: 'Tak — mapowanie linii do kategorii Scope 1–3 jest rdzeniem workflow.',
+                a: 'Tak — wszystkie trzy zakresy. Mapowanie linii faktur do kategorii Scope 1–3 jest rdzeniem systemu. Scope 3 jest dostępny od planu Starter.',
               },
               {
-                q: 'Jak wygląda wdrożenie?',
-                a: 'Start od konfiguracji organizacji, importu i szkolenia zespołu — czas zależy od skali; typowo od kilku dni do kilku tygodni.',
+                q: 'Jak wygląda trial?',
+                a: 'Po rejestracji masz 7 dni bezpłatnego dostępu do wszystkich funkcji. Po trialu wybierasz plan — bez zobowiązań, jeśli zdecydujesz się odejść.',
               },
               {
-                q: 'Czy nadaje się dla MŚP?',
-                a: 'Tak — plan Mikro (149 zl/mc) jest przeznaczony dla firm z 1 polaczeniem KSeF i jednym uzytkownikiem. Bez limitu liczby faktur.',
+                q: 'Czy dane z KSeF są bezpieczne?',
+                a: 'Tokeny KSeF są szyfrowane (AES-256) przed zapisaniem w bazie. Dane przetwarzane są na serwerach w UE. Każda organizacja ma izolowaną przestrzeń — inni klienci nie mają dostępu do Twoich faktur.',
               },
               {
-                q: 'Ile kosztuje i od czego zależy cena?',
-                a: 'Cena zalezy od liczby polaczen KSeF i liczby uzytkownikow — nie od liczby faktur. Plany od 149 zl/mc. Szczegoly na stronie Cennik.',
+                q: 'Czy potrzebuję specjalisty ESG do obsługi Scopeo?',
+                a: 'Nie. System jest zaprojektowany do obsługi przez dział finansowy lub księgowy. Specjalista ESG weryfikuje wyniki w workflow akceptacji — nie musi uczestniczyć w codziennym imporcie.',
               },
             ].map((x) => (
               <div key={x.q} className="mkt-faq-item">
@@ -338,21 +341,33 @@ export default function MarketingHomePage() {
           </div>
           <p style={{ marginTop: 16 }}>
             <Link href="/faq" className="mkt-link">
-              Wszystkie odpowiedzi →
+              Wszystkie pytania i odpowiedzi →
             </Link>
           </p>
         </div>
       </section>
 
-      <section className="mkt-section mkt-section--surface" id="demo">
+      {/* FINAL CTA */}
+      <section className="mkt-section" id="demo">
         <div className="mkt-inner">
           <div className="mkt-cta-band">
-            <h2>Umów demo</h2>
+            <h2>Zacznij bezpłatny trial — 7 dni</h2>
             <p>
-              Krótka rozmowa o wolumenie faktur, integracji z KSeF i oczekiwanym procesie review.
-              Odezwiemy się w ciągu 1 dnia roboczego.
+              Zarejestruj się, połącz KSeF i miej pierwsze dane emisyjne jeszcze dziś.
+              Bez specjalisty ESG. Bez zobowiązań.
             </p>
-            <div style={{ maxWidth: 440, margin: '0 auto', textAlign: 'left' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 8 }}>
+              <Link href="/register" className="mkt-btn mkt-btn--primary">
+                Zacznij trial bezpłatnie
+              </Link>
+              <Link href="/kontakt" className="mkt-btn mkt-btn--secondary">
+                Wolę porozmawiać z zespołem
+              </Link>
+            </div>
+            <p style={{ marginTop: 20, fontSize: '0.875rem', color: '#64748b' }}>
+              Wolisz najpierw zobaczyć demo? Zostaw dane poniżej — skontaktujemy się w ciągu 1 dnia roboczego.
+            </p>
+            <div style={{ maxWidth: 440, margin: '16px auto 0', textAlign: 'left' }}>
               <LeadForm idPrefix="home" />
             </div>
           </div>
