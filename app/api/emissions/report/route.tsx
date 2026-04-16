@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
 
-  const organizationId = (session.user as any).organizationId as string;
+  const organizationId = (session.user as { organizationId?: string }).organizationId as string;
   const ip = getClientIp(req.headers);
   const rl = await checkRateLimit(`ghg-report:${organizationId}:${ip}`, { windowMs: 5 * 60_000, maxRequests: 5 });
   if (!rl.ok) {
@@ -34,9 +34,9 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const pdfBuffer = await renderToBuffer(
-    GhgReportDocument({
-      data: {
+  const doc = (
+    <GhgReportDocument
+      data={{
         companyName: profile.companyName,
         reportingYear: validYear ?? profile.reportingYear,
         baseYear: profile.baseYear,
@@ -49,9 +49,11 @@ export async function GET(req: NextRequest) {
         byCategory: result.byCategory,
         linesCount: result.lineCount,
         generatedAt: new Date().toLocaleDateString('pl-PL'),
-      },
-    })
+      }}
+    />
   );
+
+  const pdfBuffer = await renderToBuffer(doc);
 
   const filename = `raport-ghg-${profile.companyName
     .replace(/\s+/g, '-')
