@@ -5,7 +5,8 @@ import { LEGAL_EMAIL } from '@/lib/legal';
 
 export const metadata: Metadata = {
   title: 'Kontakt — Scopeo',
-  description: 'Skontaktuj się z zespołem Scopeo — pytania o produkt, demo, wdrożenie Enterprise lub wsparcie techniczne.',
+  description:
+    'Kontakt z zespołem Scopeo: demo, pytania o produkt, Enterprise. Trial 7 dni bez karty. Adresy e-mail: ogólny, wsparcie, RODO.',
 };
 
 export default function KontaktPage() {
@@ -17,7 +18,12 @@ export default function KontaktPage() {
           <h1>Porozmawiajmy</h1>
           <p>
             Masz pytania o produkt, chcesz zobaczyć demo lub rozmawiasz o wdrożeniu Enterprise?
-            Zostaw dane — odezwiemy się w ciągu 1 dnia roboczego.
+            Zostaw dane w formularzu — odezwiemy się w ciągu 1 dnia roboczego. Możesz też od razu
+            uruchomić{' '}
+            <Link href="/register" className="mkt-link">
+              7-dniowy trial bez karty
+            </Link>
+            .
           </p>
         </div>
       </div>
@@ -27,6 +33,11 @@ export default function KontaktPage() {
           <div className="mkt-contact-grid">
             <div id="demo">
               <h2 style={{ margin: '0 0 16px', fontSize: '1.125rem' }}>Formularz kontaktowy</h2>
+              <p style={{ margin: '0 0 16px', fontSize: '0.875rem', color: '#64748b', lineHeight: 1.6 }}>
+                Wyślij zapytanie — umówimy demo, odpowiemy na pytania handlowe albo wskażemy kolejne
+                kroki. Cena Scopeo nie zależy od liczby faktur; pole wolumenu w formularzu jest tylko
+                orientacyjne.
+              </p>
               <LeadForm idPrefix="contact" />
             </div>
             <div>
@@ -37,7 +48,8 @@ export default function KontaktPage() {
                   Wolisz samodzielnie sprawdzić produkt?
                 </p>
                 <p style={{ margin: '0 0 12px', fontSize: '0.875rem', color: '#64748b', lineHeight: 1.6 }}>
-                  Trial trwa 7 dni, bez karty kredytowej. Pierwsze dane masz w 15 minut.
+                  Trial trwa 7 dni, bez karty kredytowej. Rejestracja i pierwsze połączenie KSeF to
+                  zwykle około 15 minut.
                 </p>
                 <Link href="/register" className="mkt-btn mkt-btn--primary mkt-btn--sm">
                   Zacznij bezpłatny trial

@@ -5,7 +5,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'FAQ — Scopeo',
   description:
-    'Pytania o KSeF, Scope 1–3, CSRD, bezpieczeństwo danych, cennik, trial i metodykę GHG. Odpowiedzi dla działów finansów, ESG i zarządu.',
+    'Pytania o KSeF, Scope 1–3, CSRD, bezpieczeństwo, cennik (bez limitu faktur), 7-dniowy trial, workflow akceptacji i GHG. Dla finansów, ESG i zarządu.',
 };
 
 const items: { q: string; a: ReactNode }[] = [
@@ -20,7 +20,7 @@ const items: { q: string; a: ReactNode }[] = [
   },
   {
     q: 'Czym różni się Scopeo od arkusza Excel?',
-    a: 'Excel wymaga ręcznego przepisywania faktur, nie ma historii zmian i łatwo o błąd. Scopeo pobiera faktury automatycznie z KSeF, liczy emisje bez udziału człowieka i zapisuje każdą decyzję z datą i nazwiskiem osoby, która ją podjęła. Kiedy przychodzi audytor, masz gotową dokumentację — zamiast stosu plików.',
+    a: 'Excel wymaga ręcznego przepisywania faktur, nie ma historii zmian i łatwo o błąd. Scopeo pobiera faktury automatycznie z KSeF, przypisuje kategorie i przelicza emisje — człowiek wchodzi do procesu tam, gdzie potrzebna jest weryfikacja lub akceptacja. Każda decyzja zostaje z datą i użytkownikiem (ślad audytowy). Kiedy przychodzi audytor, masz uporządkowaną dokumentację zamiast stosu plików.',
   },
   {
     q: 'Czy Scopeo zastępuje doradcę ESG lub audytora?',
@@ -77,10 +77,11 @@ const items: { q: string; a: ReactNode }[] = [
     q: 'Kogo dotyczy CSRD i od kiedy?',
     a: (
       <>
-        Dyrektywa CSRD nakłada obowiązek raportowania danych ESG na firmy w UE. Duże firmy
-        (ponad 500 pracowników) raportują jako pierwsze — za rok 2024, termin do 2025 r.
-        Firmy powyżej 250 pracowników lub 40 mln EUR przychodu — za rok 2025, termin do 2026 r.
-        MŚP notowane na giełdach — za rok 2026, termin do 2027 r. Szczegóły na{' '}
+        CSRD rozszerza raportowanie niefinansowe na wiele podmiotów w UE — w tym dane o emisjach.
+        Konkretny harmonogram, progi wielkości i obowiązki łańcucha dostaw zależą od przepisów
+        krajowych, kategorii podmiotu oraz bieżących aktów wykonawczych; mogą się zmieniać w czasie.
+        Zanim podejmiesz decyzje compliance, zweryfikuj stan prawny z doradcą. Oficjalne materiały
+        i przegląd ramy znajdziesz na{' '}
         <a
           href="https://finance.ec.europa.eu/capital-markets-company-reporting/reporting-related/company-reporting-sustainability_en"
           className="mkt-link"
@@ -100,7 +101,7 @@ const items: { q: string; a: ReactNode }[] = [
   // BILLING I TRIAL
   {
     q: 'Jak wygląda trial?',
-    a: 'Po rejestracji masz 7 dni bezpłatnego dostępu do pełnych funkcji. Po tym czasie wybierasz plan subskrypcji, który Ci odpowiada. Jeśli zdecydujesz się nie kontynuować — nie ponosisz żadnych kosztów.',
+    a: 'Po rejestracji masz 7 dni na przetestowanie produktu na swoich danych — bez karty kredytowej. Po zakończeniu okresu próbnego wybierasz plan albo rezygnujesz bez opłat.',
   },
   {
     q: 'Od czego zależy cena?',
@@ -125,7 +126,7 @@ const items: { q: string; a: ReactNode }[] = [
   },
   {
     q: 'Czy potrzebuję specjalisty ESG, żeby korzystać z Scopeo?',
-    a: 'Nie. Codzienną obsługę — import faktur, przeglądanie wyników — z powodzeniem prowadzi dział finansowy lub księgowy. Specjalista ESG wchodzi do procesu tylko tam, gdzie rzeczywiście potrzebna jest jego wiedza merytoryczna, czyli przy zatwierdzaniu trudnych przypadków.',
+    a: 'Nie. Codzienną obsługę — import faktur, przeglądanie wyników — z powodzeniem prowadzi dział finansowy lub księgowy. Specjalista ESG wchodzi do procesu tam, gdzie potrzebna jest wiedza merytoryczna, np. przy akceptacji trudnych przypisań kategorii w workflow akceptacji.',
   },
   {
     q: 'Ile osób z mojego zespołu może korzystać z systemu?',
@@ -177,8 +178,8 @@ export default function FaqPage() {
           <p className="mkt-kicker">FAQ</p>
           <h1>Pytania i odpowiedzi</h1>
           <p>
-            Odpowiedzi na pytania o produkt, KSeF, CSRD, bezpieczeństwo danych, cennik i metodykę GHG.
-            Nie znalazłeś odpowiedzi?{' '}
+            Odpowiedzi na pytania o produkt, KSeF, CSRD, bezpieczeństwo danych, cennik (bez limitu
+            faktur), trial i metodykę GHG. Nie znalazłeś odpowiedzi?{' '}
             <Link href="/kontakt" className="mkt-link">
               Napisz do nas.
             </Link>
@@ -213,9 +214,12 @@ export default function FaqPage() {
             ))}
           </ul>
 
-          <div style={{ marginTop: 40 }}>
+          <div style={{ marginTop: 40, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <Link href="/register" className="mkt-btn mkt-btn--primary">
               Zacznij bezpłatny trial — 7 dni
+            </Link>
+            <Link href="/kontakt#demo" className="mkt-btn mkt-btn--secondary">
+              Umów demo
             </Link>
           </div>
         </div>

@@ -4,7 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'O Scopeo — dlaczego powstało i co oferuje',
   description:
-    'Scopeo to polskie oprogramowanie SaaS do raportowania emisji GHG z danych KSeF. Operacyjny system dla firm, które potrzebują rzetelnych danych do CSRD bez chaosu Excela.',
+    'Polskie SaaS do emisji GHG z KSeF: import, Scope 1–3, workflow akceptacji, ślad audytowy, eksport CSRD/GHG. Dla firm, które wychodzą z chaosu Excela.',
 };
 
 export default function ONasPage() {
@@ -34,15 +34,16 @@ export default function ONasPage() {
           <p>
             Scopeo robi dokładnie to: automatycznie pobiera faktury z KSeF, mapuje je do kategorii
             emisji na podstawie współczynników KOBiZE i prowadzi przez workflow akceptacji z pełnym
-            audit trail. Wynik to raport gotowy dla CFO, zarządu i zewnętrznego audytora.
+            śladem audytowym (audit trail). Wynik to raport gotowy dla CFO, zarządu i zewnętrznego
+            audytora.
           </p>
 
           <h2>Raportowanie emisji to operacja, nie jednorazowy projekt</h2>
           <p>
             Wiele firm podchodzi do śladu węglowego jak do jednorazowego zlecenia — outsourcowanego
             do doradcy raz na rok. To może wystarczyć przy pierwszym raporcie. Ale przy CSRD raportowanie
-            staje się regularnym obowiązkiem: dane kwartalne, workflow akceptacji, historia zmian,
-            możliwość weryfikacji. Tego nie da rady utrzymać w Excelu ani arkuszu Google.
+            staje się regularnym obowiązkiem: dane kwartalne, workflow akceptacji, historia zmian
+            i możliwość weryfikacji. Tego nie da się sensownie utrzymać w Excelu ani arkuszu Google.
           </p>
           <p>
             Scopeo jest zaprojektowany jako system operacyjny do tej pracy — z rolami, statusami,
@@ -74,8 +75,11 @@ export default function ONasPage() {
             <Link href="/register" className="mkt-btn mkt-btn--primary">
               Zacznij bezpłatny trial — 7 dni
             </Link>
+            <Link href="/kontakt#demo" className="mkt-btn mkt-btn--secondary">
+              Umów demo
+            </Link>
             <Link href="/jak-dziala" className="mkt-btn mkt-btn--secondary">
-              Zobacz jak działa
+              Jak działa
             </Link>
           </div>
         </div>
