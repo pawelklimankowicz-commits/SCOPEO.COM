@@ -59,7 +59,7 @@
     "@vitest/coverage-v8": "^4.1.4",
     "eslint": "^8.57.1",
     "eslint-config-next": "15.5.15",
-    "fast-check": "^3.23.2",
+    "fast-check": "^4.6.0",
     "prisma": "6.6.0",
     "tsx": "^4.21.0",
     "typescript": "^5.8.2",
