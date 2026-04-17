@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { renderToBuffer } from '@react-pdf/renderer';
+import { PDFDocument } from 'pdf-lib';
 import { auth } from '@/lib/auth';
 import { calculateOrganizationEmissions } from '@/lib/emissions';
 import { GhgReportDocument } from '@/lib/ghg-report-pdf';
@@ -158,12 +159,17 @@ export async function GET(req: NextRequest) {
   );
 
   const pdfBuffer = await renderToBuffer(doc);
+  const renderedPdf = await PDFDocument.load(pdfBuffer);
+  while (renderedPdf.getPageCount() > 3) {
+    renderedPdf.removePage(renderedPdf.getPageCount() - 1);
+  }
+  const normalizedPdfBuffer = await renderedPdf.save();
 
   const filename = `raport-ghg-${profile.companyName
     .replace(/\s+/g, '-')
     .toLowerCase()}-${validYear ?? profile.reportingYear}.pdf`;
 
-  return new NextResponse(new Uint8Array(pdfBuffer), {
+  return new NextResponse(new Uint8Array(normalizedPdfBuffer), {
     headers: {
       'Content-Type': 'application/pdf',
       'Content-Disposition': `attachment; filename="${filename}"`,

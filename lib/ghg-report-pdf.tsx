@@ -240,6 +240,9 @@ export function GhgReportDocument({ data }: { data: ReportData }) {
   const pieInput = sortedCategories.slice(0, 6);
   const restKg = sortedCategories.slice(6).reduce((sum, [, kg]) => sum + kg, 0);
   const pieData = restKg > 0 ? [...pieInput, ['Pozostale kategorie', restKg] as [string, number]] : pieInput;
+  const tableCategories = sortedCategories.slice(0, 8);
+  const evidenceEntriesLimited = (data.evidenceTrail?.entries ?? []).slice(0, 4);
+  const scope3MatrixLimited = (data.scope3Completeness?.matrix ?? []).slice(0, 4);
   let pieAngle = 0;
   const pieSegments = pieData.map(([code, kg], idx) => {
     const share = data.totalKg > 0 ? kg / data.totalKg : 0;
@@ -373,7 +376,7 @@ export function GhgReportDocument({ data }: { data: ReportData }) {
         </View>
 
         <Text style={styles.footer}>
-          Strona 1/2 · Raport wygenerowany przez Scopeo dnia {data.generatedAt}. Material ma charakter operacyjno-zarzadczy
+          Strona 1/3 · Raport wygenerowany przez Scopeo dnia {data.generatedAt}. Material ma charakter operacyjno-zarzadczy
           i nie stanowi certyfikowanej opinii audytorskiej.
         </Text>
       </Page>
@@ -398,7 +401,7 @@ export function GhgReportDocument({ data }: { data: ReportData }) {
             <Text style={[styles.colTons, { fontWeight: 'bold' }]}>tCO2e</Text>
             <Text style={[styles.colShare, { fontWeight: 'bold' }]}>Udzial</Text>
           </View>
-          {sortedCategories.map(([code, kg]) => (
+          {tableCategories.map(([code, kg]) => (
             <View key={`row-${code}`} style={styles.tableRow}>
               <Text style={styles.colCategory}>
                 {categoryLabel(code)} [{categoryEvidenceMap.get(code) ?? `EV-CAT-${code}`}]
@@ -408,40 +411,20 @@ export function GhgReportDocument({ data }: { data: ReportData }) {
               <Text style={styles.colShare}>{pct(kg)}</Text>
             </View>
           ))}
+          {sortedCategories.length > tableCategories.length ? (
+            <View style={styles.tableRow}>
+              <Text style={styles.colCategory}>
+                ... oraz {sortedCategories.length - tableCategories.length} dodatkowych kategorii (pelna lista w CSV/XLSX).
+              </Text>
+              <Text style={styles.colScope}>-</Text>
+              <Text style={styles.colTons}>-</Text>
+              <Text style={styles.colShare}>-</Text>
+            </View>
+          ) : null}
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>5. Formal Report Pack</Text>
-          <View style={styles.methodologyWrap}>
-            <Text style={styles.methodologyTitle}>5.1 Metodyka</Text>
-            {(data.formalReportPack?.methodology ?? []).map((line, idx) => (
-              <Text key={`frp-methodology-${idx}`} style={styles.methodologyLine}>• {line}</Text>
-            ))}
-            <Text style={[styles.methodologyTitle, { marginTop: 6 }]}>5.2 Granice</Text>
-            {(data.formalReportPack?.boundaries ?? []).map((line, idx) => (
-              <Text key={`frp-boundaries-${idx}`} style={styles.methodologyLine}>• {line}</Text>
-            ))}
-            <Text style={[styles.methodologyTitle, { marginTop: 6 }]}>5.3 Wykluczenia</Text>
-            {(data.formalReportPack?.exclusions ?? []).map((line, idx) => (
-              <Text key={`frp-exclusions-${idx}`} style={styles.methodologyLine}>• {line}</Text>
-            ))}
-            <Text style={[styles.methodologyTitle, { marginTop: 6 }]}>5.4 Niepewnosc</Text>
-            {(data.formalReportPack?.uncertainty ?? []).map((line, idx) => (
-              <Text key={`frp-uncertainty-${idx}`} style={styles.methodologyLine}>• {line}</Text>
-            ))}
-            <Text style={[styles.methodologyTitle, { marginTop: 6 }]}>5.5 Odpowiedzialnosc</Text>
-            {(data.formalReportPack?.responsibility ?? []).map((line, idx) => (
-              <Text key={`frp-responsibility-${idx}`} style={styles.methodologyLine}>• {line}</Text>
-            ))}
-            <Text style={[styles.methodologyTitle, { marginTop: 6 }]}>5.6 Status Assurance</Text>
-            {(data.formalReportPack?.assuranceStatus ?? []).map((line, idx) => (
-              <Text key={`frp-assurance-${idx}`} style={styles.methodologyLine}>• {line}</Text>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>6. Sekcja Wysylkowa do Kontrahenta</Text>
+          <Text style={styles.sectionTitle}>5. Sekcja Wysylkowa do Kontrahenta</Text>
           <View style={styles.methodologyWrap}>
             <Text style={styles.methodologyLine}>• Numer raportu: {resolvedReportNumber}</Text>
             <Text style={styles.methodologyLine}>• Data zatwierdzenia: {resolvedApprovedAt}</Text>
@@ -453,6 +436,35 @@ export function GhgReportDocument({ data }: { data: ReportData }) {
             <Text style={[styles.methodologyLine, { marginTop: 8 }]}>
               • Podpis osoby odpowiedzialnej: ________________________________
             </Text>
+          </View>
+        </View>
+
+        <Text style={styles.footer}>
+          Strona 2/3 · Raport wygenerowany przez Scopeo dnia {data.generatedAt}. Dokument ma charakter formalny roboczy i nie stanowi certyfikatu zgodnosci.
+        </Text>
+      </Page>
+      <Page size="A4" style={styles.page}>
+        <View style={styles.brandRow}>
+          <Text style={styles.brand}>SCOPEO | ESG Intelligence</Text>
+          <Text style={styles.confidential}>Zalacznik audytowy</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.title}>Audit Annex i Jakosc Danych</Text>
+          <Text style={styles.subtitle}>
+            {data.companyName} | Rok raportowania: {data.reportingYear}
+          </Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>6. Formal Report Pack (skrot)</Text>
+          <View style={styles.methodologyWrap}>
+            <Text style={styles.methodologyLine}>• Metodyka: {data.formalReportPack?.methodology?.[0] ?? 'GHG Protocol Corporate Standard.'}</Text>
+            <Text style={styles.methodologyLine}>• Granice: {data.formalReportPack?.boundaries?.[0] ?? `Granica organizacyjna: ${data.boundaryApproach}.`}</Text>
+            <Text style={styles.methodologyLine}>• Wykluczenia: {data.formalReportPack?.exclusions?.[0] ?? 'Mozliwe braki danych spoza dostarczonego zakresu.'}</Text>
+            <Text style={styles.methodologyLine}>• Niepewnosc: {data.formalReportPack?.uncertainty?.[0] ?? 'Poziom niepewnosci zalezy od jakosci danych zrodlowych.'}</Text>
+            <Text style={styles.methodologyLine}>• Odpowiedzialnosc: {data.formalReportPack?.responsibility?.[0] ?? 'Za dane wejsciowe odpowiada raportujaca organizacja.'}</Text>
+            <Text style={styles.methodologyLine}>• Assurance: {data.formalReportPack?.assuranceStatus?.[0] ?? 'External assurance: not performed.'}</Text>
           </View>
         </View>
 
@@ -468,14 +480,14 @@ export function GhgReportDocument({ data }: { data: ReportData }) {
             <Text style={styles.methodologyLine}>
               • Ponizej lista linii dowodowych (skrot): EvidenceID | Faktura | Linia | Faktor | Metodyka | Link.
             </Text>
-            {(data.evidenceTrail?.entries ?? []).slice(0, 20).map((entry) => (
+            {evidenceEntriesLimited.map((entry) => (
               <Text key={entry.evidenceId} style={styles.methodologyLine}>
-                • {entry.evidenceId} | {entry.invoiceNumber} | {entry.lineId.slice(0, 8)} | {entry.factorCode ?? 'BRAK'} | {entry.methodologyVersion} | {entry.invoiceSourceLink}
+                • {entry.evidenceId} | {entry.invoiceNumber} | {entry.lineId.slice(0, 8)} | {entry.factorCode ?? 'BRAK'} | {entry.methodologyVersion}
               </Text>
             ))}
-            {data.evidenceTrail && data.evidenceTrail.entries.length > 20 ? (
+            {data.evidenceTrail && data.evidenceTrail.entries.length > evidenceEntriesLimited.length ? (
               <Text style={styles.methodologyLine}>
-                • ... oraz {data.evidenceTrail.entries.length - 20} kolejnych rekordow dowodowych (pelny wykaz w eksporcie CSV/XLSX).
+                • ... oraz {data.evidenceTrail.entries.length - evidenceEntriesLimited.length} kolejnych rekordow dowodowych (pelny wykaz w eksporcie CSV/XLSX/JSON).
               </Text>
             ) : null}
           </View>
@@ -490,15 +502,6 @@ export function GhgReportDocument({ data }: { data: ReportData }) {
             <Text style={styles.methodologyLine}>
               • Flagged impact: {(data.dataQuality?.flaggedImpactKg ?? 0).toFixed(2)} kg ({qualityFlaggedPct.toFixed(2)}% calkowitej emisji).
             </Text>
-            <Text style={styles.methodologyLine}>
-              • estimated: {(data.dataQuality?.impactByFlagKg?.estimated ?? 0).toFixed(2)} kg ({(data.dataQuality?.impactByFlagPct?.estimated ?? 0).toFixed(2)}%), linie: {data.dataQuality?.lineCountsByFlag?.estimated ?? 0}
-            </Text>
-            <Text style={styles.methodologyLine}>
-              • missing: {(data.dataQuality?.impactByFlagKg?.missing ?? 0).toFixed(2)} kg ({(data.dataQuality?.impactByFlagPct?.missing ?? 0).toFixed(2)}%), linie: {data.dataQuality?.lineCountsByFlag?.missing ?? 0}
-            </Text>
-            <Text style={styles.methodologyLine}>
-              • assumed: {(data.dataQuality?.impactByFlagKg?.assumed ?? 0).toFixed(2)} kg ({(data.dataQuality?.impactByFlagPct?.assumed ?? 0).toFixed(2)}%), linie: {data.dataQuality?.lineCountsByFlag?.assumed ?? 0}
-            </Text>
           </View>
         </View>
 
@@ -508,11 +511,16 @@ export function GhgReportDocument({ data }: { data: ReportData }) {
             <Text style={styles.methodologyLine}>
               • Pokrycie macierzy Scope 3: {scope3CoveragePct.toFixed(2)}% ({scope3CoveredCount}/{scope3TotalCount} kategorii).
             </Text>
-            {(data.scope3Completeness?.matrix ?? []).map((item) => (
+            {scope3MatrixLimited.map((item) => (
               <Text key={item.categoryCode} style={styles.methodologyLine}>
-                • {item.categoryLabel} [{item.categoryCode}] → {item.status === 'covered' ? 'covered' : 'not covered'} | {item.reason}
+                • {item.categoryLabel} [{item.categoryCode}] → {item.status === 'covered' ? 'covered' : 'not covered'}
               </Text>
             ))}
+            {(data.scope3Completeness?.matrix ?? []).length > scope3MatrixLimited.length ? (
+              <Text style={styles.methodologyLine}>
+                • ... oraz {(data.scope3Completeness?.matrix ?? []).length - scope3MatrixLimited.length} kolejnych pozycji macierzy Scope 3 (pelny eksport w CSV/XLSX/JSON).
+              </Text>
+            ) : null}
           </View>
         </View>
 
@@ -523,21 +531,8 @@ export function GhgReportDocument({ data }: { data: ReportData }) {
               • Polityka formalna: {data.baseYearRecalculationPolicy?.standard ?? 'GHG Protocol Corporate Standard'} v{data.baseYearRecalculationPolicy?.version ?? '1.0'}.
             </Text>
             <Text style={styles.methodologyLine}>
-              • Cel polityki: {data.baseYearRecalculationPolicy?.objective ?? 'Spojnosc trendu emisyjnego i porownywalnosc danych historycznych.'}
-            </Text>
-            <Text style={styles.methodologyLine}>
               • Zasada istotnosci: {data.baseYearRecalculationPolicy?.materialityRule ?? 'Przeliczenie wymagane przy istotnym wplywie na rok bazowy.'}
             </Text>
-            {(data.baseYearRecalculationPolicy?.mandatoryTriggers ?? []).map((trigger, idx) => (
-              <Text key={`policy-trigger-${idx}`} style={styles.methodologyLine}>
-                • Trigger: {trigger}
-              </Text>
-            ))}
-            {(data.baseYearRecalculationPolicy?.governance ?? []).map((rule, idx) => (
-              <Text key={`policy-governance-${idx}`} style={styles.methodologyLine}>
-                • Governance: {rule}
-              </Text>
-            ))}
             {data.latestBaseYearRecalculation ? (
               <>
                 <Text style={[styles.methodologyLine, { marginTop: 4 }]}>
@@ -546,7 +541,6 @@ export function GhgReportDocument({ data }: { data: ReportData }) {
                 <Text style={styles.methodologyLine}>
                   • Wplyw na baseline: {recalculationDeltaKg.toFixed(2)} kg ({recalculationDeltaPct.toFixed(2)}%), materialnosc (prog 5%): {recalculationMaterial ? 'TAK' : 'NIE'}.
                 </Text>
-                <Text style={styles.methodologyLine}>• Uzasadnienie: {data.latestBaseYearRecalculation.reason}</Text>
               </>
             ) : (
               <Text style={[styles.methodologyLine, { marginTop: 4 }]}>
@@ -557,7 +551,7 @@ export function GhgReportDocument({ data }: { data: ReportData }) {
         </View>
 
         <Text style={styles.footer}>
-          Strona 2/2 · Raport wygenerowany przez Scopeo dnia {data.generatedAt}. Dokument ma charakter formalny roboczy i nie stanowi certyfikatu zgodnosci.
+          Strona 3/3 · Raport wygenerowany przez Scopeo dnia {data.generatedAt}. Dokument ma charakter formalny roboczy i nie stanowi certyfikatu zgodnosci.
         </Text>
       </Page>
     </Document>

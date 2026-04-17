@@ -192,6 +192,7 @@ model Organization {
   emissionCalculations EmissionCalculation[]
   emissionReportSnapshots EmissionReportSnapshot[]
   baseYearRecalculationLogs BaseYearRecalculationLog[]
+  faqAssistantQueries    FaqAssistantQuery[]
   mappingDecisions     MappingDecision[]
   reviewEvents         ReviewEvent[]
   importRuns           FactorImportRun[]
@@ -532,6 +533,25 @@ model BaseYearRecalculationLog {
   createdAt         DateTime     @default(now())
 
   @@index([organizationId, createdAt])
+}
+
+model FaqAssistantQuery {
+  id                 String        @id @default(cuid())
+  organizationId     String?
+  organization       Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  sessionId          String?
+  question           String
+  normalizedQuestion String
+  answerPreview      String?
+  source             String
+  matchedIntent      String?
+  responseMs         Int?
+  ipHash             String?
+  createdAt          DateTime      @default(now())
+
+  @@index([createdAt])
+  @@index([organizationId, createdAt])
+  @@index([normalizedQuestion])
 }
 
 model Lead {

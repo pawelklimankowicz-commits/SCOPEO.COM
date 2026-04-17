@@ -1,0 +1,16 @@
+---
+description: Po każdej zmianie kodu — push na GitHub i deploy na Vercel do sukcesu
+alwaysApply: true
+---
+
+# Deploy po zmianach
+
+Po **każdej** wprowadzonej zmianie w tym repozytorium:
+
+1. Uruchom walidację: `npm run typecheck` oraz `npm run lint` (i testy, jeśli dotyczy zmiany).
+2. Zrób commit z czytelnym opisem.
+3. Wypchnij na GitHub: `git push origin main` (lub aktualny branch).
+4. Wdróż na Vercel: `npx vercel --prod --yes` (z katalogu projektu, po zalogowaniu CLI).
+5. Przy błędach: napraw, powtórz od kroku 1 aż do **zielonego** wyniku (build/deploy).
+
+Nie commituj artefaktów lokalnych (screenshoty, `video.mp4`, `reports/*.pdf`, `supabase/.temp/`, `tsconfig.tsbuildinfo`) chyba że użytkownik wyraźnie tego zażąda.
