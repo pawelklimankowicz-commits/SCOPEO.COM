@@ -100,3 +100,11 @@ jobs:
         run: npx prisma validate
         env:
           DATABASE_URL: 'postgresql://scopeo:scopeo@localhost:5433/scopeo_ci'
+      - name: Run integration tests after migrations
+        run: npm run test:integration
+        env:
+          DATABASE_URL: 'postgresql://scopeo:scopeo@localhost:5433/scopeo_ci'
+          NEXTAUTH_SECRET: 'ci-test-secret-minimum-32-characters-long'
+          NEXTAUTH_URL: 'http://localhost:3000'
+          DATA_ENCRYPTION_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
+          KSEF_TOKEN_ENCRYPTION_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='

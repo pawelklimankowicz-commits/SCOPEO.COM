@@ -1,7 +1,10 @@
-import { prisma } from '@/lib/prisma';
-
 function roundKg(n: number) {
   return Math.round(n * 1e6) / 1e6;
+}
+
+async function getPrisma() {
+  const mod = await import('@/lib/prisma');
+  return mod.prisma;
 }
 
 /** Pure CO₂e (kg) for one invoice line — used by `calculateOrganizationEmissions` and tests. */
@@ -49,6 +52,7 @@ export async function calculateOrganizationEmissions(
   reportYear?: number,
   options: { persist?: boolean; maxLines?: number; pageSize?: number } = { persist: false }
 ) {
+  const prisma = await getPrisma();
   const maxLines = Math.max(
     1,
     Math.min(

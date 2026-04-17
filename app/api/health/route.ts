@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { isProductionRuntime } from '@/lib/production-env';
 
 function canViewHealthDiagnostics(req?: Request): boolean {
   const secret = process.env.HEALTH_CHECK_SECRET?.trim();
@@ -12,6 +12,7 @@ export async function GET(req?: Request) {
   const startedAt = Date.now();
   const includeDiagnostics = canViewHealthDiagnostics(req);
   try {
+    const { prisma } = await import('@/lib/prisma');
     await prisma.$queryRaw`SELECT 1`;
     return NextResponse.json(
       {
@@ -25,6 +26,15 @@ export async function GET(req?: Request) {
                 (process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || '').trim()
               ),
               nextAuthUrlSet: Boolean((process.env.NEXTAUTH_URL || '').trim()),
+              stripeSecretSet: Boolean((process.env.STRIPE_SECRET_KEY || '').trim()),
+              cronSecretSet: Boolean((process.env.CRON_SECRET || '').trim()),
+              upstashConfigured: Boolean(
+                (process.env.UPSTASH_REDIS_REST_URL || '').trim() &&
+                  (process.env.UPSTASH_REDIS_REST_TOKEN || '').trim()
+              ),
+              dataEncryptionKeySet: Boolean((process.env.DATA_ENCRYPTION_KEY || '').trim()),
+              ksefTokenKeySet: Boolean((process.env.KSEF_TOKEN_ENCRYPTION_KEY || '').trim()),
+              productionRuntime: isProductionRuntime(),
             }
           : {}),
         responseMs: Date.now() - startedAt,
@@ -51,6 +61,15 @@ export async function GET(req?: Request) {
                 (process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || '').trim()
               ),
               nextAuthUrlSet: Boolean((process.env.NEXTAUTH_URL || '').trim()),
+              stripeSecretSet: Boolean((process.env.STRIPE_SECRET_KEY || '').trim()),
+              cronSecretSet: Boolean((process.env.CRON_SECRET || '').trim()),
+              upstashConfigured: Boolean(
+                (process.env.UPSTASH_REDIS_REST_URL || '').trim() &&
+                  (process.env.UPSTASH_REDIS_REST_TOKEN || '').trim()
+              ),
+              dataEncryptionKeySet: Boolean((process.env.DATA_ENCRYPTION_KEY || '').trim()),
+              ksefTokenKeySet: Boolean((process.env.KSEF_TOKEN_ENCRYPTION_KEY || '').trim()),
+              productionRuntime: isProductionRuntime(),
               errorName: e?.name ?? 'UnknownError',
               errorCode: e?.code ?? null,
               errorMessage: (e?.message || 'Unknown database error').slice(0, 240),

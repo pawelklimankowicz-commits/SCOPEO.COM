@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getKsefCronInnerFetchTimeoutMs } from '@/lib/ksef-worker-config';
+import { assertProductionAuthEnv, assertProductionCronEnv } from '@/lib/production-env';
 
 function isFetchAbort(error: unknown): boolean {
   return (
@@ -16,6 +17,8 @@ export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 export async function GET(req: Request) {
+  assertProductionCronEnv();
+  assertProductionAuthEnv();
   const authHeader = req.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });

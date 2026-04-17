@@ -24,6 +24,7 @@ export function taxIdSegmentForExternalId(sellerTaxId: string | undefined | null
 
 function sellerNameSegmentForExternalId(sellerName: string | undefined | null): string {
   const raw = String(sellerName ?? '')
+    .replace(/[łŁ]/g, (match) => (match === 'ł' ? 'l' : 'L'))
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toUpperCase()

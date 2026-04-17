@@ -6,6 +6,7 @@ import { importKsefXmlForOrganization } from '@/lib/ksef-import-service';
 import { getKsefProcessBudgetMs } from '@/lib/ksef-worker-config';
 import { logger } from '@/lib/logger';
 import { createNotification } from '@/lib/notifications';
+import { assertProductionCronEnv, assertProductionKsefCryptoEnv } from '@/lib/production-env';
 
 export const maxDuration = 60;
 
@@ -24,6 +25,8 @@ function backoffMs(attemptCount: number) {
 }
 
 export async function POST(req: Request) {
+  assertProductionCronEnv();
+  assertProductionKsefCryptoEnv();
   if (!canRunWorker(req)) {
     return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
   }

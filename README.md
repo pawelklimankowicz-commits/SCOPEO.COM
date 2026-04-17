@@ -18,7 +18,7 @@ cp .env.example .env
 docker compose up -d
 npm install
 npx prisma generate
-npx prisma db push
+npx prisma migrate dev
 npm run dev
 ```
 
@@ -31,15 +31,28 @@ Import „faktorów zewnętrznych” dokłada krajowy zestaw z pliku **`data/kob
 ### Testy
 
 - `npm test` — testy jednostkowe w `tests/unit/` oraz integracyjne w `tests/integration/` (m.in. `lib/emissions`, `lib/ksef-xml`, `lib/payload-security`; handler `GET` `/api/health` z rzeczywistym pingiem DB).
-- Bez ustawionego `DATABASE_URL` test integracyjny health jest **pomijany**. W GitHub Actions job **`migrations`** (po `prisma migrate deploy` na tymczasowej Postgresie) uruchamia ten test osobno.
+- Bez ustawionego `DATABASE_URL` test integracyjny health jest **pomijany** lokalnie.
+- W GitHub Actions job **`migration-check`** po `prisma migrate deploy` uruchamia `npm run test:integration` na tymczasowej Postgresie.
 
-### Wielokrotne organizacje (brak przełączania workspace)
+### Wielokrotne organizacje
 
-Model danych pozwala jednemu użytkownikowi mieć wiele członkostw (`Membership`). **Sesja (JWT) i cała aplikacja operują na jednej „aktywnej” organizacji:** przy logowaniu wybierane jest **pierwsze** członkostwo w kolejności `id` rosnąco (`lib/auth.ts`). Nie ma endpointów ani UI do zmiany aktywnej organizacji. Planowana rozbudowa produktu: przełącznik workspace + utrwalanie wybranego `organizationId` w tokenie lub w sesji po stronie serwera.
+Model danych pozwala jednemu użytkownikowi mieć wiele członkostw (`Membership`). Sesja (JWT) i aplikacja operują na jednej „aktywnej” organizacji naraz, a jej wybór można zmienić z poziomu UI (`WorkspaceSwitcher`). Jeśli aktywna organizacja nie jest ustawiona, logowanie domyślnie wybiera pierwsze członkostwo w kolejności `id`.
 
 ## Produkcja
 
 Ustaw `DATABASE_URL` i `AUTH_SECRET` w środowisku (Vercel, Railway itd.). Port **5433** w przykładzie jest tylko dla lokalnego Dockera — na produkcji użyj connection stringa od dostawcy.
+
+### Wymagane zmienne w produkcji (hard fail)
+
+Aplikacja zatrzyma start krytycznych ścieżek, jeśli w `production` brakuje:
+
+- `AUTH_SECRET` (lub `NEXTAUTH_SECRET`) — minimum 32 znaki
+- `NEXTAUTH_URL`
+- `UPSTASH_REDIS_REST_URL` i `UPSTASH_REDIS_REST_TOKEN`
+- `STRIPE_SECRET_KEY`
+- `CRON_SECRET`
+- `DATA_ENCRYPTION_KEY` (base64, 32 bajty)
+- `KSEF_TOKEN_ENCRYPTION_KEY` (base64, 32 bajty)
 
 **Migracje bazy:** build aplikacji (np. na Vercel) **nie** uruchamia `prisma migrate deploy`. Po wdrożeniu lub w pipeline CI/CD wywołaj w środowisku z ustawionym `DATABASE_URL`:
 
@@ -47,7 +60,7 @@ Ustaw `DATABASE_URL` i `AUTH_SECRET` w środowisku (Vercel, Railway itd.). Port 
 npx prisma migrate deploy
 ```
 
-GitHub Actions w tym repo uruchamia `migrate deploy` + `migrate status` na tymczasowej bazie (job `migrations`), żeby wyłapać błędne pliki migracji — to **nie** aktualizuje produkcyjnej bazy.
+GitHub Actions w tym repo uruchamia `migrate deploy` + `prisma validate` + `test:integration` na tymczasowej bazie (job `migration-check`) — to **nie** aktualizuje produkcyjnej bazy.
 
 ---
 
@@ -67,7 +80,7 @@ cp .env.example .env
 openssl rand -base64 32
 ```
 
-Skopiuj wynik do `.env` jako wartość `AUTH_SECRET=...`.
+Skopiuj wynik do `.env` jako wartość `AUTH_SECRET=...` (minimum 32 znaki).
 
 ```bash
 docker compose up -d
@@ -78,7 +91,7 @@ npm install
 ```
 
 ```bash
-npx prisma db push
+npx prisma migrate dev
 ```
 
 ```bash
@@ -130,18 +143,18 @@ git push -u origin main
 | Nazwa | Wartość |
 |--------|---------|
 | `DATABASE_URL` | Connection string PostgreSQL (np. [Neon](https://neon.tech) lub Supabase — musi zaczynać się od `postgresql://`) |
-| `AUTH_SECRET` | Ten sam sekret co lokalnie (`openssl rand -base64 32`) |
+| `AUTH_SECRET` | Ten sam sekret co lokalnie (`openssl rand -base64 32`, min. 32 znaki) |
 | `NEXTAUTH_URL` | `https://twoja-domena.vercel.app` (dokładnie URL produkcji, bez końcowego `/`) |
 
 **Import faktorów (UK Government flat file + EPA Hub):** co roku ministerstwa publikują nowe pliki XLSX i zmieniają nagłówki kolumn (np. „GHG Conversion Factor 2026”). Bez aktualizacji zmiennych środowiskowych import może się nie powieść. Ustaw w Vercelu (lub lokalnie) m.in. `FACTOR_IMPORT_UK_FLAT_XLSX_URL`, `FACTOR_IMPORT_EPA_HUB_XLSX_URL`, opcjonalnie `FACTOR_IMPORT_UK_GHG_COLUMN` oraz `FACTOR_IMPORT_DATA_YEAR` / `FACTOR_IMPORT_UK_DATA_YEAR` / `FACTOR_IMPORT_EPA_DATA_YEAR` — szczegóły w `.env.example`. Domyślne wartości w kodzie odpowiadają wydaniu 2025 i wymagają odświeżenia po przejściu na nowe pliki.
 
-4. **Pierwsza synchronizacja bazy** (jednorazowo, z Twojego komputera — wstaw ten sam URL co w Vercel):
+4. **Wdrożenie migracji bazy** (po każdym deployu, z pipeline CI/CD lub ręcznie):
 
 ```bash
-DATABASE_URL="postgresql://USER:HASLO@HOST/BAZA?sslmode=require" npx prisma db push
+DATABASE_URL="postgresql://USER:HASLO@HOST/BAZA?sslmode=require" npx prisma migrate deploy
 ```
 
-(W katalogu `scopeo-saas`, po `npm install`.) Tworzy tabele w bazie produkcyjnej.
+(W katalogu `scopeo-saas`, po `npm install`.) Wykonuje wersjonowane migracje w bazie produkcyjnej.
 
 5. **Deploy:** po pushu na `main` Vercel zbuduje projekt sam (`postinstall` uruchomi `prisma generate`).
 

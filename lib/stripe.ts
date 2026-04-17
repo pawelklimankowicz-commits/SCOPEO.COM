@@ -1,6 +1,10 @@
 import Stripe from 'stripe';
+import { assertProductionStripeEnv, isProductionRuntime } from '@/lib/production-env';
 
-if (!process.env.STRIPE_SECRET_KEY) {
+const isProduction = isProductionRuntime();
+assertProductionStripeEnv();
+
+if (!process.env.STRIPE_SECRET_KEY && !isProduction) {
   console.warn('STRIPE_SECRET_KEY is missing; Stripe routes will fail until configured.');
 }
 
@@ -15,7 +19,7 @@ export const PLANS = {
     ksefLimit: 1,
     userLimit: 1,
     monthlyPricePLN: 149,
-    annualPricePLN: 119,
+    annualPricePLN: 134,
     priceIdMonthly: process.env.STRIPE_PRICE_ID_MIKRO_MONTHLY,
     priceIdAnnual: process.env.STRIPE_PRICE_ID_MIKRO_ANNUAL,
   },
@@ -24,7 +28,7 @@ export const PLANS = {
     ksefLimit: 1,
     userLimit: 5,
     monthlyPricePLN: 279,
-    annualPricePLN: 223,
+    annualPricePLN: 251,
     priceIdMonthly: process.env.STRIPE_PRICE_ID_STARTER_MONTHLY,
     priceIdAnnual: process.env.STRIPE_PRICE_ID_STARTER_ANNUAL,
   },
@@ -33,7 +37,7 @@ export const PLANS = {
     ksefLimit: 3,
     userLimit: 15,
     monthlyPricePLN: 499,
-    annualPricePLN: 399,
+    annualPricePLN: 449,
     priceIdMonthly: process.env.STRIPE_PRICE_ID_GROWTH_MONTHLY,
     priceIdAnnual: process.env.STRIPE_PRICE_ID_GROWTH_ANNUAL,
     recommended: true,
@@ -43,7 +47,7 @@ export const PLANS = {
     ksefLimit: 10,
     userLimit: 999,
     monthlyPricePLN: 849,
-    annualPricePLN: 679,
+    annualPricePLN: 764,
     priceIdMonthly: process.env.STRIPE_PRICE_ID_SCALE_MONTHLY,
     priceIdAnnual: process.env.STRIPE_PRICE_ID_SCALE_ANNUAL,
   },
@@ -58,5 +62,5 @@ export const PLANS = {
   },
 } as const;
 
-export const ANNUAL_DISCOUNT = 0.2;
+export const ANNUAL_DISCOUNT = 0.1;
 export const TRIAL_DAYS = Number(process.env.STRIPE_TRIAL_DAYS ?? '7');
