@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
 });
 
 /** Limity wyswietlania w PDF (nie obcinac dokumentu do 3 stron — tracone byly listy dowodow). */
-export const GHG_REPORT_PIE_TOP_N = 10;
+export const GHG_REPORT_PIE_TOP_N = 11;
 export const GHG_REPORT_TABLE_MAX_ROWS = 30;
 export const GHG_REPORT_EVIDENCE_MAX_ROWS = 30;
 export const GHG_REPORT_SCOPE3_MATRIX_MAX_ROWS = 30;
@@ -187,9 +187,25 @@ function categoryLabel(code: string): string {
     scope3_cat4_transport: 'Kat. 4: Transport i dystrybucja (upstream)',
     scope3_cat5_waste: 'Kat. 5: Odpady z dzialalnosci',
     scope3_cat6_business_travel: 'Kat. 6: Podroze sluzbowe',
+    scope3_cat3_fuel_energy: 'Kat. 3: Energia paliwowa (upstream)',
   };
   return map[code] ?? code;
 }
+
+/** 11 punktow kontrolnych widocznych zawsze w sekcji 11 (spojnosc z oczekiwanym szablonem). */
+export const GHG_REPORT_CHECKLIST_11 = [
+  'Granica organizacyjna i rok raportu zgodne z profilem carbon.',
+  'Agregacja Scope 1 / 2 / 3 zgodna z sumami kategorii i dowodami linii.',
+  'Scope 2 LB i MB oraz delta MB-LB opisane przy danych energetycznych.',
+  'Kompletna tabela kategorii z udzialami procentowymi i identyfikatorami EV-CAT-*.',
+  'Evidence trail: kazda pozycja raportowa mapowana do faktury, linii i metodyki.',
+  'Data Quality Score i flagged impact zgodne z flagami estymacji / brakow.',
+  'Macierz Scope 3: pokrycie kategorii i status covered / not covered.',
+  'Formal Report Pack: metodyka, granice, wykluczenia, niepewnosc, odpowiedzialnosc, assurance.',
+  'Sekcja wysylkowa: numer raportu, data, osoba, hash snapshotu (gdy dotyczy).',
+  'Rejestr rekalkulacji roku bazowego lub potwierdzenie braku zmian.',
+  'Pelny eksport CSV / XLSX / JSON dla audytu poza PDF (dokument roboczy).',
+] as const;
 
 function polarToCartesian(cx: number, cy: number, radius: number, angle: number) {
   const rad = ((angle - 90) * Math.PI) / 180;
@@ -251,7 +267,15 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
   const restKg = sortedCategories.slice(GHG_REPORT_PIE_TOP_N).reduce((sum, [, kg]) => sum + kg, 0);
   const pieData = restKg > 0 ? [...pieInput, ['Pozostale kategorie', restKg] as [string, number]] : pieInput;
   const tableCategories = sortedCategories.slice(0, GHG_REPORT_TABLE_MAX_ROWS);
-  const evidenceEntriesLimited = (data.evidenceTrail?.entries ?? []).slice(0, GHG_REPORT_EVIDENCE_MAX_ROWS);
+  const evidenceEntriesAll = data.evidenceTrail?.entries ?? [];
+  /** Przy >=11 rekordach pokazujemy co najmniej 11 pierwszych (wymaganie raportu kontrahenta). */
+  const evidenceTake =
+    evidenceEntriesAll.length === 0
+      ? 0
+      : evidenceEntriesAll.length < 11
+        ? evidenceEntriesAll.length
+        : Math.min(GHG_REPORT_EVIDENCE_MAX_ROWS, evidenceEntriesAll.length);
+  const evidenceEntriesLimited = evidenceEntriesAll.slice(0, evidenceTake);
   const scope3MatrixLimited = (data.scope3Completeness?.matrix ?? []).slice(0, GHG_REPORT_SCOPE3_MATRIX_MAX_ROWS);
   let pieAngle = 0;
   const pieSegments = pieData.map(([code, kg], idx) => {
@@ -592,6 +616,17 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
                 • Rejestr rekalkulacji: brak zarejestrowanych zmian roku bazowego dla tej organizacji.
               </Text>
             )}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>11. Lista kontrolna kompletnosci (11 punktow)</Text>
+          <View style={styles.methodologyWrap}>
+            {GHG_REPORT_CHECKLIST_11.map((line, idx) => (
+              <Text key={`chk-${idx}`} style={styles.methodologyLine}>
+                {idx + 1}. {line}
+              </Text>
+            ))}
           </View>
         </View>
 
