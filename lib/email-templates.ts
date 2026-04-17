@@ -63,7 +63,7 @@ function renderTemplate(input: {
             }
             <tr>
               <td style="padding:18px 28px 24px;font-size:12px;line-height:1.6;color:#64748b;border-top:1px solid #f1f5f9;margin-top:12px;">
-                Scopeo · scopeo.com · Nie zamawiałeś konta? Zignoruj tę wiadomość.
+                Scopeo · scopeo.pl · Nie zamawiałeś konta? Zignoruj tę wiadomość.
               </td>
             </tr>
           </table>
@@ -82,7 +82,7 @@ ${input.ctaLabel}: ${input.ctaUrl}
 Jeśli przycisk nie działa, skopiuj ten link: ${input.ctaUrl}
 Link ważny 24 godziny.
 ${input.footerNote ? `${input.footerNote}\n` : ''}
-Scopeo · scopeo.com · Nie zamawiałeś konta? Zignoruj tę wiadomość.`;
+Scopeo · scopeo.pl · Nie zamawiałeś konta? Zignoruj tę wiadomość.`;
 
   return { subject: input.subject, html, text };
 }

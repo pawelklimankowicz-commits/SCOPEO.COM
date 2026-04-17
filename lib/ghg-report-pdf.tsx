@@ -1,49 +1,57 @@
 import React from 'react';
-import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Font, Svg, G, Path, Circle } from '@react-pdf/renderer';
 
-Font.register({
-  family: 'Noto Sans',
-  fonts: [
-    {
-      src: 'https://fonts.gstatic.com/s/notosans/v36/o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7du3mhPy0.woff2',
-      fontWeight: 'normal',
-    },
-    {
-      src: 'https://fonts.gstatic.com/s/notosans/v36/o-0IIpQlx3QUlC5A4PNb4j5Ba_2c7fj2AI-instr-8517694.woff2',
-      fontWeight: 'bold',
-    },
-  ],
-});
+const PDF_FONT_FAMILY = process.env.DISABLE_REMOTE_PDF_FONTS === '1' ? 'Helvetica' : 'Noto Sans';
+
+if (process.env.DISABLE_REMOTE_PDF_FONTS !== '1') {
+  Font.register({
+    family: 'Noto Sans',
+    fonts: [
+      {
+        src: 'https://fonts.gstatic.com/s/notosans/v36/o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7du3mhPy0.woff2',
+        fontWeight: 'normal',
+      },
+      {
+        src: 'https://fonts.gstatic.com/s/notosans/v36/o-0IIpQlx3QUlC5A4PNb4j5Ba_2c7fj2AI-instr-8517694.woff2',
+        fontWeight: 'bold',
+      },
+    ],
+  });
+}
 
 const styles = StyleSheet.create({
-  page: { fontFamily: 'Noto Sans', fontSize: 10, padding: 48, color: '#1e293b' },
-  title: { fontSize: 22, fontWeight: 'bold', color: '#16a34a', marginBottom: 4 },
-  subtitle: { fontSize: 12, color: '#475569', marginBottom: 32 },
-  section: { marginBottom: 20 },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-    paddingBottom: 4,
-    marginBottom: 10,
-  },
-  row: { flexDirection: 'row', paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
-  cellLeft: { flex: 3, paddingRight: 8 },
-  cellRight: { flex: 1, textAlign: 'right' },
-  headerRow: { flexDirection: 'row', paddingVertical: 6, backgroundColor: '#f8fafc', marginBottom: 2 },
-  kpiBox: { flex: 1, backgroundColor: '#f0fdf4', borderRadius: 4, padding: 10, marginRight: 8 },
-  kpiValue: { fontSize: 18, fontWeight: 'bold', color: '#15803d' },
-  kpiLabel: { fontSize: 9, color: '#4b5563', marginTop: 2 },
-  footer: {
-    position: 'absolute',
-    bottom: 32,
-    left: 48,
-    right: 48,
-    fontSize: 8,
-    color: '#94a3b8',
-    textAlign: 'center',
-  },
+  page: { fontFamily: PDF_FONT_FAMILY, fontSize: 10, paddingTop: 32, paddingBottom: 36, paddingHorizontal: 36, color: '#0f172a', backgroundColor: '#ffffff' },
+  brandRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+  brand: { fontSize: 11, color: '#10b981' },
+  confidential: { fontSize: 8, color: '#64748b' },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 4, color: '#0f172a' },
+  subtitle: { fontSize: 11, color: '#334155', marginBottom: 18 },
+  section: { marginBottom: 14 },
+  sectionTitle: { fontSize: 12, fontWeight: 'bold', marginBottom: 8, color: '#0f172a' },
+  summaryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  summaryCard: { width: '48.8%', borderWidth: 1, borderColor: '#86efac', borderRadius: 10, padding: 10, backgroundColor: '#f0fdf4' },
+  cardLabel: { fontSize: 8, color: '#475569', marginBottom: 4 },
+  cardValue: { fontSize: 16, fontWeight: 'bold', color: '#059669' },
+  cardSub: { fontSize: 8, color: '#64748b', marginTop: 2 },
+  narrativeBox: { borderWidth: 1, borderColor: '#86efac', borderRadius: 10, padding: 10, backgroundColor: '#f0fdf4' },
+  narrativeText: { fontSize: 9, color: '#334155', lineHeight: 1.45 },
+  tableHeader: { flexDirection: 'row', backgroundColor: '#bbf7d0', borderTopLeftRadius: 8, borderTopRightRadius: 8, paddingVertical: 6, paddingHorizontal: 8, borderWidth: 1, borderColor: '#86efac' },
+  tableRow: { flexDirection: 'row', paddingVertical: 6, paddingHorizontal: 8, borderLeftWidth: 1, borderRightWidth: 1, borderBottomWidth: 1, borderColor: '#bbf7d0', backgroundColor: '#f0fdf4' },
+  colCategory: { flex: 3.6, paddingRight: 6 },
+  colScope: { flex: 1.2, textAlign: 'right' },
+  colTons: { flex: 1.1, textAlign: 'right' },
+  colShare: { flex: 1.1, textAlign: 'right' },
+  pieWrap: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#86efac', borderRadius: 10, padding: 10, backgroundColor: '#f0fdf4' },
+  pieCanvas: { width: 210, alignItems: 'center', justifyContent: 'center' },
+  pieLegend: { flex: 1, paddingLeft: 10 },
+  pieLegendRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 5 },
+  pieLegendDot: { width: 8, height: 8, borderRadius: 999, marginRight: 6 },
+  pieLegendLabel: { flex: 1, fontSize: 8.5, color: '#1f2937' },
+  pieLegendValue: { width: 70, textAlign: 'right', fontSize: 8.5, color: '#334155' },
+  methodologyWrap: { borderWidth: 1, borderColor: '#86efac', borderRadius: 10, padding: 10, backgroundColor: '#f0fdf4' },
+  methodologyTitle: { fontSize: 9, fontWeight: 'bold', color: '#0f172a', marginBottom: 4 },
+  methodologyLine: { fontSize: 8.5, color: '#334155', marginBottom: 2, lineHeight: 1.4 },
+  footer: { position: 'absolute', left: 36, right: 36, bottom: 18, fontSize: 7.5, color: '#64748b', textAlign: 'center' },
 });
 
 type ReportData = {
@@ -54,11 +62,104 @@ type ReportData = {
   industry: string;
   scope1: number;
   scope2: number;
+  scope2LocationKg?: number;
+  scope2MarketKg?: number;
   scope3: number;
   totalKg: number;
   byCategory: Record<string, number>;
   linesCount: number;
   generatedAt: string;
+  dataQuality?: {
+    score?: number;
+    flaggedImpactKg?: number;
+    flaggedImpactPct?: number;
+    impactByFlagKg?: { estimated?: number; missing?: number; assumed?: number };
+    impactByFlagPct?: { estimated?: number; missing?: number; assumed?: number };
+    lineCountsByFlag?: { estimated?: number; missing?: number; assumed?: number };
+  };
+  scope3Completeness?: {
+    summary?: {
+      coveredCount?: number;
+      totalCount?: number;
+      coveragePct?: number;
+    };
+    matrix?: Array<{
+      categoryCode: string;
+      categoryLabel: string;
+      status: 'covered' | 'not_covered';
+      coveredKg: number;
+      matchedCategories: string[];
+      reason: string;
+    }>;
+  };
+  evidenceTrail?: {
+    aggregateEvidence: {
+      total: { evidenceId: string; valueKg: number; sourceEvidenceIds: string[] };
+      scope1: { evidenceId: string; valueKg: number; sourceEvidenceIds: string[] };
+      scope2: { evidenceId: string; valueKg: number; sourceEvidenceIds: string[] };
+      scope2LocationBased?: { evidenceId: string; valueKg: number; sourceEvidenceIds: string[] };
+      scope2MarketBased?: { evidenceId: string; valueKg: number; sourceEvidenceIds: string[] };
+      scope3: { evidenceId: string; valueKg: number; sourceEvidenceIds: string[] };
+      categories: Array<{
+        categoryCode: string;
+        evidenceId: string;
+        valueKg: number;
+        sourceEvidenceIds: string[];
+      }>;
+    };
+    entries: Array<{
+      evidenceId: string;
+      co2eKg: number;
+      scope: 'SCOPE1' | 'SCOPE2' | 'SCOPE3';
+      categoryCode: string;
+      calculationMethod: 'ACTIVITY' | 'SPEND';
+      invoiceId: string;
+      invoiceNumber: string;
+      invoiceExternalId: string;
+      invoiceIssueDate: string;
+      invoiceSourceLink: string;
+      lineId: string;
+      lineDescription: string;
+      factorId: string | null;
+      factorCode: string | null;
+      factorValue: number;
+      factorUnit: string | null;
+      methodologyVersion: string;
+      emissionSourceCode: string | null;
+      emissionSourceVersion: string | null;
+      factorSourceLink: string | null;
+    }>;
+  };
+  reportNumber?: string;
+  approvedAt?: string;
+  responsiblePerson?: string;
+  contractualClause?: string;
+  snapshotHashSha256?: string;
+  baseYearRecalculationPolicy?: {
+    standard?: string;
+    version?: string;
+    objective?: string;
+    mandatoryTriggers?: readonly string[];
+    materialityRule?: string;
+    governance?: readonly string[];
+  };
+  latestBaseYearRecalculation?: {
+    previousBaseYear: number;
+    newBaseYear: number;
+    triggerType: string;
+    reason: string;
+    approvedAt: string;
+    author: string;
+    impactSummary?: Record<string, unknown>;
+  };
+  formalReportPack?: {
+    methodology: string[];
+    boundaries: string[];
+    exclusions: string[];
+    uncertainty: string[];
+    responsibility: string[];
+    assuranceStatus: string[];
+  };
 };
 
 function scopeLabel(s: string) {
@@ -83,96 +184,380 @@ function categoryLabel(code: string): string {
   return map[code] ?? code;
 }
 
+function polarToCartesian(cx: number, cy: number, radius: number, angle: number) {
+  const rad = ((angle - 90) * Math.PI) / 180;
+  return {
+    x: cx + radius * Math.cos(rad),
+    y: cy + radius * Math.sin(rad),
+  };
+}
+
+function describePieArc(cx: number, cy: number, radius: number, startAngle: number, endAngle: number) {
+  const start = polarToCartesian(cx, cy, radius, endAngle);
+  const end = polarToCartesian(cx, cy, radius, startAngle);
+  const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+  return `M ${cx} ${cy} L ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y} Z`;
+}
+
 export function GhgReportDocument({ data }: { data: ReportData }) {
+  const resolvedReportNumber =
+    data.reportNumber ??
+    `SCOPEO/GHG/${data.reportingYear}/${String(data.generatedAt).replace(/\D/g, '').slice(0, 8) || '0001'}`;
+  const resolvedApprovedAt = data.approvedAt ?? data.generatedAt;
+  const resolvedResponsiblePerson = data.responsiblePerson ?? '................................................';
+  const resolvedClause =
+    data.contractualClause ??
+    'Niniejszy raport przygotowano na potrzeby odpowiedzi kontrahenckiej i przekazano w dobrej wierze, na podstawie danych dostarczonych przez raportujaca organizacje. Zakres odpowiedzialnosci Scopeo ogranicza sie do przetworzenia danych zgodnie z uzgodniona metodyka.';
+  const resolvedSnapshotHash = data.snapshotHashSha256 ?? 'hash-not-embedded';
+  const scope2LocationKg = Number(data.scope2LocationKg ?? data.scope2);
+  const scope2MarketKg = Number(data.scope2MarketKg ?? data.scope2);
+  const scope2DeltaKg = scope2MarketKg - scope2LocationKg;
+  const qualityScore = Number(data.dataQuality?.score ?? 100);
+  const qualityFlaggedPct = Number(data.dataQuality?.flaggedImpactPct ?? 0);
+  const scope3CoveragePct = Number(data.scope3Completeness?.summary?.coveragePct ?? 0);
+  const scope3CoveredCount = Number(data.scope3Completeness?.summary?.coveredCount ?? 0);
+  const scope3TotalCount = Number(data.scope3Completeness?.summary?.totalCount ?? 0);
+  const recalculationDeltaPct = Number(data.latestBaseYearRecalculation?.impactSummary?.deltaPct ?? 0);
+  const recalculationDeltaKg = Number(data.latestBaseYearRecalculation?.impactSummary?.deltaKg ?? 0);
+  const recalculationMaterial = Boolean(data.latestBaseYearRecalculation?.impactSummary?.materialThresholdExceeded ?? false);
   const tCO2 = (kg: number) => (kg / 1000).toFixed(2);
   const pct = (kg: number) => (data.totalKg > 0 ? `${((kg / data.totalKg) * 100).toFixed(1)}%` : '0%');
+  const kgToText = (kg: number) => `${kg.toFixed(0)} kg`;
+  const topScope = [
+    { label: 'Scope 1', value: data.scope1 },
+    { label: 'Scope 2', value: data.scope2 },
+    { label: 'Scope 3', value: data.scope3 },
+  ].sort((a, b) => b.value - a.value)[0];
 
   const sortedCategories = Object.entries(data.byCategory)
     .sort(([, a], [, b]) => b - a)
     .filter(([, v]) => v > 0);
+  const palette = ['#047857', '#059669', '#10b981', '#34d399', '#6ee7b7', '#84cc16', '#0ea5e9', '#6366f1'];
+  const topThreeShare = sortedCategories.slice(0, 3).reduce((sum, [, kg]) => sum + kg, 0) / (data.totalKg || 1);
+  const categoryEvidenceMap = new Map(
+    data.evidenceTrail?.aggregateEvidence.categories.map((item) => [item.categoryCode, item.evidenceId]) ?? []
+  );
+  const pieInput = sortedCategories.slice(0, 6);
+  const restKg = sortedCategories.slice(6).reduce((sum, [, kg]) => sum + kg, 0);
+  const pieData = restKg > 0 ? [...pieInput, ['Pozostale kategorie', restKg] as [string, number]] : pieInput;
+  let pieAngle = 0;
+  const pieSegments = pieData.map(([code, kg], idx) => {
+    const share = data.totalKg > 0 ? kg / data.totalKg : 0;
+    const sweep = share * 360;
+    const start = pieAngle;
+    const end = pieAngle + sweep;
+    pieAngle = end;
+    return {
+      code,
+      kg,
+      share,
+      start,
+      end,
+      color: palette[idx % palette.length],
+    };
+  });
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
+        <View style={styles.brandRow}>
+          <Text style={styles.brand}>SCOPEO | ESG Intelligence</Text>
+          <Text style={styles.confidential}>Poufne · tylko do uzytku wewnetrznego</Text>
+        </View>
+
         <View style={styles.section}>
-          <Text style={styles.title}>Raport emisji GHG</Text>
+          <Text style={styles.title}>Raport Emisji GHG (ESG)</Text>
           <Text style={styles.subtitle}>
-            {data.companyName} · Rok raportowania: {data.reportingYear}
+            {data.companyName} | Rok raportowania: {data.reportingYear} | Rok bazowy: {data.baseYear}
           </Text>
         </View>
 
-        <View style={[styles.section, { flexDirection: 'row', gap: 8 }]}>
-          <View style={styles.kpiBox}>
-            <Text style={styles.kpiValue}>{tCO2(data.totalKg)}</Text>
-            <Text style={styles.kpiLabel}>tCO2e lacznie</Text>
-          </View>
-          <View style={styles.kpiBox}>
-            <Text style={styles.kpiValue}>{tCO2(data.scope1)}</Text>
-            <Text style={styles.kpiLabel}>tCO2e Zakres 1</Text>
-          </View>
-          <View style={styles.kpiBox}>
-            <Text style={styles.kpiValue}>{tCO2(data.scope2)}</Text>
-            <Text style={styles.kpiLabel}>tCO2e Zakres 2</Text>
-          </View>
-          <View style={styles.kpiBox}>
-            <Text style={styles.kpiValue}>{tCO2(data.scope3)}</Text>
-            <Text style={styles.kpiLabel}>tCO2e Zakres 3</Text>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>1. Executive Summary</Text>
+          <View style={styles.summaryGrid}>
+            <View style={styles.summaryCard}>
+              <Text style={styles.cardLabel}>Laczna emisja</Text>
+              <Text style={styles.cardValue}>
+                {tCO2(data.totalKg)} tCO2e [{data.evidenceTrail?.aggregateEvidence.total.evidenceId ?? 'EV-TOTAL'}]
+              </Text>
+              <Text style={styles.cardSub}>{kgToText(data.totalKg)}</Text>
+            </View>
+            <View style={styles.summaryCard}>
+              <Text style={styles.cardLabel}>Dominujacy zakres</Text>
+              <Text style={styles.cardValue}>{topScope?.label ?? 'n/d'}</Text>
+              <Text style={styles.cardSub}>{topScope ? pct(topScope.value) : '0%'}</Text>
+            </View>
+            <View style={styles.summaryCard}>
+              <Text style={styles.cardLabel}>Scope 1 + 2 + 3</Text>
+              <Text style={styles.cardValue}>
+                {tCO2(data.scope1)} [{data.evidenceTrail?.aggregateEvidence.scope1.evidenceId ?? 'EV-SCOPE1'}] / {tCO2(scope2LocationKg)} [{data.evidenceTrail?.aggregateEvidence.scope2LocationBased?.evidenceId ?? 'EV-SCOPE2-LB'}] / {tCO2(data.scope3)} [{data.evidenceTrail?.aggregateEvidence.scope3.evidenceId ?? 'EV-SCOPE3'}]
+              </Text>
+              <Text style={styles.cardSub}>tCO2e</Text>
+            </View>
+            <View style={styles.summaryCard}>
+              <Text style={styles.cardLabel}>Koncentracja top 3 kategorii</Text>
+              <Text style={styles.cardValue}>{(topThreeShare * 100).toFixed(1)}%</Text>
+              <Text style={styles.cardSub}>udzialu w emisji calkowitej</Text>
+            </View>
+            <View style={styles.summaryCard}>
+              <Text style={styles.cardLabel}>Scope 2 LB / MB</Text>
+              <Text style={styles.cardValue}>{tCO2(scope2LocationKg)} / {tCO2(scope2MarketKg)}</Text>
+              <Text style={styles.cardSub}>
+                tCO2e | Delta MB-LB: {(scope2DeltaKg / 1000).toFixed(2)} t
+              </Text>
+            </View>
+            <View style={styles.summaryCard}>
+              <Text style={styles.cardLabel}>Data Quality Score</Text>
+              <Text style={styles.cardValue}>{qualityScore.toFixed(1)} / 100</Text>
+              <Text style={styles.cardSub}>Flagged impact: {qualityFlaggedPct.toFixed(1)}% emisji</Text>
+            </View>
+            <View style={styles.summaryCard}>
+              <Text style={styles.cardLabel}>Scope 3 Completeness</Text>
+              <Text style={styles.cardValue}>
+                {scope3CoveragePct.toFixed(1)}%
+              </Text>
+              <Text style={styles.cardSub}>
+                Covered: {scope3CoveredCount}/{scope3TotalCount} kategorii Scope 3
+              </Text>
+            </View>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Emisje wedlug kategorii</Text>
-          <View style={styles.headerRow}>
-            <Text style={[styles.cellLeft, { fontWeight: 'bold' }]}>Kategoria</Text>
-            <Text style={[styles.cellRight, { fontWeight: 'bold' }]}>tCO2e</Text>
-            <Text style={[styles.cellRight, { fontWeight: 'bold' }]}>Udzial</Text>
-            <Text style={[styles.cellRight, { fontWeight: 'bold' }]}>Zakres</Text>
+          <Text style={styles.sectionTitle}>2. Boundary and Reporting Statement</Text>
+          <View style={styles.narrativeBox}>
+            <Text style={styles.narrativeText}>
+              Raport przygotowano zgodnie z podejsciem Corporate Accounting and Reporting Standard (GHG Protocol).
+              Granica organizacyjna: {data.boundaryApproach}. Zakres obejmuje Scope 1, Scope 2 i Scope 3 na podstawie
+              danych operacyjnych i fakturowych dostepnych za okres raportowy {data.reportingYear}. Najwiekszy udzial
+              w emisji calkowitej ma {topScope?.label ?? 'dominujacy zakres'} ({topScope ? pct(topScope.value) : '0%'}),
+              a koncentracja top 3 kategorii wynosi {(topThreeShare * 100).toFixed(1)}%.
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>3. Struktura Emisji wg Kategorii (Wykres Kolowy)</Text>
+          <View style={styles.pieWrap}>
+            <View style={styles.pieCanvas}>
+              <Svg width={180} height={180}>
+                <G>
+                  {pieSegments.map((segment) => (
+                    <Path
+                      key={`pie-${segment.code}`}
+                      d={describePieArc(90, 90, 78, segment.start, segment.end)}
+                      fill={segment.color}
+                    />
+                  ))}
+                  <Circle cx={90} cy={90} r={35} fill="#f8fafc" />
+                </G>
+              </Svg>
+            </View>
+            <View style={styles.pieLegend}>
+              {pieSegments.map((segment) => (
+                <View key={`legend-${segment.code}`} style={styles.pieLegendRow}>
+                  <View style={[styles.pieLegendDot, { backgroundColor: segment.color }]} />
+                  <Text style={styles.pieLegendLabel}>
+                    {segment.code === 'Pozostale kategorie' ? segment.code : categoryLabel(segment.code)}
+                  </Text>
+                  <Text style={styles.pieLegendValue}>
+                    {tCO2(segment.kg)} t ({(segment.share * 100).toFixed(1)}%)
+                  </Text>
+                </View>
+              ))}
+              <Text style={{ fontSize: 8, color: '#64748b', marginTop: 4 }}>
+                Wykres prezentuje 6 najwiekszych kategorii oraz agregat pozostalych pozycji.
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <Text style={styles.footer}>
+          Strona 1/2 · Raport wygenerowany przez Scopeo dnia {data.generatedAt}. Material ma charakter operacyjno-zarzadczy
+          i nie stanowi certyfikowanej opinii audytorskiej.
+        </Text>
+      </Page>
+      <Page size="A4" style={styles.page}>
+        <View style={styles.brandRow}>
+          <Text style={styles.brand}>SCOPEO | ESG Intelligence</Text>
+          <Text style={styles.confidential}>Zalacznik analityczny</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.title}>Szczegolowa Analiza Emisji</Text>
+          <Text style={styles.subtitle}>
+            {data.companyName} | Rok raportowania: {data.reportingYear}
+          </Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>4. Tabela Szczegolowa Kategorii</Text>
+          <View style={styles.tableHeader}>
+            <Text style={[styles.colCategory, { fontWeight: 'bold' }]}>Kategoria</Text>
+            <Text style={[styles.colScope, { fontWeight: 'bold' }]}>Zakres</Text>
+            <Text style={[styles.colTons, { fontWeight: 'bold' }]}>tCO2e</Text>
+            <Text style={[styles.colShare, { fontWeight: 'bold' }]}>Udzial</Text>
           </View>
           {sortedCategories.map(([code, kg]) => (
-            <View key={code} style={styles.row}>
-              <Text style={styles.cellLeft}>{categoryLabel(code)}</Text>
-              <Text style={styles.cellRight}>{tCO2(kg)}</Text>
-              <Text style={styles.cellRight}>{pct(kg)}</Text>
-              <Text style={styles.cellRight}>{scopeLabel(code)}</Text>
+            <View key={`row-${code}`} style={styles.tableRow}>
+              <Text style={styles.colCategory}>
+                {categoryLabel(code)} [{categoryEvidenceMap.get(code) ?? `EV-CAT-${code}`}]
+              </Text>
+              <Text style={styles.colScope}>{scopeLabel(code)}</Text>
+              <Text style={styles.colTons}>{tCO2(kg)}</Text>
+              <Text style={styles.colShare}>{pct(kg)}</Text>
             </View>
           ))}
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Informacje o raporcie</Text>
-          <View style={styles.row}>
-            <Text style={styles.cellLeft}>Firma</Text>
-            <Text style={styles.cellRight}>{data.companyName}</Text>
+          <Text style={styles.sectionTitle}>5. Formal Report Pack</Text>
+          <View style={styles.methodologyWrap}>
+            <Text style={styles.methodologyTitle}>5.1 Metodyka</Text>
+            {(data.formalReportPack?.methodology ?? []).map((line, idx) => (
+              <Text key={`frp-methodology-${idx}`} style={styles.methodologyLine}>• {line}</Text>
+            ))}
+            <Text style={[styles.methodologyTitle, { marginTop: 6 }]}>5.2 Granice</Text>
+            {(data.formalReportPack?.boundaries ?? []).map((line, idx) => (
+              <Text key={`frp-boundaries-${idx}`} style={styles.methodologyLine}>• {line}</Text>
+            ))}
+            <Text style={[styles.methodologyTitle, { marginTop: 6 }]}>5.3 Wykluczenia</Text>
+            {(data.formalReportPack?.exclusions ?? []).map((line, idx) => (
+              <Text key={`frp-exclusions-${idx}`} style={styles.methodologyLine}>• {line}</Text>
+            ))}
+            <Text style={[styles.methodologyTitle, { marginTop: 6 }]}>5.4 Niepewnosc</Text>
+            {(data.formalReportPack?.uncertainty ?? []).map((line, idx) => (
+              <Text key={`frp-uncertainty-${idx}`} style={styles.methodologyLine}>• {line}</Text>
+            ))}
+            <Text style={[styles.methodologyTitle, { marginTop: 6 }]}>5.5 Odpowiedzialnosc</Text>
+            {(data.formalReportPack?.responsibility ?? []).map((line, idx) => (
+              <Text key={`frp-responsibility-${idx}`} style={styles.methodologyLine}>• {line}</Text>
+            ))}
+            <Text style={[styles.methodologyTitle, { marginTop: 6 }]}>5.6 Status Assurance</Text>
+            {(data.formalReportPack?.assuranceStatus ?? []).map((line, idx) => (
+              <Text key={`frp-assurance-${idx}`} style={styles.methodologyLine}>• {line}</Text>
+            ))}
           </View>
-          <View style={styles.row}>
-            <Text style={styles.cellLeft}>Rok bazowy</Text>
-            <Text style={styles.cellRight}>{data.baseYear}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>6. Sekcja Wysylkowa do Kontrahenta</Text>
+          <View style={styles.methodologyWrap}>
+            <Text style={styles.methodologyLine}>• Numer raportu: {resolvedReportNumber}</Text>
+            <Text style={styles.methodologyLine}>• Data zatwierdzenia: {resolvedApprovedAt}</Text>
+            <Text style={styles.methodologyLine}>• Osoba odpowiedzialna: {resolvedResponsiblePerson}</Text>
+            <Text style={styles.methodologyLine}>• Hash snapshotu (SHA-256): {resolvedSnapshotHash}</Text>
+            <Text style={[styles.methodologyLine, { marginTop: 4 }]}>
+              • Klauzula umowna: {resolvedClause}
+            </Text>
+            <Text style={[styles.methodologyLine, { marginTop: 8 }]}>
+              • Podpis osoby odpowiedzialnej: ________________________________
+            </Text>
           </View>
-          <View style={styles.row}>
-            <Text style={styles.cellLeft}>Granica raportowania</Text>
-            <Text style={styles.cellRight}>{data.boundaryApproach}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>7. Evidence Trail (Audit Annex)</Text>
+          <View style={styles.methodologyWrap}>
+            <Text style={styles.methodologyLine}>
+              • EV-TOTAL, EV-SCOPE1/2/3 oraz EV-CAT-* mapuja kazda liczbe raportowa do zestawu dowodow linii zrodlowych.
+            </Text>
+            <Text style={styles.methodologyLine}>
+              • Linki zrodlowe prowadza do rekordow faktur KSeF i faktorow/metodyk w aplikacji.
+            </Text>
+            <Text style={styles.methodologyLine}>
+              • Ponizej lista linii dowodowych (skrot): EvidenceID | Faktura | Linia | Faktor | Metodyka | Link.
+            </Text>
+            {(data.evidenceTrail?.entries ?? []).slice(0, 20).map((entry) => (
+              <Text key={entry.evidenceId} style={styles.methodologyLine}>
+                • {entry.evidenceId} | {entry.invoiceNumber} | {entry.lineId.slice(0, 8)} | {entry.factorCode ?? 'BRAK'} | {entry.methodologyVersion} | {entry.invoiceSourceLink}
+              </Text>
+            ))}
+            {data.evidenceTrail && data.evidenceTrail.entries.length > 20 ? (
+              <Text style={styles.methodologyLine}>
+                • ... oraz {data.evidenceTrail.entries.length - 20} kolejnych rekordow dowodowych (pelny wykaz w eksporcie CSV/XLSX).
+              </Text>
+            ) : null}
           </View>
-          <View style={styles.row}>
-            <Text style={styles.cellLeft}>Branza</Text>
-            <Text style={styles.cellRight}>{data.industry}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>8. Data Quality Scoring</Text>
+          <View style={styles.methodologyWrap}>
+            <Text style={styles.methodologyLine}>
+              • Score: {qualityScore.toFixed(2)} / 100 (im wyzej, tym mniejszy wplyw danych oznaczonych flagami jakosci).
+            </Text>
+            <Text style={styles.methodologyLine}>
+              • Flagged impact: {(data.dataQuality?.flaggedImpactKg ?? 0).toFixed(2)} kg ({qualityFlaggedPct.toFixed(2)}% calkowitej emisji).
+            </Text>
+            <Text style={styles.methodologyLine}>
+              • estimated: {(data.dataQuality?.impactByFlagKg?.estimated ?? 0).toFixed(2)} kg ({(data.dataQuality?.impactByFlagPct?.estimated ?? 0).toFixed(2)}%), linie: {data.dataQuality?.lineCountsByFlag?.estimated ?? 0}
+            </Text>
+            <Text style={styles.methodologyLine}>
+              • missing: {(data.dataQuality?.impactByFlagKg?.missing ?? 0).toFixed(2)} kg ({(data.dataQuality?.impactByFlagPct?.missing ?? 0).toFixed(2)}%), linie: {data.dataQuality?.lineCountsByFlag?.missing ?? 0}
+            </Text>
+            <Text style={styles.methodologyLine}>
+              • assumed: {(data.dataQuality?.impactByFlagKg?.assumed ?? 0).toFixed(2)} kg ({(data.dataQuality?.impactByFlagPct?.assumed ?? 0).toFixed(2)}%), linie: {data.dataQuality?.lineCountsByFlag?.assumed ?? 0}
+            </Text>
           </View>
-          <View style={styles.row}>
-            <Text style={styles.cellLeft}>Liczba przeanalizowanych linii</Text>
-            <Text style={styles.cellRight}>{data.linesCount}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>9. Scope 3 Completeness Matrix</Text>
+          <View style={styles.methodologyWrap}>
+            <Text style={styles.methodologyLine}>
+              • Pokrycie macierzy Scope 3: {scope3CoveragePct.toFixed(2)}% ({scope3CoveredCount}/{scope3TotalCount} kategorii).
+            </Text>
+            {(data.scope3Completeness?.matrix ?? []).map((item) => (
+              <Text key={item.categoryCode} style={styles.methodologyLine}>
+                • {item.categoryLabel} [{item.categoryCode}] → {item.status === 'covered' ? 'covered' : 'not covered'} | {item.reason}
+              </Text>
+            ))}
           </View>
-          <View style={styles.row}>
-            <Text style={styles.cellLeft}>Metodologia</Text>
-            <Text style={styles.cellRight}>GHG Protocol Corporate Standard</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.cellLeft}>Wskazniki emisji</Text>
-            <Text style={styles.cellRight}>KOBiZE 2023, UK Gov 2025, EPA 2025</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>10. Base Year Recalculation Log</Text>
+          <View style={styles.methodologyWrap}>
+            <Text style={styles.methodologyLine}>
+              • Polityka formalna: {data.baseYearRecalculationPolicy?.standard ?? 'GHG Protocol Corporate Standard'} v{data.baseYearRecalculationPolicy?.version ?? '1.0'}.
+            </Text>
+            <Text style={styles.methodologyLine}>
+              • Cel polityki: {data.baseYearRecalculationPolicy?.objective ?? 'Spojnosc trendu emisyjnego i porownywalnosc danych historycznych.'}
+            </Text>
+            <Text style={styles.methodologyLine}>
+              • Zasada istotnosci: {data.baseYearRecalculationPolicy?.materialityRule ?? 'Przeliczenie wymagane przy istotnym wplywie na rok bazowy.'}
+            </Text>
+            {(data.baseYearRecalculationPolicy?.mandatoryTriggers ?? []).map((trigger, idx) => (
+              <Text key={`policy-trigger-${idx}`} style={styles.methodologyLine}>
+                • Trigger: {trigger}
+              </Text>
+            ))}
+            {(data.baseYearRecalculationPolicy?.governance ?? []).map((rule, idx) => (
+              <Text key={`policy-governance-${idx}`} style={styles.methodologyLine}>
+                • Governance: {rule}
+              </Text>
+            ))}
+            {data.latestBaseYearRecalculation ? (
+              <>
+                <Text style={[styles.methodologyLine, { marginTop: 4 }]}>
+                  • Ostatnia rekalkulacja: {data.latestBaseYearRecalculation.previousBaseYear} → {data.latestBaseYearRecalculation.newBaseYear} ({data.latestBaseYearRecalculation.triggerType}), zatwierdzono: {data.latestBaseYearRecalculation.approvedAt}, autor: {data.latestBaseYearRecalculation.author}.
+                </Text>
+                <Text style={styles.methodologyLine}>
+                  • Wplyw na baseline: {recalculationDeltaKg.toFixed(2)} kg ({recalculationDeltaPct.toFixed(2)}%), materialnosc (prog 5%): {recalculationMaterial ? 'TAK' : 'NIE'}.
+                </Text>
+                <Text style={styles.methodologyLine}>• Uzasadnienie: {data.latestBaseYearRecalculation.reason}</Text>
+              </>
+            ) : (
+              <Text style={[styles.methodologyLine, { marginTop: 4 }]}>
+                • Rejestr rekalkulacji: brak zarejestrowanych zmian roku bazowego dla tej organizacji.
+              </Text>
+            )}
           </View>
         </View>
 
         <Text style={styles.footer}>
-          Raport wygenerowany przez Scopeo · {data.generatedAt} · Dane oparte na zaimportowanych fakturach
-          KSeF. Raport ma charakter informacyjny i nie stanowi certyfikowanego raportu GHG Protocol.
+          Strona 2/2 · Raport wygenerowany przez Scopeo dnia {data.generatedAt}. Dokument ma charakter formalny roboczy i nie stanowi certyfikatu zgodnosci.
         </Text>
       </Page>
     </Document>

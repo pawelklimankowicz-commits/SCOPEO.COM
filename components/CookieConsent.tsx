@@ -88,68 +88,117 @@ export function CookieConsent({ isLoggedIn, serverAnalyticsCookies }: Props) {
 
   return (
     <div
+      role="dialog"
+      aria-live="polite"
+      aria-label="Informacja o przetwarzaniu plików cookies"
       style={{
         position: 'fixed',
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 50,
-        borderTop: '1px solid #e2e8f0',
-        background: '#ffffff',
+        inset: 0,
+        zIndex: 1000,
+        background: 'rgba(15, 23, 42, 0.35)',
         padding: 16,
-        boxShadow: '0 -6px 16px rgba(0, 0, 0, 0.08)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}
     >
       <div
         style={{
-          maxWidth: 1200,
-          margin: '0 auto',
-          display: 'flex',
-          gap: 12,
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
+          width: '100%',
+          maxWidth: 980,
+          background: '#ffffff',
+          border: '1px solid #86efac',
+          borderRadius: 14,
+          boxShadow: '0 28px 60px rgba(2, 6, 23, 0.22)',
+          padding: 28,
         }}
       >
-        <div style={{ fontSize: 14, color: '#334155' }}>
-          <p style={{ margin: '0 0 4px 0', fontWeight: 700 }}>Używamy plików cookie</p>
-          <p>
-            Stosujemy niezbędne pliki cookie do działania aplikacji oraz opcjonalne do monitorowania błędów
-            (Sentry). Szczegóły w{' '}
-            <a href="/polityka-prywatnosci" style={{ color: '#2563eb', textDecoration: 'underline' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ fontSize: 54, lineHeight: 1, fontWeight: 800, letterSpacing: -1.5, color: '#0f172a' }}>
+              scopeo
+            </div>
+            <div
+              aria-hidden
+              style={{
+                width: 11,
+                height: 11,
+                borderRadius: '50%',
+                background: '#22c55e',
+                marginTop: 12,
+              }}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => void persist('rejected')}
+            style={{
+              border: 0,
+              background: 'transparent',
+              color: '#0f172a',
+              textDecoration: 'underline',
+              fontSize: 33 / 2,
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            Kontynuuj bez akceptacji →
+          </button>
+        </div>
+
+        <div style={{ marginTop: 18, color: '#0f172a', fontSize: 37 / 2, lineHeight: 1.55 }}>
+          <p style={{ margin: 0 }}>
+            Za Twoją zgodą używamy plików cookies i podobnych technologii do prawidłowego działania serwisu,
+            analityki ruchu oraz ulepszania jakości usług Scopeo.
+          </p>
+          <p style={{ margin: '10px 0 0 0' }}>
+            Dane mogą obejmować identyfikatory cookie i informacje o korzystaniu ze strony. W każdej chwili możesz
+            zmienić decyzję w ustawieniach prywatności. Szczegóły znajdziesz w{' '}
+            <a href="/cookies" style={{ color: '#16a34a', textDecoration: 'underline' }}>
+              polityce cookies
+            </a>{' '}
+            oraz{' '}
+            <a href="/polityka-prywatnosci" style={{ color: '#16a34a', textDecoration: 'underline' }}>
               polityce prywatności
             </a>
             .
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-          <button
-            type="button"
-            onClick={() => void persist('rejected')}
+
+        <div style={{ display: 'flex', gap: 12, marginTop: 22, flexWrap: 'wrap' }}>
+          <a
+            href="/cookies"
             style={{
-              borderRadius: 8,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 10,
               border: '1px solid #cbd5e1',
-              background: '#fff',
+              background: '#f8fafc',
               color: '#0f172a',
-              padding: '8px 14px',
-              fontSize: 13,
+              padding: '12px 22px',
+              fontSize: 29 / 2,
+              fontWeight: 700,
+              textDecoration: 'none',
             }}
           >
-            Tylko niezbędne
-          </button>
+            Dowiedz się więcej
+          </a>
           <button
             type="button"
             onClick={() => void persist('accepted')}
             style={{
-              borderRadius: 8,
+              borderRadius: 10,
               border: 0,
-              background: '#16a34a',
+              background: '#22c55e',
               color: '#fff',
-              padding: '8px 14px',
-              fontSize: 13,
+              padding: '12px 28px',
+              fontSize: 29 / 2,
+              fontWeight: 800,
+              cursor: 'pointer',
             }}
           >
-            Akceptuję wszystkie
+            Akceptuj i zamknij
           </button>
         </div>
       </div>

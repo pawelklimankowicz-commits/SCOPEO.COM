@@ -190,6 +190,8 @@ model Organization {
   emissionSources      EmissionSource[]
   emissionFactors      EmissionFactor[]
   emissionCalculations EmissionCalculation[]
+  emissionReportSnapshots EmissionReportSnapshot[]
+  baseYearRecalculationLogs BaseYearRecalculationLog[]
   mappingDecisions     MappingDecision[]
   reviewEvents         ReviewEvent[]
   importRuns           FactorImportRun[]
@@ -490,6 +492,45 @@ model EmissionCalculation {
   summaryJson    Json
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   createdAt      DateTime     @default(now())
+  @@index([organizationId, createdAt])
+}
+
+model EmissionReportSnapshot {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportYear     Int?
+  version        Int
+  hashSha256     String
+  authorUserId   String
+  authorEmail    String?
+  createdAt      DateTime     @default(now())
+  approvedAt     DateTime     @default(now())
+  scope1Kg       Float
+  scope2Kg       Float
+  scope3Kg       Float
+  totalKg        Float
+  payloadJson    Json
+
+  @@unique([organizationId, version])
+  @@unique([organizationId, hashSha256])
+  @@index([organizationId, createdAt])
+}
+
+model BaseYearRecalculationLog {
+  id                String       @id @default(cuid())
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  previousBaseYear  Int
+  newBaseYear       Int
+  triggerType       String
+  reason            String
+  impactSummaryJson Json
+  authorUserId      String
+  authorEmail       String?
+  approvedAt        DateTime     @default(now())
+  createdAt         DateTime     @default(now())
+
   @@index([organizationId, createdAt])
 }
 

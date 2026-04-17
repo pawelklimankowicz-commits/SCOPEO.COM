@@ -2,6 +2,7 @@ import '../marketing.css';
 import { DM_Sans } from 'next/font/google';
 import SiteFooter from '@/components/marketing/SiteFooter';
 import SiteHeader from '@/components/marketing/SiteHeader';
+import FaqAssistantWidget from '@/components/marketing/FaqAssistantWidget';
 
 const dmSans = DM_Sans({
   subsets: ['latin', 'latin-ext'],
@@ -15,6 +16,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       <SiteHeader />
       <main>{children}</main>
       <SiteFooter />
+      <FaqAssistantWidget />
     </div>
   );
 }

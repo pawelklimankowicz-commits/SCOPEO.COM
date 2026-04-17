@@ -32,7 +32,7 @@ const PLANS: Array<{
     ksef: '1',
     users: '1',
     monthly: 149,
-    annualMonthly: 119,
+    annualMonthly: 134,
     features: [
       ['KSeF import (bez limitu faktur)', true],
       ['Scope 1 + 2', true],
@@ -51,7 +51,7 @@ const PLANS: Array<{
     ksef: '1',
     users: '5',
     monthly: 279,
-    annualMonthly: 223,
+    annualMonthly: 251,
     features: [
       ['KSeF import (bez limitu faktur)', true],
       ['Scope 1 + 2', true],
@@ -70,7 +70,7 @@ const PLANS: Array<{
     ksef: '3',
     users: '15',
     monthly: 499,
-    annualMonthly: 399,
+    annualMonthly: 449,
     recommended: true,
     features: [
       ['KSeF import (bez limitu faktur)', true],
@@ -90,7 +90,7 @@ const PLANS: Array<{
     ksef: '10',
     users: 'bez limitu',
     monthly: 849,
-    annualMonthly: 679,
+    annualMonthly: 764,
     features: [
       ['KSeF import (bez limitu faktur)', true],
       ['Scope 1 + 2', true],
@@ -150,11 +150,11 @@ export default function BillingPlansClient({ snapshot }: { snapshot: BillingSnap
         return;
       }
       if (!res.ok || !data.url) {
-        throw new Error(data.error || 'Nie udalo sie rozpocząć checkout');
+        throw new Error(data.error || 'Nie udało się rozpocząć checkout');
       }
       window.location.href = data.url;
     } catch (error: unknown) {
-      setMessage(error instanceof Error ? error.message : 'Nieznany blad');
+      setMessage(error instanceof Error ? error.message : 'Nieznany błąd');
     } finally {
       setLoadingPlan(null);
     }
@@ -167,11 +167,11 @@ export default function BillingPlansClient({ snapshot }: { snapshot: BillingSnap
       const res = await fetch('/api/billing/portal', { method: 'POST' });
       const data = await res.json();
       if (!res.ok || !data.url) {
-        throw new Error(data.error || 'Nie udalo sie otworzyć portalu');
+        throw new Error(data.error || 'Nie udało się otworzyć portalu');
       }
       window.location.href = data.url;
     } catch (error: unknown) {
-      setMessage(error instanceof Error ? error.message : 'Nieznany blad');
+      setMessage(error instanceof Error ? error.message : 'Nieznany błąd');
     } finally {
       setLoadingPlan(null);
     }
@@ -213,7 +213,7 @@ export default function BillingPlansClient({ snapshot }: { snapshot: BillingSnap
           Miesięcznie
         </button>
         <button className={`btn ${interval === 'ANNUAL' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setInterval('ANNUAL')}>
-          Rocznie (-20%)
+          Za rok z góry (-10%)
         </button>
       </div>
 
@@ -240,7 +240,7 @@ export default function BillingPlansClient({ snapshot }: { snapshot: BillingSnap
                   ? 'Wycena indywidualna'
                   : interval === 'MONTHLY'
                     ? `${plan.monthly} zł / mc`
-                    : `${plan.annualMonthly} zł / mc (rocznie)`}
+                    : `${plan.annualMonthly} zł / mc (płatność za 12 mies.)`}
               </p>
               <ul style={{ paddingLeft: 18 }}>
                 {plan.features.map(([name, enabled]) => (

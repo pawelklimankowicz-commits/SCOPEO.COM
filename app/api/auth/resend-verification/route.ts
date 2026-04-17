@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY);
   void resend.emails
     .send({
-      from: process.env.LEADS_FROM_EMAIL ?? 'noreply@scopeo.com',
+      from: process.env.LEADS_FROM_EMAIL ?? 'noreply@scopeo.pl',
       to: email,
       subject: 'Potwierdź adres email — Scopeo',
       text: `Witaj ${dbUser.name ?? ''},\n\nAby potwierdzić adres email, kliknij:\n\n${verifyUrl}\n\nLink ważny przez 24 godziny.`,

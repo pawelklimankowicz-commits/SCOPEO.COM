@@ -20,7 +20,7 @@ function envOrFallback(
 
 const legalEmailFallback = envOrFallback(
   process.env.SALES_INBOX_EMAIL,
-  'kontakt@scopeo.com'
+  'kontakt@scopeo.pl'
 );
 
 export const LEGAL_EMAIL = {

@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY);
   void resend.emails
     .send({
-      from: process.env.LEADS_FROM_EMAIL ?? 'noreply@scopeo.com',
+      from: process.env.LEADS_FROM_EMAIL ?? 'noreply@scopeo.pl',
       to: normalizedEmail,
       subject: 'Reset hasła — Scopeo',
       text: `Otrzymaliśmy prośbę o reset hasła dla konta ${email}.\n\nKliknij link, aby ustawić nowe hasło:\n${resetUrl}\n\nLink ważny przez 1 godzinę. Jeśli nie prosiłeś o reset, zignoruj tę wiadomość.`,

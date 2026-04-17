@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Scopeo — Podgląd treści marketingowych (aktualny)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8fafc; color: #0f172a; line-height: 1.6; }
+  .nav { background: #0f172a; color: #fff; padding: 14px 32px; position: sticky; top: 0; z-index: 10; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .nav strong { color: #10b981; margin-right: 12px; font-size: 1rem; }
+  .nav a { color: #94a3b8; text-decoration: none; font-size: 0.8125rem; padding: 4px 10px; border-radius: 4px; }
+  .nav a:hover { background: #1e293b; color: #fff; }
+  .page { max-width: 820px; margin: 40px auto; padding: 0 24px 80px; }
+  .page-section { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 36px; margin-bottom: 40px; }
+  .page-label { display: inline-block; background: #10b981; color: #fff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; border-radius: 999px; padding: 3px 12px; margin-bottom: 16px; }
+  .url { font-family: monospace; font-size: 0.8125rem; color: #64748b; background: #f1f5f9; padding: 4px 10px; border-radius: 4px; margin-bottom: 24px; display: inline-block; }
+  h1.pg { font-size: 1.75rem; font-weight: 800; color: #0f172a; margin-bottom: 12px; line-height: 1.25; }
+  h2.sec { font-size: 1.25rem; font-weight: 700; color: #0f172a; margin: 28px 0 8px; border-left: 3px solid #10b981; padding-left: 12px; }
+  h3.sub { font-size: 1rem; font-weight: 700; color: #1e293b; margin: 20px 0 6px; }
+  p.lead { font-size: 1rem; color: #334155; margin-bottom: 16px; }
+  p.body { font-size: 0.9375rem; color: #475569; margin-bottom: 12px; }
+  .kicker { font-size: 0.8125rem; font-weight: 700; color: #10b981; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .badge { display: inline-block; font-size: 0.75rem; font-weight: 700; border: 1px solid #10b981; color: #10b981; border-radius: 999px; padding: 2px 10px; margin-bottom: 12px; }
+  .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-problem { background: #fff5f5; border-color: #fecaca; }
+  .card-value { background: #f0fdf4; border-color: #bbf7d0; }
+  .tag { display: inline-block; background: #e2e8f0; color: #475569; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 999px; padding: 2px 8px; margin-bottom: 8px; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-top: 12px; }
+  .price-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; }
+  .price-card.featured { border-color: #10b981; background: #f0fdf4; }
+  .price-name { font-weight: 800; font-size: 1rem; }
+  .price-amount { font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 4px 0; }
+  .price-desc { font-size: 0.8125rem; color: #64748b; }
+  .faq-item { border-bottom: 1px solid #f1f5f9; padding: 16px 0; }
+  .faq-q { font-weight: 700; font-size: 0.9375rem; color: #0f172a; margin-bottom: 6px; }
+  .faq-a { font-size: 0.9rem; color: #475569; }
+  .step { display: flex; gap: 14px; margin-bottom: 16px; align-items: flex-start; }
+  .step-num { flex-shrink: 0; width: 30px; height: 30px; background: #10b981; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.875rem; }
+  .ul-bullets { padding-left: 20px; margin-bottom: 12px; }
+  .ul-bullets li { font-size: 0.9375rem; color: #475569; margin-bottom: 8px; }
+  .cta-block { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 10px; padding: 24px; color: #fff; text-align: center; margin-top: 24px; }
+  .cta-block h3 { color: #fff; margin-bottom: 8px; font-size: 1.25rem; }
+  .cta-block p { color: #94a3b8; font-size: 0.9375rem; margin-bottom: 12px; }
+  .btn-p { display: inline-block; background: #10b981; color: #fff; font-weight: 700; border-radius: 6px; padding: 10px 22px; font-size: 0.9rem; margin: 4px; text-decoration: none; }
+  .btn-s { display: inline-block; background: transparent; color: #94a3b8; border: 1px solid #334155; font-weight: 600; border-radius: 6px; padding: 10px 22px; font-size: 0.9rem; margin: 4px; text-decoration: none; }
+  .meta-box { background: #f1f5f9; border-radius: 6px; padding: 12px 16px; margin-bottom: 16px; }
+  .meta-box strong { font-size: 0.8125rem; color: #64748b; }
+  .meta-box p { font-size: 0.875rem; color: #334155; margin-top: 2px; }
+  .trust-row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+  .trust-item { font-size: 0.8125rem; color: #64748b; background: #f1f5f9; padding: 4px 12px; border-radius: 999px; }
+  .highlight-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 10px 14px; font-size: 0.875rem; color: #166534; margin: 8px 0; }
+  .note { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 12px 16px; font-size: 0.875rem; color: #1d4ed8; margin-top: 16px; }
+  .section-label { font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin: 24px 0 8px; }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <strong>Scopeo — Podgląd treści (aktualny)</strong>
+  <a href="#home">/ Landing</a>
+  <a href="#jak-dziala">/jak-dziala</a>
+  <a href="#produkt">/produkt</a>
+  <a href="#dla-kogo">/dla-kogo</a>
+  <a href="#o-nas">/o-nas</a>
+  <a href="#faq">/faq</a>
+  <a href="#kontakt">/kontakt</a>
+</div>
+
+<div class="page">
+
+  <!-- ===== HOME PAGE ===== -->
+  <div class="page-section" id="home">
+    <span class="page-label">Landing Page</span><br>
+    <span class="url">scopeo.pl/</span>
+
+    <div class="meta-box">
+      <strong>SEO title:</strong>
+      <p>Scopeo — ślad węglowy Twojej firmy z faktur KSeF. Automatycznie.</p>
+      <strong style="margin-top:6px;display:block">Meta description:</strong>
+      <p>Import faktur z KSeF, automatyczne mapowanie do Scope 1–3, workflow akceptacji i raport gotowy na audyt. Zacznij bezpłatny trial — 7 dni.</p>
+    </div>
+
+    <div class="section-label">HERO</div>
+    <div class="badge">KSeF · Scope 1–3 · CSRD 2026</div>
+    <h1 class="pg">Od Twoich faktur w KSeF<br>do pełnego raportu śladu węglowego</h1>
+    <p class="lead">Scopeo automatycznie importuje faktury z Krajowego Systemu e-Faktur, przypisuje linie do kategorii emisji Scope 1, 2 i 3 oraz prowadzi workflow akceptacji z pełnym audit trail. Twoje dane są gotowe dla CFO, działu ESG i zewnętrznego audytora.</p>
+    <ul class="ul-bullets">
+      <li>Bez ręcznego przepisywania faktur do Excela — import z KSeF działa automatycznie. Oszczędzasz czas oraz minimalizujesz do 0 możliwość kosztownej pomyłki.</li>
+      <li>Każda decyzja o kategorii emisji zostaje zapisana, dzięki temu obrona przed audytorem trwa kilka sekund.</li>
+      <li>Scope 3 z danych transakcyjnych, nie z szacunków z kolumny H Excel'a.</li>
+    </ul>
+    <a href="#" class="btn-p">Zacznij bezpłatny trial — 7 dni</a>
+    <a href="#" class="btn-s">Zobacz jak działa</a>
+    <div class="trust-row">
+      <span class="trust-item">✓ Import z KSeF</span>
+      <span class="trust-item">✓ Scope 1–3</span>
+      <span class="trust-item">✓ Audit trail</span>
+      <span class="trust-item">✓ Hosting w UE</span>
+    </div>
+
+    <div class="section-label">SEKCJA — Problem</div>
+    <div class="kicker">Problem</div>
+    <h2 class="sec">Excel nie był projektowany do raportowania emisji</h2>
+    <p class="body">Większość firm próbuje liczyć ślad węglowy w arkuszach — przepisując faktury ręcznie, tworząc osobne pliki dla każdego działu i tracąc historię decyzji przy każdej aktualizacji. Kiedy pojawia się audytor lub zarząd pyta o metodologię, <strong>zaczyna się panika.</strong></p>
+    <div class="card card-problem">
+      <div class="tag">Bez Scopeo</div>
+      <p class="body" style="margin:0">Faktury z KSeF pobierane ręcznie, dane kopiowane między plikami, różne wersje w ESG i księgowości, brak historii kto i kiedy zmienił kategorię. Przygotowanie raportu zajmuje tygodnie i kończy się kompromisem z audytorem.</p>
+    </div>
+    <div class="card card-value">
+      <div class="tag">Z Scopeo</div>
+      <p class="body" style="margin:0">KSeF podłączony raz — faktury importują się automatycznie. Każda linia przypisana do kategorii Scope 1–3. Workflow akceptacji z rolami. Pełny audit trail. Raport generowany w minuty, nie tygodnie.</p>
+    </div>
+
+    <div class="section-label">SEKCJA — Jak działa (skrót, 3 kroki)</div>
+    <div class="kicker">Proces</div>
+    <h2 class="sec">Trzy kroki od faktury do raportu</h2>
+    <p class="body">Scopeo nie wymaga wielomiesięcznego wdrożenia ani dedykowanego specjalisty ESG. Pierwsze dane emisyjne możesz mieć jeszcze tego samego dnia.</p>
+    <div class="step"><span class="step-num">1</span><div><strong>Połącz konto KSeF</strong><p class="body" style="margin-top:4px">Jednorazowa konfiguracja tokenu KSeF. Scopeo automatycznie pobiera faktury — historyczne i bieżące. Jedno połączenie na plan Mikro, do 10 na Scale.</p></div></div>
+    <div class="step"><span class="step-num">2</span><div><strong>Mapowanie do Scope 1, 2 i 3</strong><p class="body" style="margin-top:4px">System automatycznie przypisuje linie faktur do kategorii emisji na podstawie współczynników KOBiZE. Wyjątki trafiają do kolejki review — z możliwością korekty i zapisanym uzasadnieniem.</p></div></div>
+    <div class="step"><span class="step-num">3</span><div><strong>Raport gotowy na audyt</strong><p class="body" style="margin-top:4px">Dashboard z podziałem na Scope i kategorie. Export do PDF, CSV lub XML (CSRD/ESRS). Pełny audit trail — każda zmiana z datą, użytkownikiem i uzasadnieniem.</p></div></div>
+
+    <div class="section-label">SEKCJA — Wymierne efekty (4 karty)</div>
+    <h2 class="sec">Wymierne efekty dla organizacji</h2>
+    <p class="body">Konkretne usprawnienie operacyjne — nie obietnica bez pokrycia.</p>
+    <div class="card"><h3 class="sub" style="margin-top:0;color:#10b981">★ Błąd ludzki zredukowany do zera</h3><p class="body" style="margin:0">Automatyczny import i algorytmiczne mapowanie eliminują ręczne przepisywanie. Nie ma człowieka w pętli kopiowania — nie ma pomyłki.</p></div>
+    <div class="card"><h3 class="sub" style="margin-top:0">Mniej czasu na przygotowanie raportu</h3><p class="body" style="margin:0">Import z KSeF eliminuje ręczne przepisywanie faktur. Raport, który zajmował tygodnie, generujesz w ciągu dnia.</p></div>
+    <div class="card"><h3 class="sub" style="margin-top:0">Dane, które możesz obronić</h3><p class="body" style="margin:0">Każda kategoria emisji ma źródło w konkretnej fakturze i historię decyzji. Audytor i zarząd widzą to samo co Ty.</p></div>
+    <div class="card"><h3 class="sub" style="margin-top:0">Jeden proces dla całego zespołu</h3><p class="body" style="margin:0">ESG, finanse i księgowość pracują na tych samych danych — bez konfliktów wersji i mailowania plików.</p></div>
+
+    <div class="section-label">SEKCJA — Cennik (skrót)</div>
+    <h2 class="sec">Cennik — przejrzysty i bez limitów faktur</h2>
+    <p class="body">Płacisz za liczbę połączeń KSeF i użytkowników — nie za liczbę faktur. Każdy plan zawiera 7-dniowy bezpłatny trial. Rabat 10% przy jednorazowej płatności za 12 miesięcy.</p>
+    <div class="pricing-grid">
+      <div class="price-card"><div class="price-name">Mikro</div><div class="price-amount">149 zł/mc</div><div class="price-desc">1 KSeF · 1 użytkownik</div></div>
+      <div class="price-card"><div class="price-name">Starter</div><div class="price-amount">279 zł/mc</div><div class="price-desc">1 KSeF · do 5 użytkowników</div></div>
+      <div class="price-card featured"><div class="price-name">Growth ★</div><div class="price-amount">499 zł/mc</div><div class="price-desc">3 KSeF · do 15 użytkowników</div></div>
+      <div class="price-card"><div class="price-name">Scale</div><div class="price-amount">849 zł/mc</div><div class="price-desc">10 KSeF · bez limitu</div></div>
+    </div>
+    <p style="font-size:0.8125rem;color:#64748b;margin-top:10px">Ceny przy płatności za 12 mies. z góry (−10%): Mikro 134 zł, Starter 251 zł, Growth 449 zł, Scale 764 zł.</p>
+
+    <div class="section-label">SEKCJA — FAQ (6 pytań skrót)</div>
+    <h2 class="sec">Najczęstsze pytania</h2>
+    <div class="faq-item"><div class="faq-q">Czy Scopeo działa z każdą firmą podłączoną do KSeF?</div><div class="faq-a">Tak — Scopeo łączy się z API KSeF przy użyciu tokenu autoryzacyjnego Twojej firmy. Wystarczy jednorazowa konfiguracja i faktury zaczynają się importować automatycznie.</div></div>
+    <div class="faq-item"><div class="faq-q">Co to jest CSRD i czy moja firma musi raportować?</div><div class="faq-a">Dyrektywa CSRD nakłada obowiązek raportowania danych ESG na firmy w UE. Duże przedsiębiorstwa od 2025 r., MŚP notowane od 2026 r. Scopeo pomaga zebrać dane emisyjne z faktur KSeF i przygotować je do raportu.</div></div>
+    <div class="faq-item"><div class="faq-q">Czy obejmuje Scope 1, 2 i 3?</div><div class="faq-a">Tak — wszystkie trzy zakresy. Mapowanie linii faktur do kategorii Scope 1–3 jest rdzeniem systemu. Scope 3 jest dostępny od planu Starter.</div></div>
+    <div class="faq-item"><div class="faq-q">Jak wygląda trial?</div><div class="faq-a">Po rejestracji masz 7 dni bezpłatnego dostępu do wszystkich funkcji. Po trialu wybierasz plan — bez zobowiązań, jeśli zdecydujesz się odejść.</div></div>
+    <div class="faq-item"><div class="faq-q">Czy dane z KSeF są bezpieczne?</div><div class="faq-a">Tokeny KSeF są szyfrowane (AES-256) przed zapisaniem w bazie. Dane przetwarzane są na serwerach w UE. Każda organizacja ma izolowaną przestrzeń — inni klienci nie mają dostępu do Twoich faktur.</div></div>
+    <div class="faq-item"><div class="faq-q">Czy potrzebuję specjalisty ESG do obsługi Scopeo?</div><div class="faq-a">Nie. System jest zaprojektowany do obsługi przez dział finansowy lub księgowy. Specjalista ESG weryfikuje wyniki w workflow akceptacji — nie musi uczestniczyć w codziennym imporcie.</div></div>
+
+    <div class="section-label">KOŃCOWE CTA</div>
+    <div class="cta-block">
+      <h3>Zacznij bezpłatny trial — 7 dni</h3>
+      <p>Zarejestruj się, połącz KSeF i miej pierwsze dane emisyjne jeszcze dziś. Bez specjalisty ESG. Bez zobowiązań.</p>
+      <a href="#" class="btn-p">Zacznij trial bezpłatnie</a>
+      <a href="#" class="btn-s">Wolę porozmawiać z zespołem</a>
+    </div>
+  </div>
+
+  <!-- ===== JAK DZIAŁA ===== -->
+  <div class="page-section" id="jak-dziala">
+    <span class="page-label">Podstrona</span><br>
+    <span class="url">scopeo.pl/jak-dziala</span>
+
+    <div class="kicker">Jak działa</div>
+    <h1 class="pg">Od faktury w KSeF do raportu gotowego na audyt — krok po kroku</h1>
+    <p class="lead">Scopeo nie wymaga specjalisty ESG do uruchomienia ani wielomiesięcznego projektu wdrożeniowego. Pierwsze dane emisyjne masz w ciągu godziny od połączenia KSeF.</p>
+
+    <div class="step"><span class="step-num">1</span><div><strong>Rejestracja i konfiguracja organizacji</strong><p class="body" style="margin-top:4px">Zakładasz konto, podajesz nazwę firmy i NIP. Scopeo tworzy izolowaną przestrzeń danych dla Twojej organizacji.</p></div></div>
+    <div class="step"><span class="step-num">2</span><div><strong>Połączenie z KSeF — jednorazowo, w kilka minut</strong><p class="body" style="margin-top:4px">W ustawieniach wpisujesz token autoryzacyjny KSeF swojej firmy. Scopeo weryfikuje połączenie i natychmiast zaczyna pobierać faktury — zarówno historyczne, jak i bieżące. Jeden token = jedno połączenie KSeF. Plan Growth obsługuje 3, Scale 10 połączeń jednocześnie.</p>
+    <div class="highlight-box">Nie masz IT w firmie? To nie problem. Konfiguracja zajmuje ok. 10 minut i nie wymaga żadnej pomocy technicznej.</div></div></div>
+    <div class="step"><span class="step-num">3</span><div><strong>Automatyczny import i parsowanie faktur</strong><p class="body" style="margin-top:4px">Scopeo cyklicznie pobiera nowe faktury z KSeF. Każda linia faktury jest osobnym rekordem — z dostawcą, kwotą, datą i opisem. Status importu widoczny na dashboardzie w czasie rzeczywistym.</p></div></div>
+    <div class="step"><span class="step-num">4</span><div><strong>Mapowanie do kategorii emisji Scope 1, 2 i 3</strong><p class="body" style="margin-top:4px">Na podstawie opisów i kategorii linii faktur system przypisuje je do kategorii emisji GHG. Przeliczenie na CO₂eq odbywa się na podstawie współczynników KOBiZE (opcjonalnie UK DESNZ lub EPA). Pozycje niejednoznaczne trafiają do kolejki review z sugestią kategorii.</p></div></div>
+    <div class="step"><span class="step-num">5</span><div><strong>Workflow akceptacji z rolami</strong><p class="body" style="margin-top:4px">Pozycje trafiają do odpowiednich osób w zespole (Reviewer, Approver). Każda decyzja — zatwierdzenie, odrzucenie, korekta — zapisana z datą i nazwiskiem. Role: Owner, Admin, Analyst, Reviewer, Approver, Viewer.</p></div></div>
+    <div class="step"><span class="step-num">6</span><div><strong>Eksport raportu i audit trail</strong><p class="body" style="margin-top:4px">Raport GHG Protocol w PDF, eksport CSRD/ESRS (XML, JSON, CSV) lub surowe dane. Audit trail eksportowalny i filtrowalny — niezbędny przy weryfikacji zewnętrznej.</p></div></div>
+  </div>
+
+  <!-- ===== PRODUKT ===== -->
+  <div class="page-section" id="produkt">
+    <span class="page-label">Podstrona</span><br>
+    <span class="url">scopeo.pl/produkt</span>
+
+    <div class="kicker">Produkt</div>
+    <h1 class="pg">Wszystko, czego potrzebuje Twój zespół do raportu emisji</h1>
+    <p class="lead">Scopeo to pełny system operacyjny do pracy z danymi emisyjnymi — od importu faktur po eksport raportu gotowego na audyt zewnętrzny.</p>
+
+    <h2 class="sec">6 modułów</h2>
+    <div class="card"><h3 class="sub" style="margin-top:0">Dashboard emisji</h3><p class="body" style="margin:0">Agregaty Scope 1, 2 i 3 z podziałem na kategorie, trendy, status importów i wskaźniki per NIP. Widok dla CFO i ESG managera — bez grzebania w surowych danych.</p></div>
+    <div class="card"><h3 class="sub" style="margin-top:0">Workflow akceptacji</h3><p class="body" style="margin:0">Kolejka pozycji wymagających weryfikacji, przypisanie do reviewerów, statusy (Pending, In Review, Approved, Rejected, Overridden). Każda decyzja z datą i użytkownikiem.</p></div>
+    <div class="card"><h3 class="sub" style="margin-top:0">Audit trail</h3><p class="body" style="margin:0">Chronologiczny log każdej zmiany: kategoria, współczynnik, status, autor. Eksportowalny, filtrowany po zakresie dat i użytkowniku. Niezbędny przy weryfikacji zewnętrznej.</p></div>
+    <div class="card"><h3 class="sub" style="margin-top:0">Import z KSeF</h3><p class="body" style="margin:0">Automatyczny pobór faktur, parser XML, kolejka przetwarzania i obsługa wyjątków. Status importu widoczny w czasie rzeczywistym. Obsługa wielu połączeń KSeF równolegle.</p></div>
+    <div class="card"><h3 class="sub" style="margin-top:0">Eksport i raportowanie</h3><p class="body" style="margin:0">Raport GHG Protocol w PDF, eksport CSRD/ESRS (XML, JSON, CSV), eksport surowych danych. Każdy eksport z timestampem i zakresem danych.</p></div>
+    <div class="card"><h3 class="sub" style="margin-top:0">Role i uprawnienia</h3><p class="body" style="margin:0">Owner, Admin, Analyst, Reviewer, Approver, Viewer — granularne uprawnienia per rola. Zaproszenie nowych członków przez email.</p></div>
+
+    <h2 class="sec">Tabela funkcji per plan</h2>
+    <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:0.875rem;margin-top:8px">
+      <thead><tr style="border-bottom:2px solid #e2e8f0"><th style="text-align:left;padding:8px 12px">Funkcja</th><th style="text-align:center;padding:8px 12px">Mikro</th><th style="text-align:center;padding:8px 12px">Starter</th><th style="text-align:center;padding:8px 12px">Growth</th><th style="text-align:center;padding:8px 12px">Scale</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px 12px;color:#475569">Import z KSeF (bez limitu faktur)</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td></tr>
+        <tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px 12px;color:#475569">Scope 1 i 2</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td></tr>
+        <tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px 12px;color:#475569">Scope 3</td><td style="text-align:center;color:#cbd5e1">—</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td></tr>
+        <tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px 12px;color:#475569">Raport PDF GHG Protocol</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td></tr>
+        <tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px 12px;color:#475569">Eksport CSRD / ESRS</td><td style="text-align:center;color:#cbd5e1">—</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td></tr>
+        <tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px 12px;color:#475569">Workflow akceptacji</td><td style="text-align:center;color:#cbd5e1">—</td><td style="text-align:center;color:#cbd5e1">—</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td></tr>
+        <tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px 12px;color:#475569">Public API</td><td style="text-align:center;color:#cbd5e1">—</td><td style="text-align:center;color:#cbd5e1">—</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td></tr>
+        <tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px 12px;color:#475569">Raporty white-label</td><td style="text-align:center;color:#cbd5e1">—</td><td style="text-align:center;color:#cbd5e1">—</td><td style="text-align:center;color:#cbd5e1">—</td><td style="text-align:center;color:#10b981;font-weight:700">✓</td></tr>
+        <tr style="border-bottom:1px solid #f1f5f9;background:#f8fafc"><td style="padding:8px 12px;color:#475569">Połączeń KSeF</td><td style="text-align:center;font-weight:700">1</td><td style="text-align:center;font-weight:700">1</td><td style="text-align:center;font-weight:700">3</td><td style="text-align:center;font-weight:700">10</td></tr>
+        <tr><td style="padding:8px 12px;color:#475569">Użytkowników</td><td style="text-align:center;font-weight:700">1</td><td style="text-align:center;font-weight:700">5</td><td style="text-align:center;font-weight:700">15</td><td style="text-align:center;font-weight:700">bez limitu</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- ===== DLA KOGO ===== -->
+  <div class="page-section" id="dla-kogo">
+    <span class="page-label">Podstrona</span><br>
+    <span class="url">scopeo.pl/dla-kogo</span>
+
+    <div class="kicker">Dla kogo</div>
+    <h1 class="pg">Scopeo dla Twojego zespołu</h1>
+    <p class="lead">Scopeo adresuje firmy, które mają faktury w KSeF i muszą z nich zrobić rzetelny raport emisji — bez wielomiesięcznego projektu wdrożeniowego.</p>
+
+    <div class="card"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><h3 class="sub" style="margin:0">Działy finansów i księgowości</h3><span class="tag">Finanse</span></div><p class="body"><strong>Typowy problem:</strong> Te same faktury przetwarzane dwukrotnie — raz „pod podatek", raz „pod ESG". Osobny Excel dla emisji, który rozjeżdża się z danymi z systemu FK.</p><p class="body"><strong style="color:#0f766e">Co zmienia Scopeo:</strong> Jedno źródło danych eliminuje konflikty wersji. Dział finansów konfiguruje raz, ESG korzysta z tych samych danych.</p></div>
+    <div class="card"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><h3 class="sub" style="margin:0">Zespoły ESG i sustainability</h3><span class="tag">ESG</span></div><p class="body"><strong>Typowy problem:</strong> Dane emisyjne oparte na szacunkach lub kopiowane z poprzedniego raportu. Trudno obronić liczby bez historii decyzji.</p><p class="body"><strong style="color:#0f766e">Co zmienia Scopeo:</strong> Dane transakcyjne z KSeF — nie szacunki. Każda kategoria emisji ma źródło w konkretnej fakturze. Każda liczba jest obronialna.</p></div>
+    <div class="card"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><h3 class="sub" style="margin:0">Małe i średnie firmy</h3><span class="tag">MŚP</span></div><p class="body"><strong>Typowy problem:</strong> CSRD zbliża się, ale nie ma budżetu na zewnętrzne doradztwo ESG ani czasu na wielomiesięczne wdrożenie.</p><p class="body"><strong style="color:#0f766e">Co zmienia Scopeo:</strong> Plan Mikro od 149 zł/mc. Dane emisyjne w ciągu godziny. Nie potrzebujesz specjalisty ESG do uruchomienia.</p></div>
+    <div class="card"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><h3 class="sub" style="margin:0">Grupy spółek i holdingi</h3><span class="tag">Grupy spółek</span></div><p class="body"><strong>Typowy problem:</strong> Kilkanaście jednostek, każda z osobnym KSeF i Excelem. Konsolidacja zajmuje tygodnie.</p><p class="body"><strong style="color:#0f766e">Co zmienia Scopeo:</strong> Jeden panel dla całej grupy — wiele połączeń KSeF, spójny proces, jeden audit trail. Konsolidacja w kilka kliknięć.</p></div>
+    <div class="card"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><h3 class="sub" style="margin:0">Biura rachunkowe i doradcy ESG</h3><span class="tag">Doradcy</span></div><p class="body"><strong>Typowy problem:</strong> Obsługa kilku klientów jednocześnie, każdy z innym arkuszem i inną metodologią.</p><p class="body"><strong style="color:#0f766e">Co zmienia Scopeo:</strong> Jedna platforma, każdy klient z izolowaną przestrzenią danych. Eksport raportów z brandingiem klienta (plan Scale).</p></div>
+  </div>
+
+  <!-- ===== O NAS ===== -->
+  <div class="page-section" id="o-nas">
+    <span class="page-label">Podstrona</span><br>
+    <span class="url">scopeo.pl/o-nas</span>
+
+    <div class="kicker">O produkcie</div>
+    <h1 class="pg">Dlaczego powstało Scopeo</h1>
+    <p class="lead">Polskie firmy mają w KSeF jedne z najlepiej ustrukturyzowanych danych finansowych na świecie. A mimo to liczą ślad węglowy w Excelu. Scopeo to zmienia.</p>
+
+    <h2 class="sec">KSeF to gotowe dane emisyjne. Trzeba je tylko poukładać.</h2>
+    <p class="body">Każda polska firma ma już w rękach najlepsze możliwe dane do liczenia śladu węglowego — rzeczywiste dane transakcyjne z KSeF, nie szacunki z ankiety. Brakuje tylko systemu, który zamieni te faktury w kategoryzowane emisje Scope 1–3.</p>
+    <p class="body">Scopeo robi dokładnie to: automatycznie pobiera faktury z KSeF, mapuje je do kategorii emisji na podstawie współczynników KOBiZE i prowadzi przez workflow akceptacji z pełnym audit trail. Wynik to raport gotowy dla CFO, zarządu i zewnętrznego audytora.</p>
+
+    <h2 class="sec">Raportowanie emisji to operacja, nie jednorazowy projekt</h2>
+    <p class="body">Przy CSRD raportowanie staje się regularnym obowiązkiem: dane kwartalne, workflow akceptacji, historia zmian, możliwość weryfikacji. Tego nie da rady utrzymać w Excelu. Scopeo jest zaprojektowany jako system operacyjny do tej pracy — z rolami, statusami, historią decyzji i eksportem pod audyt.</p>
+
+    <h2 class="sec">Polskie narzędzie dla polskiego rynku</h2>
+    <p class="body">Scopeo powstało w Polsce, integruje się z polskim KSeF i używa polskich baz współczynników emisji (KOBiZE). Interfejs Scopeo mówi językiem operacji finansowych, nie żargonem ESG.</p>
+
+    <h2 class="sec">Co Scopeo nie jest</h2>
+    <p class="body">Scopeo nie jest kalkulatorem edukacyjnym ani platformą konsultingową. Jest narzędziem B2B do konkretnej pracy: zebrać, poukładać, zatwierdzić i wyeksportować dane emisyjne. Dobrze i powtarzalnie.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+      <div class="card card-value"><strong style="color:#10b981">Co Scopeo robi dobrze</strong><ul class="ul-bullets" style="margin-top:8px"><li>Automatyczny import faktur z KSeF</li><li>Mapowanie do Scope 1–3 z bazą KOBiZE</li><li>Workflow akceptacji z pełnym audit trail</li><li>Eksport CSRD/ESRS i GHG Protocol PDF</li><li>Izolacja danych per organizacja, hosting w UE</li></ul></div>
+      <div class="card card-problem"><strong style="color:#94a3b8">Czego Scopeo nie zastępuje</strong><ul class="ul-bullets" style="margin-top:8px"><li>Zewnętrznej weryfikacji przez akredytowanego weryfikatora</li><li>Doradztwa prawnego w zakresie CSRD</li><li>Strategii redukcji emisji</li><li>Szkoleń GHG Protocol</li><li>Pełnego raportu CSRD z częścią narracyjną</li></ul></div>
+    </div>
+  </div>
+
+  <!-- ===== FAQ (20 PYTAŃ) ===== -->
+  <div class="page-section" id="faq">
+    <span class="page-label">Podstrona</span><br>
+    <span class="url">scopeo.pl/faq</span>
+
+    <div class="kicker">FAQ</div>
+    <h1 class="pg">Pytania i odpowiedzi</h1>
+    <p class="lead">Odpowiedzi na pytania o produkt, KSeF, CSRD, bezpieczeństwo danych, cennik i metodykę GHG.</p>
+
+    <h2 class="sec">Produkt (7 pytań)</h2>
+    <div class="faq-item"><div class="faq-q">1. Do czego służy Scopeo?</div><div class="faq-a">Scopeo to narzędzie, które pomaga firmom zmierzyć i udokumentować swój ślad węglowy na podstawie faktur z KSeF. Wszystko dzieje się automatycznie — bez ręcznego przepisywania danych, bez arkuszy Excel i bez ryzyka pomyłki.</div></div>
+    <div class="faq-item"><div class="faq-q">2. Co to jest ślad węglowy i dlaczego moja firma powinna go mierzyć?</div><div class="faq-a">Ślad węglowy to suma emisji gazów cieplarnianych, które Twoja firma wytwarza bezpośrednio i pośrednio — przez zużycie energii, transport, zakupy usług i towarów. Coraz więcej firm jest zobowiązanych do jego raportowania przez prawo UE (CSRD). Pomiar pozwala też świadomie zarządzać kosztami i odpowiadać na pytania kontrahentów oraz inwestorów.</div></div>
+    <div class="faq-item"><div class="faq-q">3. Czym różni się Scopeo od arkusza Excel?</div><div class="faq-a">Excel wymaga ręcznego przepisywania faktur, nie ma historii zmian i łatwo o błąd. Scopeo pobiera faktury automatycznie z KSeF, liczy emisje bez udziału człowieka i zapisuje każdą decyzję z datą i nazwiskiem. Kiedy przychodzi audytor, masz gotową dokumentację.</div></div>
+    <div class="faq-item"><div class="faq-q">4. Czy Scopeo zastępuje doradcę ESG lub audytora?</div><div class="faq-a">Nie. Scopeo zbiera i porządkuje dane emisyjne. Strategię redukcji emisji, pełny raport CSRD ani weryfikację zewnętrzną nie zastąpi. Daje jednak doradcy i audytorowi porządne, udokumentowane dane zamiast arkusza z ręcznie wpisanymi liczbami.</div></div>
+    <div class="faq-item"><div class="faq-q">5. Czy Scopeo obsługuje Scope 1, 2 i 3?</div><div class="faq-a">Tak — wszystkie trzy zakresy. Scope 1 to emisje bezpośrednie (spalanie paliw, własna flota). Scope 2 to zakupiona energia elektryczna i ciepło. Scope 3 obejmuje cały łańcuch dostaw. Scope 3 dostępny jest od planu Starter.</div></div>
+    <div class="faq-item"><div class="faq-q">6. Skąd Scopeo wie, ile CO₂ emituje dana faktura?</div><div class="faq-a">Scopeo korzysta z oficjalnych baz współczynników emisji — domyślnie KOBiZE (polskie standardy). Na podstawie opisu i kategorii każdej pozycji faktury system dobiera odpowiedni współczynnik i automatycznie przelicza emisję na tony CO₂ ekwiwalentu.</div></div>
+    <div class="faq-item"><div class="faq-q">7. Czy Scopeo generuje raport CSRD / ESRS?</div><div class="faq-a">Scopeo przygotowuje dane emisyjne i eksportuje je w formatach wymaganych przez CSRD/ESRS oraz generuje raport GHG Protocol w PDF. Część opisowa raportu CSRD — strategia, narracja, inne wskaźniki ESG — pozostaje po stronie Twojego zespołu lub doradcy.</div></div>
+
+    <h2 class="sec">KSeF i dane (4 pytania)</h2>
+    <div class="faq-item"><div class="faq-q">8. Jak Scopeo łączy się z KSeF?</div><div class="faq-a">W ustawieniach podajesz token autoryzacyjny KSeF swojej firmy — to jednorazowa czynność zajmująca kilka minut. Po weryfikacji Scopeo samodzielnie pobiera faktury i na bieżąco przetwarza nowe. Nie potrzebujesz działu IT ani żadnych dodatkowych instalacji.</div></div>
+    <div class="faq-item"><div class="faq-q">9. Czy dane z moich faktur są bezpieczne?</div><div class="faq-a">Tak. Twoje dane są przechowywane na serwerach w Unii Europejskiej i są całkowicie odizolowane od danych innych firm. Dostęp do nich mają wyłącznie osoby, którym nadałeś uprawnienia w swoim koncie.</div></div>
+    <div class="faq-item"><div class="faq-q">10. Czy mogę obsługiwać kilka firm lub spółek w jednym koncie?</div><div class="faq-a">Tak — wyższe plany pozwalają podłączyć kilka kont KSeF jednocześnie. Plan Growth obsługuje 3 połączenia, Scale 10, Enterprise bez limitu. Każde połączenie ma osobną konfigurację, ale wszystkie widoczne są w jednym panelu.</div></div>
+    <div class="faq-item"><div class="faq-q">11. Co z dokumentami, których nie ma w KSeF?</div><div class="faq-a">Faktury spoza KSeF można wprowadzić ręcznie. Trafiają do tego samego procesu weryfikacji i są widoczne w raporcie razem z fakturami z KSeF.</div></div>
+
+    <h2 class="sec">CSRD i regulacje (2 pytania)</h2>
+    <div class="faq-item"><div class="faq-q">12. Kogo dotyczy CSRD i od kiedy?</div><div class="faq-a">Dyrektywa CSRD nakłada obowiązek raportowania danych ESG na firmy w UE. Duże firmy (ponad 500 pracowników) — raportują za rok 2024, termin do 2025 r. Firmy powyżej 250 pracowników lub 40 mln EUR przychodu — za rok 2025, termin do 2026 r. MŚP notowane na giełdach — za rok 2026, termin do 2027 r.</div></div>
+    <div class="faq-item"><div class="faq-q">13. Czy Scopeo gwarantuje zgodność z CSRD?</div><div class="faq-a">Scopeo dostarcza rzetelne dane o emisjach — to fundament każdego raportu CSRD. Sama zgodność z dyrektywą to szerszy temat obejmujący też część opisową i weryfikację zewnętrzną. W tych kwestiach potrzebny jest doradca lub audytor.</div></div>
+
+    <h2 class="sec">Billing i trial (5 pytań)</h2>
+    <div class="faq-item"><div class="faq-q">14. Jak wygląda trial?</div><div class="faq-a">Po rejestracji masz 7 dni bezpłatnego dostępu do pełnych funkcji. Po tym czasie wybierasz plan subskrypcji. Jeśli zdecydujesz się nie kontynuować — nie ponosisz żadnych kosztów.</div></div>
+    <div class="faq-item"><div class="faq-q">15. Od czego zależy cena?</div><div class="faq-a">Cena zależy od liczby połączeń KSeF i liczby użytkowników — nie ma limitu faktur. Plany: Mikro 149 zł/mc (1 KSeF, 1 user), Starter 279 zł/mc (1 KSeF, do 5 users), Growth 499 zł/mc (3 KSeF, do 15 users), Scale 849 zł/mc (10 KSeF, bez limitu). Jednorazowa płatność za 12 miesięcy z góry daje 10% rabatu.</div></div>
+    <div class="faq-item"><div class="faq-q">16. Czy mogę zmienić plan w trakcie subskrypcji?</div><div class="faq-a">Tak — plan możesz zmienić w dowolnym momencie. Przy zmianie na wyższy plan dostęp do nowych funkcji pojawia się natychmiast. Zmiana na niższy plan wchodzi w życie od następnego okresu rozliczeniowego. W przypadku płatności za 12 miesięcy z góry zmiana planu wiąże się z nową płatnością.</div></div>
+    <div class="faq-item"><div class="faq-q">17. Czy mogę anulować subskrypcję w dowolnym momencie?</div><div class="faq-a">Tak. Anulowanie zatrzymuje automatyczne odnawianie — dostęp masz do końca opłaconego okresu. Od pierwszej płatności po trialu obowiązuje 14-dniowa polityka zwrotu.</div></div>
+    <div class="faq-item"><div class="faq-q">18. Jak wygląda dokument potwierdzający płatność?</div><div class="faq-a">Płatności obsługuje Stripe — po każdej transakcji otrzymujesz potwierdzenie na email. Jeśli Twoja firma potrzebuje faktury VAT do odliczenia podatku, skonsultuj to z księgowym.</div></div>
+
+    <h2 class="sec">Wdrożenie i zespół (2 pytania)</h2>
+    <div class="faq-item"><div class="faq-q">19. Ile czasu zajmuje uruchomienie?</div><div class="faq-a">Rejestracja i pierwsze połączenie z KSeF zajmuje około 15 minut. Pierwsze faktury pojawiają się w systemie w ciągu kilku minut od połączenia. Nie potrzebujesz działu IT ani wcześniejszego przygotowania.</div></div>
+    <div class="faq-item"><div class="faq-q">20. Ile osób z mojego zespołu może korzystać z systemu?</div><div class="faq-a">Plan Mikro: 1 osoba. Starter: do 5 osób. Growth: do 15 osób. Scale: bez limitu. Każda osoba ma przypisaną rolę z odpowiednimi uprawnieniami — możesz kontrolować, kto widzi dane, a kto może je zatwierdzać.</div></div>
+  </div>
+
+  <!-- ===== KONTAKT ===== -->
+  <div class="page-section" id="kontakt">
+    <span class="page-label">Podstrona</span><br>
+    <span class="url">scopeo.pl/kontakt</span>
+
+    <div class="kicker">Kontakt</div>
+    <h1 class="pg">Porozmawiajmy</h1>
+    <p class="lead">Masz pytania o produkt, chcesz zobaczyć demo lub rozmawiasz o wdrożeniu Enterprise? Zostaw dane — odezwiemy się w ciągu 1 dnia roboczego.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:16px">
+      <div>
+        <h3 class="sub">Formularz kontaktowy</h3>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px"><p style="color:#64748b;font-size:0.875rem">[formularz: imię, email, firma, wiadomość]</p></div>
+      </div>
+      <div>
+        <h3 class="sub">Inne kanały</h3>
+        <div class="card" style="margin-bottom:12px"><strong>Wolisz samodzielnie sprawdzić produkt?</strong><p class="body">Trial trwa 7 dni. Pierwsze dane masz w 15 minut.</p><a href="#" class="btn-p" style="font-size:0.8125rem;padding:8px 16px">Zacznij bezpłatny trial</a></div>
+        <p class="body"><strong>Email ogólny:</strong> kontakt@scopeo.pl</p>
+        <p class="body"><strong>Wsparcie techniczne:</strong> support@scopeo.pl</p>
+        <p class="body" style="font-size:0.875rem;color:#64748b">Na demo pokazujemy import z KSeF, mapowanie do Scope 1–3, workflow akceptacji i eksport raportu. Spotkanie trwa 30–45 minut, online.</p>
+        <p class="body" style="font-size:0.875rem;color:#94a3b8">Pytania prawne i RODO: privacy@scopeo.pl</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:0">
+    <strong>To jest podgląd treści — aktualny stan po wszystkich poprawkach.</strong> Wygląd (kolory, czcionki, layout) odpowiada projektowi scopeo.pl. Plik służy wyłącznie do oceny i edycji tekstów.
+  </div>
+
+</div>
+</body>
+</html>

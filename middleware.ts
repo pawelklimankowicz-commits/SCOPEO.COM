@@ -74,13 +74,16 @@ export async function middleware(request: NextRequest) {
   }
 
   const subscriptionStatus = typeof token?.subscriptionStatus === 'string' ? token.subscriptionStatus : null;
+  const trialEndsAt = typeof token?.trialEndsAt === 'string' ? token.trialEndsAt : null;
+  const isTrialExpired =
+    subscriptionStatus === 'TRIALING' && trialEndsAt !== null && new Date(trialEndsAt) < new Date();
   const isDashboardPath = pathname.startsWith('/dashboard');
   const isBillingAllowedPath =
     pathname === '/dashboard/billing-required' || pathname === '/dashboard/settings/billing';
   if (
     isDashboardPath &&
     !isBillingAllowedPath &&
-    (subscriptionStatus === 'CANCELED' || subscriptionStatus === 'PAST_DUE')
+    (subscriptionStatus === 'CANCELED' || subscriptionStatus === 'PAST_DUE' || isTrialExpired)
   ) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/dashboard/billing-required';

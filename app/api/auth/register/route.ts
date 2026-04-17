@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     const resend = new Resend(process.env.RESEND_API_KEY);
     void resend.emails
       .send({
-        from: process.env.LEADS_FROM_EMAIL ?? 'noreply@scopeo.com',
+        from: process.env.LEADS_FROM_EMAIL ?? 'noreply@scopeo.pl',
         to: parsed.email.toLowerCase(),
         subject: email.subject,
         html: email.html,

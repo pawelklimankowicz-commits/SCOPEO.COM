@@ -7,7 +7,7 @@ export async function GET() {
       title: 'Scopeo Public API',
       version: '1.0.0',
       description: 'Publiczne API Scopeo dla integracji ERP/BI.',
-      contact: { email: 'support@scopeo.com' },
+      contact: { email: 'support@scopeo.pl' },
     },
     servers: [{ url: '/api/v1' }],
     components: {
