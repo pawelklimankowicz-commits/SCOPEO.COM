@@ -33,19 +33,13 @@ jobs:
           if [ -z "$ORG" ]; then ORG="${ORG_ID:-}"; fi
           PROJ="${VERCEL_PROJECT_ID:-}"
           if [ -z "$PROJ" ]; then PROJ="${PROJECT_ID:-}"; fi
-          if [ -z "$TOKEN" ]; then
-            echo "Missing secret: VERCEL_TOKEN (or VERCEL_ACCESS_TOKEN)" >&2
-            exit 1
+
+          if [ -z "$TOKEN" ] || [ -z "$ORG" ] || [ -z "$PROJ" ]; then
+            echo "::warning::Pomijam deploy CLI — brak pelnego zestawu sekretow (VERCEL_TOKEN lub VERCEL_ACCESS_TOKEN, VERCEL_ORG_ID lub ORG_ID, VERCEL_PROJECT_ID lub PROJECT_ID)."
+            echo "::notice::Polacz repozytorium z projektem Vercel w panelu Vercel (Git Integration) — wtedy kazdy push na main i tak buduje produkcje bez tego workflow."
+            exit 0
           fi
-          if [ -z "$ORG" ]; then
-            echo "Missing secret: VERCEL_ORG_ID (or ORG_ID)" >&2
-            exit 1
-          fi
-          if [ -z "$PROJ" ]; then
-            echo "Missing secret: VERCEL_PROJECT_ID (or PROJECT_ID)" >&2
-            exit 1
-          fi
+
           export VERCEL_ORG_ID="$ORG"
           export VERCEL_PROJECT_ID="$PROJ"
-          # Official CLI path — avoids third-party action breakage on Node / Vercel API changes.
           npx --yes vercel@latest deploy --prod --yes --token "$TOKEN"
