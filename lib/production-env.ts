@@ -25,7 +25,6 @@ export function isProductionRuntime(): boolean {
 export function assertProductionAuthEnv() {
   if (!isProductionRuntime()) return;
   requireMinLength('AUTH_SECRET or NEXTAUTH_SECRET', process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET, 32);
-  requireMinLength('NEXTAUTH_URL', process.env.NEXTAUTH_URL, 1);
 }
 
 export function assertProductionStripeEnv() {
