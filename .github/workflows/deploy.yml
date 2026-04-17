@@ -8,31 +8,44 @@ jobs:
   deploy:
     name: Deploy Production
     runs-on: ubuntu-latest
-    environment: production
-    env:
-      VERCEL_TOKEN_EFFECTIVE: ${{ secrets.VERCEL_TOKEN || secrets.VERCEL_ACCESS_TOKEN }}
-      VERCEL_ORG_ID_EFFECTIVE: ${{ secrets.VERCEL_ORG_ID || secrets.ORG_ID }}
-      VERCEL_PROJECT_ID_EFFECTIVE: ${{ secrets.VERCEL_PROJECT_ID || secrets.PROJECT_ID }}
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
-      - name: Validate Vercel secrets
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Deploy to Vercel (CLI)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ACCESS_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          ORG_ID: ${{ secrets.ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          PROJECT_ID: ${{ secrets.PROJECT_ID }}
         run: |
-          if [ -z "${VERCEL_TOKEN_EFFECTIVE}" ]; then
+          set -euo pipefail
+          TOKEN="${VERCEL_TOKEN:-}"
+          if [ -z "$TOKEN" ]; then TOKEN="${VERCEL_ACCESS_TOKEN:-}"; fi
+          ORG="${VERCEL_ORG_ID:-}"
+          if [ -z "$ORG" ]; then ORG="${ORG_ID:-}"; fi
+          PROJ="${VERCEL_PROJECT_ID:-}"
+          if [ -z "$PROJ" ]; then PROJ="${PROJECT_ID:-}"; fi
+          if [ -z "$TOKEN" ]; then
             echo "Missing secret: VERCEL_TOKEN (or VERCEL_ACCESS_TOKEN)" >&2
             exit 1
           fi
-          if [ -z "${VERCEL_ORG_ID_EFFECTIVE}" ]; then
+          if [ -z "$ORG" ]; then
             echo "Missing secret: VERCEL_ORG_ID (or ORG_ID)" >&2
             exit 1
           fi
-          if [ -z "${VERCEL_PROJECT_ID_EFFECTIVE}" ]; then
+          if [ -z "$PROJ" ]; then
             echo "Missing secret: VERCEL_PROJECT_ID (or PROJECT_ID)" >&2
             exit 1
           fi
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ env.VERCEL_TOKEN_EFFECTIVE }}
-          vercel-org-id: ${{ env.VERCEL_ORG_ID_EFFECTIVE }}
-          vercel-project-id: ${{ env.VERCEL_PROJECT_ID_EFFECTIVE }}
-          vercel-args: '--prod'
+          export VERCEL_ORG_ID="$ORG"
+          export VERCEL_PROJECT_ID="$PROJ"
+          # Official CLI path — avoids third-party action breakage on Node / Vercel API changes.
+          npx --yes vercel@latest deploy --prod --yes --token "$TOKEN"

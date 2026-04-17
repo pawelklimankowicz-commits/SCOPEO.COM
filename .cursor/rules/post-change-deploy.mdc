@@ -10,7 +10,7 @@ Po **każdej** wprowadzonej zmianie w tym repozytorium:
 1. Uruchom walidację: `npm run typecheck` oraz `npm run lint` (i testy, jeśli dotyczy zmiany).
 2. Zrób commit z czytelnym opisem.
 3. Wypchnij na GitHub: `git push origin main` (lub aktualny branch).
-4. Wdróż na Vercel: `npx vercel --prod --yes` (z katalogu projektu, po zalogowaniu CLI).
-5. Przy błędach: napraw, powtórz od kroku 1 aż do **zielonego** wyniku (build/deploy).
+4. Wdróż na Vercel: po pushu na `main` uruchamia się workflow `.github/workflows/deploy.yml` (CLI `npx vercel deploy`). Lokalnie możesz też: `npx vercel --prod --yes`.
+5. Przy błędach: napraw, powtórz od kroku 1 aż do **zielonego** wyniku (build/deploy), w tym sprawdź logi GitHub Actions dla jobu „Deploy Production”.
 
 Nie commituj artefaktów lokalnych (screenshoty, `video.mp4`, `reports/*.pdf`, `supabase/.temp/`, `tsconfig.tsbuildinfo`) chyba że użytkownik wyraźnie tego zażąda.
