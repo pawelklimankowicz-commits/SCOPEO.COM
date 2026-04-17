@@ -63,6 +63,7 @@ jobs:
         run: npm run build
         env:
           DATABASE_URL: 'postgresql://fake:fake@localhost:5432/fake'
+          AUTH_SECRET: 'ci-test-secret-minimum-32-characters-long'
           NEXTAUTH_SECRET: 'ci-test-secret-minimum-32-characters-long'
           NEXTAUTH_URL: 'http://localhost:3000'
           DATA_ENCRYPTION_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
