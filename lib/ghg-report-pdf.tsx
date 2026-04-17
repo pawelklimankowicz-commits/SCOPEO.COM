@@ -1,5 +1,6 @@
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Font, Svg, G, Path, Circle } from '@react-pdf/renderer';
+import { formatBoundaryApproachLabel } from '@/lib/ghg-report-boundary-label';
 
 const PDF_FONT_FAMILY = process.env.DISABLE_REMOTE_PDF_FONTS === '1' ? 'Helvetica' : 'Noto Sans';
 
@@ -54,7 +55,7 @@ const styles = StyleSheet.create({
   footer: { position: 'absolute', left: 36, right: 36, bottom: 18, fontSize: 7.5, color: '#64748b', textAlign: 'center' },
 });
 
-type ReportData = {
+export type GhgReportDocumentData = {
   companyName: string;
   reportingYear: number;
   baseYear: number;
@@ -199,7 +200,7 @@ function describePieArc(cx: number, cy: number, radius: number, startAngle: numb
   return `M ${cx} ${cy} L ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y} Z`;
 }
 
-export function GhgReportDocument({ data }: { data: ReportData }) {
+export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
   const resolvedReportNumber =
     data.reportNumber ??
     `SCOPEO/GHG/${data.reportingYear}/${String(data.generatedAt).replace(/\D/g, '').slice(0, 8) || '0001'}`;
@@ -235,7 +236,7 @@ export function GhgReportDocument({ data }: { data: ReportData }) {
   const palette = ['#047857', '#059669', '#10b981', '#34d399', '#6ee7b7', '#84cc16', '#0ea5e9', '#6366f1'];
   const topThreeShare = sortedCategories.slice(0, 3).reduce((sum, [, kg]) => sum + kg, 0) / (data.totalKg || 1);
   const categoryEvidenceMap = new Map(
-    data.evidenceTrail?.aggregateEvidence.categories.map((item) => [item.categoryCode, item.evidenceId]) ?? []
+    data.evidenceTrail?.aggregateEvidence?.categories?.map((item) => [item.categoryCode, item.evidenceId]) ?? []
   );
   const pieInput = sortedCategories.slice(0, 6);
   const restKg = sortedCategories.slice(6).reduce((sum, [, kg]) => sum + kg, 0);
@@ -281,7 +282,7 @@ export function GhgReportDocument({ data }: { data: ReportData }) {
             <View style={styles.summaryCard}>
               <Text style={styles.cardLabel}>Laczna emisja</Text>
               <Text style={styles.cardValue}>
-                {tCO2(data.totalKg)} tCO2e [{data.evidenceTrail?.aggregateEvidence.total.evidenceId ?? 'EV-TOTAL'}]
+                {tCO2(data.totalKg)} tCO2e [{data.evidenceTrail?.aggregateEvidence?.total?.evidenceId ?? 'EV-TOTAL'}]
               </Text>
               <Text style={styles.cardSub}>{kgToText(data.totalKg)}</Text>
             </View>
@@ -293,7 +294,7 @@ export function GhgReportDocument({ data }: { data: ReportData }) {
             <View style={styles.summaryCard}>
               <Text style={styles.cardLabel}>Scope 1 + 2 + 3</Text>
               <Text style={styles.cardValue}>
-                {tCO2(data.scope1)} [{data.evidenceTrail?.aggregateEvidence.scope1.evidenceId ?? 'EV-SCOPE1'}] / {tCO2(scope2LocationKg)} [{data.evidenceTrail?.aggregateEvidence.scope2LocationBased?.evidenceId ?? 'EV-SCOPE2-LB'}] / {tCO2(data.scope3)} [{data.evidenceTrail?.aggregateEvidence.scope3.evidenceId ?? 'EV-SCOPE3'}]
+                {tCO2(data.scope1)} [{data.evidenceTrail?.aggregateEvidence?.scope1?.evidenceId ?? 'EV-SCOPE1'}] / {tCO2(scope2LocationKg)} [{data.evidenceTrail?.aggregateEvidence?.scope2LocationBased?.evidenceId ?? data.evidenceTrail?.aggregateEvidence?.scope2?.evidenceId ?? 'EV-SCOPE2-LB'}] / {tCO2(data.scope3)} [{data.evidenceTrail?.aggregateEvidence?.scope3?.evidenceId ?? 'EV-SCOPE3'}]
               </Text>
               <Text style={styles.cardSub}>tCO2e</Text>
             </View>
@@ -331,7 +332,7 @@ export function GhgReportDocument({ data }: { data: ReportData }) {
           <View style={styles.narrativeBox}>
             <Text style={styles.narrativeText}>
               Raport przygotowano zgodnie z podejsciem Corporate Accounting and Reporting Standard (GHG Protocol).
-              Granica organizacyjna: {data.boundaryApproach}. Zakres obejmuje Scope 1, Scope 2 i Scope 3 na podstawie
+              Granica organizacyjna: {formatBoundaryApproachLabel(data.boundaryApproach)}. Zakres obejmuje Scope 1, Scope 2 i Scope 3 na podstawie
               danych operacyjnych i fakturowych dostepnych za okres raportowy {data.reportingYear}. Najwiekszy udzial
               w emisji calkowitej ma {topScope?.label ?? 'dominujacy zakres'} ({topScope ? pct(topScope.value) : '0%'}),
               a koncentracja top 3 kategorii wynosi {(topThreeShare * 100).toFixed(1)}%.
@@ -460,7 +461,7 @@ export function GhgReportDocument({ data }: { data: ReportData }) {
           <Text style={styles.sectionTitle}>6. Formal Report Pack (skrot)</Text>
           <View style={styles.methodologyWrap}>
             <Text style={styles.methodologyLine}>• Metodyka: {data.formalReportPack?.methodology?.[0] ?? 'GHG Protocol Corporate Standard.'}</Text>
-            <Text style={styles.methodologyLine}>• Granice: {data.formalReportPack?.boundaries?.[0] ?? `Granica organizacyjna: ${data.boundaryApproach}.`}</Text>
+            <Text style={styles.methodologyLine}>• Granice: {data.formalReportPack?.boundaries?.[0] ?? `Granica organizacyjna: ${formatBoundaryApproachLabel(data.boundaryApproach)}.`}</Text>
             <Text style={styles.methodologyLine}>• Wykluczenia: {data.formalReportPack?.exclusions?.[0] ?? 'Mozliwe braki danych spoza dostarczonego zakresu.'}</Text>
             <Text style={styles.methodologyLine}>• Niepewnosc: {data.formalReportPack?.uncertainty?.[0] ?? 'Poziom niepewnosci zalezy od jakosci danych zrodlowych.'}</Text>
             <Text style={styles.methodologyLine}>• Odpowiedzialnosc: {data.formalReportPack?.responsibility?.[0] ?? 'Za dane wejsciowe odpowiada raportujaca organizacja.'}</Text>

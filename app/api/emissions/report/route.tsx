@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { renderToBuffer } from '@react-pdf/renderer';
-import { PDFDocument } from 'pdf-lib';
 import { auth } from '@/lib/auth';
 import { calculateOrganizationEmissions } from '@/lib/emissions';
+import {
+  buildGhgReportDocumentData,
+  normalizeGhgReportPdfToMaxPages,
+  type GhgReportComputedInput,
+} from '@/lib/ghg-report-document-data';
 import { GhgReportDocument } from '@/lib/ghg-report-pdf';
 import { prisma } from '@/lib/prisma';
 import { checkRateLimit, getClientIp } from '@/lib/security';
-import { BASE_YEAR_RECALCULATION_POLICY } from '@/lib/base-year-recalculation';
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -81,89 +84,43 @@ export async function GET(req: NextRequest) {
       }
     : result!;
 
-  const doc = (
-    <GhgReportDocument
-      data={{
-        companyName: profile.companyName,
-        reportingYear: validYear ?? profile.reportingYear,
-        baseYear: profile.baseYear,
-        boundaryApproach: profile.boundaryApproach,
-        industry: profile.industry,
-        scope1: computed.scope1,
-        scope2: computed.scope2,
-        scope3: computed.scope3,
-        totalKg: computed.totalKg,
-        scope2LocationKg: (computed as any).scope2LocationKg ?? computed.scope2,
-        scope2MarketKg:
-          (computed as any).scope2MarketKg ??
-          (computed as any).scope2Breakdown?.marketBasedKg ??
-          computed.scope2,
-        byCategory: computed.byCategory,
-        linesCount: computed.lineCount,
-        dataQuality: computed.dataQuality as any,
-        scope3Completeness: (computed as any).scope3Completeness,
-        evidenceTrail: computed.evidenceTrail as any,
-        reportNumber: snapshot ? `SCOPEO-SNAPSHOT-${snapshot.version}` : undefined,
-        approvedAt: snapshot?.approvedAt.toISOString().slice(0, 10),
-        responsiblePerson: snapshot?.authorEmail ?? snapshot?.authorUserId,
-        snapshotHashSha256: snapshot?.hashSha256,
-        baseYearRecalculationPolicy: BASE_YEAR_RECALCULATION_POLICY,
-        latestBaseYearRecalculation: latestBaseYearRecalculation
-          ? {
-              previousBaseYear: latestBaseYearRecalculation.previousBaseYear,
-              newBaseYear: latestBaseYearRecalculation.newBaseYear,
-              triggerType: latestBaseYearRecalculation.triggerType,
-              reason: latestBaseYearRecalculation.reason,
-              approvedAt: latestBaseYearRecalculation.approvedAt.toISOString().slice(0, 10),
-              author: latestBaseYearRecalculation.authorEmail ?? latestBaseYearRecalculation.authorUserId,
-              impactSummary: latestBaseYearRecalculation.impactSummaryJson as Record<string, unknown>,
-            }
-          : undefined,
-        formalReportPack: {
-          methodology: [
-            'Standard: GHG Protocol Corporate Standard (Corporate Accounting and Reporting Standard).',
-            'Podejscie obliczeniowe: activity-based i spend-based, zaleznie od dostepnosci danych zrodlowych.',
-            'Baza faktorow: KOBiZE, UK Government, EPA oraz metodyki wersjonowane w aplikacji.',
-            `Scope 2 LB/MB: LB = ${((computed as any).scope2LocationKg ?? computed.scope2).toFixed(2)} kgCO2e, MB = ${(((computed as any).scope2MarketKg ?? (computed as any).scope2Breakdown?.marketBasedKg ?? computed.scope2)).toFixed(2)} kgCO2e.`,
-          ],
-          boundaries: [
-            `Granica organizacyjna: ${profile.boundaryApproach}.`,
-            `Zakres raportu: Scope 1, Scope 2, Scope 3 dla roku ${validYear ?? profile.reportingYear}.`,
-            `Branza i kontekst operacyjny: ${profile.industry}.`,
-            `Liczba przeanalizowanych pozycji danych: ${computed.lineCount}.`,
-          ],
-          exclusions: [
-            'Emisje nieudokumentowane fakturowo lub nieudostepnione przez organizacje moga byc poza zakresem.',
-            'Dane dostawcow/kontrahentow nieprzekazane do raportowania nie sa ujete w calosci.',
-            'Pozycje bez wiarygodnego mapowania kategorii lub bez wymaganych atrybutow moga byc klasyfikowane ostroznie lub pomijane.',
-          ],
-          uncertainty: [
-            'Wynik ma poziom niepewnosci zalezny od jakosci danych zrodlowych i przypisania wspolczynnikow.',
-            `Data Quality Score: ${(computed as any).dataQuality?.score?.toFixed?.(2) ?? '100.00'} / 100.`,
-            `Flagged impact (estimated/missing/assumed): ${((computed as any).dataQuality?.flaggedImpactPct ?? 0).toFixed(2)}% emisji calkowitej.`,
-          ],
-          responsibility: [
-            'Za kompletność i rzetelnosc danych wejsciowych odpowiada raportujaca organizacja.',
-            'Scopeo odpowiada za przetwarzanie danych i kalkulacje zgodnie z zadeklarowana metodyka.',
-            'Zmiany metodyki i rekalkulacje roku bazowego sa dokumentowane w formalnym rejestrze.',
-          ],
-          assuranceStatus: [
-            'Status raportu: contractor-ready management report.',
-            'External assurance: not performed (brak niezaleznej weryfikacji strony trzeciej na moment wydania).',
-            'W przypadku wymogu kontrahenta zalecane jest wykonanie limited/reasonable assurance przez podmiot niezalezny.',
-          ],
-        },
-        generatedAt: new Date().toLocaleDateString('pl-PL'),
-      }}
-    />
-  );
+  const reportData = buildGhgReportDocumentData({
+    profile: {
+      companyName: profile.companyName,
+      baseYear: profile.baseYear,
+      boundaryApproach: profile.boundaryApproach,
+      industry: profile.industry,
+    },
+    reportingYear: validYear ?? profile.reportingYear,
+    computed: computed as GhgReportComputedInput,
+    snapshot: snapshot
+      ? {
+          version: snapshot.version,
+          approvedAt: snapshot.approvedAt,
+          authorEmail: snapshot.authorEmail,
+          authorUserId: snapshot.authorUserId,
+          hashSha256: snapshot.hashSha256,
+        }
+      : null,
+    latestBaseYearRecalculation: latestBaseYearRecalculation
+      ? {
+          previousBaseYear: latestBaseYearRecalculation.previousBaseYear,
+          newBaseYear: latestBaseYearRecalculation.newBaseYear,
+          triggerType: latestBaseYearRecalculation.triggerType,
+          reason: latestBaseYearRecalculation.reason,
+          approvedAt: latestBaseYearRecalculation.approvedAt,
+          authorEmail: latestBaseYearRecalculation.authorEmail,
+          authorUserId: latestBaseYearRecalculation.authorUserId,
+          impactSummaryJson: (latestBaseYearRecalculation.impactSummaryJson ?? null) as Record<string, unknown> | null,
+        }
+      : null,
+    generatedAt: new Date().toLocaleDateString('pl-PL'),
+  });
+
+  const doc = <GhgReportDocument data={reportData} />;
 
   const pdfBuffer = await renderToBuffer(doc);
-  const renderedPdf = await PDFDocument.load(pdfBuffer);
-  while (renderedPdf.getPageCount() > 3) {
-    renderedPdf.removePage(renderedPdf.getPageCount() - 1);
-  }
-  const normalizedPdfBuffer = await renderedPdf.save();
+  const normalizedPdfBuffer = await normalizeGhgReportPdfToMaxPages(Buffer.from(pdfBuffer), 3);
 
   const filename = `raport-ghg-${profile.companyName
     .replace(/\s+/g, '-')

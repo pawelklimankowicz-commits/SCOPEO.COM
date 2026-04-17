@@ -1,5 +1,6 @@
 import { renderToBuffer } from '@react-pdf/renderer';
 import { PrismaClient } from '@prisma/client';
+import { buildGhgReportDocumentData, normalizeGhgReportPdfToMaxPages } from '@/lib/ghg-report-document-data';
 import { GhgReportDocument } from '@/lib/ghg-report-pdf';
 import { calculateOrganizationEmissions } from '@/lib/emissions';
 import fs from 'node:fs/promises';
@@ -118,26 +119,28 @@ async function main() {
 
   const result = await calculateOrganizationEmissions(organization.id, reportYear, { persist: false });
 
-  const doc = (
-    <GhgReportDocument
-      data={{
-        companyName,
-        reportingYear: reportYear,
-        baseYear: reportYear - 1,
-        boundaryApproach: 'operational_control',
-        industry: 'Uslugi profesjonalne',
-        scope1: result.scope1,
-        scope2: result.scope2,
-        scope3: result.scope3,
-        totalKg: result.totalKg,
-        byCategory: result.byCategory,
-        linesCount: result.lineCount,
-        generatedAt: new Date().toLocaleDateString('pl-PL'),
-      }}
-    />
-  );
+  const carbonProfile = await prisma.carbonProfile.findUniqueOrThrow({
+    where: { organizationId: organization.id },
+  });
 
-  const pdfBuffer = await renderToBuffer(doc);
+  const reportData = buildGhgReportDocumentData({
+    profile: {
+      companyName: carbonProfile.companyName,
+      baseYear: carbonProfile.baseYear,
+      boundaryApproach: carbonProfile.boundaryApproach,
+      industry: carbonProfile.industry,
+    },
+    reportingYear: reportYear,
+    computed: result,
+    snapshot: null,
+    latestBaseYearRecalculation: null,
+    generatedAt: new Date().toLocaleDateString('pl-PL'),
+  });
+
+  const doc = <GhgReportDocument data={reportData} />;
+
+  const rawPdf = await renderToBuffer(doc);
+  const pdfBuffer = await normalizeGhgReportPdfToMaxPages(Buffer.from(rawPdf), 3);
   const outDir = path.join(process.cwd(), 'reports');
   await fs.mkdir(outDir, { recursive: true });
   const outPath = path.join(outDir, `raport-esg-test-${token}.pdf`);
