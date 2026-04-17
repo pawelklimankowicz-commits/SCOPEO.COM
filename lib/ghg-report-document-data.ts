@@ -1,5 +1,5 @@
 import { PDFDocument } from 'pdf-lib';
-import { BASE_YEAR_RECALCULATION_POLICY } from '@/lib/base-year-recalculation';
+import { BASE_YEAR_RECALCULATION_POLICY } from '@/lib/base-year-recalculation-policy';
 import { formatBoundaryApproachLabel } from '@/lib/ghg-report-boundary-label';
 import type { GhgReportDocumentData } from '@/lib/ghg-report-pdf';
 
