@@ -1,5 +1,6 @@
 /**
- * Generuje PDF raportu GHG bez bazy (przykladowe dane: 11 kategorii + 11 linii dowodowych).
+ * Ten sam raport PDF co eksport z Scopeo (GhgReportDocument + buildGhgReportDocumentData
+ * jak GET /api/emissions/report), na przykladowych danych bez bazy — plik na Pulpit.
  * Uzycie: DISABLE_REMOTE_PDF_FONTS=1 node --import tsx scripts/render-ghg-report-preview.tsx
  */
 import { renderToBuffer } from '@react-pdf/renderer';
@@ -136,7 +137,7 @@ async function main() {
 
   const reportData = buildGhgReportDocumentData({
     profile: {
-      companyName: 'Firma demonstracyjna Scopeo (preview PDF)',
+      companyName: 'Organizacja demonstracyjna (export jak w aplikacji Scopeo)',
       baseYear: reportYear - 1,
       boundaryApproach: 'operational_control',
       industry: 'Uslugi profesjonalne',
@@ -156,7 +157,7 @@ async function main() {
   const repoPath = path.join(reportsDir, `raport-esg-preview-${stamp}.pdf`);
   await fs.writeFile(repoPath, pdf);
 
-  const desktopPath = path.join(os.homedir(), 'Desktop', 'raport-esg-ostatni.pdf');
+  const desktopPath = path.join(os.homedir(), 'Desktop', 'Raport-Scopeo-GHG.pdf');
   await fs.writeFile(desktopPath, pdf);
 
   console.log(`REPORT_REPO=${repoPath}`);

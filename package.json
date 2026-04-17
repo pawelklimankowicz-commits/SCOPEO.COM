@@ -17,6 +17,7 @@
     "test:integration": "node --import tsx --test tests/integration/emissions-math.test.ts tests/integration/ksef-xml.test.ts tests/integration/payload-security.test.ts tests/integration/kobize-factors.test.ts tests/integration/api-health.test.ts",
     "test:ci": "node --test --experimental-test-coverage tests/unit/*.test.mjs && npm run test:integration",
     "coverage:summary": "node tests/unit/coverage-summary.mjs",
+    "report:desktop": "DISABLE_REMOTE_PDF_FONTS=1 node --import tsx scripts/render-ghg-report-preview.tsx",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "node scripts/run-prisma.cjs migrate dev",
     "prisma:migrate:deploy": "node scripts/run-prisma.cjs migrate deploy",
