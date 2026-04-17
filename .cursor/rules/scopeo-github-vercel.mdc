@@ -1,0 +1,9 @@
+---
+description: Docelowe repozytorium GitHub i projekt Vercel dla Scopeo
+alwaysApply: true
+---
+
+# Scopeo — GitHub i Vercel
+
+- **GitHub:** Wykonywaj `git push` (oraz przygotowuj commity) **wyłącznie** do repozytorium **scopeo.com** — zdalne `origin` to `github.com/pawelklimankowicz-commits/SCOPEO.COM` (ten sam kod co aplikacja Scopeo). Nie pushuj do innych repozytoriów ani nie dodawaj dodatkowych remote’ów bez wyraźnej prośby.
+- **Vercel:** Traktuj deployment i zmienne środowiskowe **wyłącznie** w kontekście projektu **scopeo-saas** na Vercel (powiązany z tym repo). Nie odnosz się do innych projektów Vercel ani nie sugeruj deployów poza tym projektem, chyba że użytkownik wyraźnie poprosi o inny projekt.
