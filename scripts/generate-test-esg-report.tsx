@@ -1,6 +1,6 @@
 import { renderToBuffer } from '@react-pdf/renderer';
 import { PrismaClient } from '@prisma/client';
-import { buildGhgReportDocumentData, normalizeGhgReportPdfToMaxPages } from '@/lib/ghg-report-document-data';
+import { buildGhgReportDocumentData } from '@/lib/ghg-report-document-data';
 import { GhgReportDocument } from '@/lib/ghg-report-pdf';
 import { calculateOrganizationEmissions } from '@/lib/emissions';
 import fs from 'node:fs/promises';
@@ -139,8 +139,7 @@ async function main() {
 
   const doc = <GhgReportDocument data={reportData} />;
 
-  const rawPdf = await renderToBuffer(doc);
-  const pdfBuffer = await normalizeGhgReportPdfToMaxPages(Buffer.from(rawPdf), 3);
+  const pdfBuffer = await renderToBuffer(doc);
   const outDir = path.join(process.cwd(), 'reports');
   await fs.mkdir(outDir, { recursive: true });
   const outPath = path.join(outDir, `raport-esg-test-${token}.pdf`);

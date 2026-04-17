@@ -2,11 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { renderToBuffer } from '@react-pdf/renderer';
 import { auth } from '@/lib/auth';
 import { calculateOrganizationEmissions } from '@/lib/emissions';
-import {
-  buildGhgReportDocumentData,
-  normalizeGhgReportPdfToMaxPages,
-  type GhgReportComputedInput,
-} from '@/lib/ghg-report-document-data';
+import { buildGhgReportDocumentData, type GhgReportComputedInput } from '@/lib/ghg-report-document-data';
 import { GhgReportDocument } from '@/lib/ghg-report-pdf';
 import { prisma } from '@/lib/prisma';
 import { checkRateLimit, getClientIp } from '@/lib/security';
@@ -120,13 +116,12 @@ export async function GET(req: NextRequest) {
   const doc = <GhgReportDocument data={reportData} />;
 
   const pdfBuffer = await renderToBuffer(doc);
-  const normalizedPdfBuffer = await normalizeGhgReportPdfToMaxPages(Buffer.from(pdfBuffer), 3);
 
   const filename = `raport-ghg-${profile.companyName
     .replace(/\s+/g, '-')
     .toLowerCase()}-${validYear ?? profile.reportingYear}.pdf`;
 
-  return new NextResponse(new Uint8Array(normalizedPdfBuffer), {
+  return new NextResponse(new Uint8Array(pdfBuffer), {
     headers: {
       'Content-Type': 'application/pdf',
       'Content-Disposition': `attachment; filename="${filename}"`,

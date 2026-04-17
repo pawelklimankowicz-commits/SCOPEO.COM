@@ -1,4 +1,3 @@
-import { PDFDocument } from 'pdf-lib';
 import { BASE_YEAR_RECALCULATION_POLICY } from '@/lib/base-year-recalculation-policy';
 import { formatBoundaryApproachLabel } from '@/lib/ghg-report-boundary-label';
 import type { GhgReportDocumentData } from '@/lib/ghg-report-pdf';
@@ -132,13 +131,4 @@ export function buildGhgReportDocumentData(input: BuildGhgReportDocumentDataInpu
     formalReportPack,
     generatedAt,
   };
-}
-
-/** Ujednolicenie z API: raport ma co najwyzej `maxPages` stron (obcina koncowke dokumentu). */
-export async function normalizeGhgReportPdfToMaxPages(pdfBuffer: Buffer, maxPages: number): Promise<Buffer> {
-  const renderedPdf = await PDFDocument.load(pdfBuffer);
-  while (renderedPdf.getPageCount() > maxPages) {
-    renderedPdf.removePage(renderedPdf.getPageCount() - 1);
-  }
-  return Buffer.from(await renderedPdf.save());
 }

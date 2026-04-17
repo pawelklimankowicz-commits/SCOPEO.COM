@@ -1,33 +1,93 @@
 /**
- * Generuje PDF raportu GHG bez bazy (przykładowe dane spójne z kalkulatorem).
- * Użycie: DISABLE_REMOTE_PDF_FONTS=1 node --import tsx scripts/render-ghg-report-preview.tsx
+ * Generuje PDF raportu GHG bez bazy (przykladowe dane: 11 kategorii + 11 linii dowodowych).
+ * Uzycie: DISABLE_REMOTE_PDF_FONTS=1 node --import tsx scripts/render-ghg-report-preview.tsx
  */
 import { renderToBuffer } from '@react-pdf/renderer';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import React from 'react';
-import { buildGhgReportDocumentData, normalizeGhgReportPdfToMaxPages, type GhgReportComputedInput } from '@/lib/ghg-report-document-data';
+import { buildGhgReportDocumentData, type GhgReportComputedInput } from '@/lib/ghg-report-document-data';
 import { GhgReportDocument } from '@/lib/ghg-report-pdf';
 
-async function main() {
-  const reportYear = 2026;
-  const scope2LocationKg = 12000 * 0.7309;
-  const scope2MarketKg = scope2LocationKg;
-  const scope1 = 0;
-  const scope3 = 0;
-  const totalKg = scope1 + scope2LocationKg + scope3;
-  const lineEvidenceId = 'EV-LINE-preview-1';
+type Row = { code: string; kg: number; scope: 'SCOPE1' | 'SCOPE2' | 'SCOPE3' };
 
-  const computed: GhgReportComputedInput = {
+const PREVIEW_ROWS: Row[] = [
+  { code: 'scope1_fuel', kg: 420, scope: 'SCOPE1' },
+  { code: 'scope1_fuel_gas', kg: 80, scope: 'SCOPE1' },
+  { code: 'scope2_electricity', kg: 6200, scope: 'SCOPE2' },
+  { code: 'scope2_district_heat', kg: 800, scope: 'SCOPE2' },
+  { code: 'scope3_cat1_purchased_goods', kg: 1100, scope: 'SCOPE3' },
+  { code: 'scope3_cat1_purchased_services', kg: 820, scope: 'SCOPE3' },
+  { code: 'scope3_cat2_capital_goods', kg: 360, scope: 'SCOPE3' },
+  { code: 'scope3_cat4_transport', kg: 550, scope: 'SCOPE3' },
+  { code: 'scope3_cat5_waste', kg: 140, scope: 'SCOPE3' },
+  { code: 'scope3_cat6_business_travel', kg: 290, scope: 'SCOPE3' },
+  { code: 'scope3_cat3_fuel_energy', kg: 400, scope: 'SCOPE3' },
+];
+
+function sumScope(scope: Row['scope']) {
+  return PREVIEW_ROWS.filter((r) => r.scope === scope).reduce((s, r) => s + r.kg, 0);
+}
+
+function buildComputed(reportYear: number): GhgReportComputedInput {
+  const byCategory = Object.fromEntries(PREVIEW_ROWS.map((r) => [r.code, r.kg]));
+  const scope1 = sumScope('SCOPE1');
+  const scope2 = sumScope('SCOPE2');
+  const scope3 = sumScope('SCOPE3');
+  const totalKg = scope1 + scope2 + scope3;
+  const scope2LocationKg = scope2;
+  const scope2MarketKg = scope2;
+
+  const lineIds = PREVIEW_ROWS.map((_, i) => `line-preview-${i + 1}`);
+  const evidenceIds = PREVIEW_ROWS.map((_, i) => `EV-LINE-preview-${i + 1}`);
+  const invoiceIds = PREVIEW_ROWS.map((_, i) => `inv-preview-${i + 1}`);
+
+  const entries = PREVIEW_ROWS.map((row, i) => ({
+    evidenceId: evidenceIds[i],
+    co2eKg: row.kg,
+    scope: row.scope,
+    categoryCode: row.code,
+    calculationMethod: 'ACTIVITY' as const,
+    invoiceId: invoiceIds[i],
+    invoiceNumber: `FV/PREVIEW/${i + 1}`,
+    invoiceExternalId: `EXT-${i + 1}`,
+    invoiceIssueDate: `${reportYear}-03-${String((i % 27) + 1).padStart(2, '0')}T00:00:00.000Z`,
+    invoiceSourceLink: `https://app.scopeo.com/dashboard/invoices?invoiceId=${invoiceIds[i]}`,
+    lineId: lineIds[i],
+    lineDescription: `Pozycja demonstracyjna ${i + 1} (${row.code})`,
+    factorId: `factor-preview-${i + 1}`,
+    factorCode: `FACTOR_${i + 1}`,
+    factorValue: 0.5 + i * 0.01,
+    factorUnit: 'kgCO2e/jednostka',
+    methodologyVersion: 'DEMO_SRC@1.0',
+    emissionSourceCode: 'DEMO_SRC',
+    emissionSourceVersion: '1.0',
+    factorSourceLink: `https://app.scopeo.com/dashboard/factors?factorId=factor-preview-${i + 1}`,
+  }));
+
+  const scopeEvidenceIds = {
+    SCOPE1: evidenceIds.filter((_, i) => PREVIEW_ROWS[i].scope === 'SCOPE1'),
+    SCOPE2: evidenceIds.filter((_, i) => PREVIEW_ROWS[i].scope === 'SCOPE2'),
+    SCOPE3: evidenceIds.filter((_, i) => PREVIEW_ROWS[i].scope === 'SCOPE3'),
+  };
+
+  const categories = PREVIEW_ROWS.map((row, i) => ({
+    categoryCode: row.code,
+    evidenceId: `EV-CAT-${row.code}`,
+    valueKg: row.kg,
+    sourceEvidenceIds: [evidenceIds[i]],
+  }));
+
+  return {
     scope1,
-    scope2: scope2LocationKg,
+    scope2,
     scope3,
     totalKg,
     scope2LocationKg,
     scope2MarketKg,
-    byCategory: { scope2_electricity: scope2LocationKg },
-    lineCount: 1,
+    byCategory,
+    lineCount: PREVIEW_ROWS.length,
     dataQuality: {
       score: 100,
       flaggedImpactKg: 0,
@@ -37,69 +97,42 @@ async function main() {
       lineCountsByFlag: { estimated: 0, missing: 0, assumed: 0 },
     },
     scope3Completeness: {
-      summary: { coveredCount: 0, totalCount: 15, coveragePct: 0 },
-      matrix: [
-        {
-          categoryCode: 'scope3_cat1_purchased_goods',
-          categoryLabel: 'Kat. 1: Kupione materialy',
-          status: 'not_covered',
-          coveredKg: 0,
-          matchedCategories: [],
-          reason: 'Brak danych w okresie raportowym.',
-        },
-      ],
+      summary: { coveredCount: 7, totalCount: 15, coveragePct: (7 / 15) * 100 },
+      matrix: PREVIEW_ROWS.filter((r) => r.scope === 'SCOPE3').map((r) => ({
+        categoryCode: r.code,
+        categoryLabel: r.code.replace(/_/g, ' '),
+        status: 'covered' as const,
+        coveredKg: r.kg,
+        matchedCategories: [r.code],
+        reason: 'Dane demonstracyjne w podgladzie PDF.',
+      })),
     },
     evidenceTrail: {
       aggregateEvidence: {
-        total: { evidenceId: 'EV-TOTAL', valueKg: totalKg, sourceEvidenceIds: [lineEvidenceId] },
-        scope1: { evidenceId: 'EV-SCOPE1', valueKg: scope1, sourceEvidenceIds: [] },
-        scope2: { evidenceId: 'EV-SCOPE2', valueKg: scope2LocationKg, sourceEvidenceIds: [lineEvidenceId] },
+        total: { evidenceId: 'EV-TOTAL', valueKg: totalKg, sourceEvidenceIds: evidenceIds },
+        scope1: { evidenceId: 'EV-SCOPE1', valueKg: scope1, sourceEvidenceIds: scopeEvidenceIds.SCOPE1 },
+        scope2: { evidenceId: 'EV-SCOPE2', valueKg: scope2, sourceEvidenceIds: scopeEvidenceIds.SCOPE2 },
         scope2LocationBased: {
           evidenceId: 'EV-SCOPE2-LB',
           valueKg: scope2LocationKg,
-          sourceEvidenceIds: [lineEvidenceId],
+          sourceEvidenceIds: scopeEvidenceIds.SCOPE2,
         },
         scope2MarketBased: {
           evidenceId: 'EV-SCOPE2-MB',
           valueKg: scope2MarketKg,
-          sourceEvidenceIds: [lineEvidenceId],
+          sourceEvidenceIds: scopeEvidenceIds.SCOPE2,
         },
-        scope3: { evidenceId: 'EV-SCOPE3', valueKg: scope3, sourceEvidenceIds: [] },
-        categories: [
-          {
-            categoryCode: 'scope2_electricity',
-            evidenceId: 'EV-CAT-scope2_electricity',
-            valueKg: scope2LocationKg,
-            sourceEvidenceIds: [lineEvidenceId],
-          },
-        ],
+        scope3: { evidenceId: 'EV-SCOPE3', valueKg: scope3, sourceEvidenceIds: scopeEvidenceIds.SCOPE3 },
+        categories,
       },
-      entries: [
-        {
-          evidenceId: lineEvidenceId,
-          co2eKg: scope2LocationKg,
-          scope: 'SCOPE2',
-          categoryCode: 'scope2_electricity',
-          calculationMethod: 'ACTIVITY',
-          invoiceId: 'inv-preview-1',
-          invoiceNumber: 'FV/PREVIEW/1',
-          invoiceExternalId: 'EXT-1',
-          invoiceIssueDate: `${reportYear}-03-15T00:00:00.000Z`,
-          invoiceSourceLink: 'https://app.scopeo.com/dashboard/invoices?invoiceId=inv-preview-1',
-          lineId: 'line-preview-1',
-          lineDescription: 'Zuzycie energii elektrycznej biuro',
-          factorId: 'factor-preview-1',
-          factorCode: 'TEST_FACTOR',
-          factorValue: 0.7309,
-          factorUnit: 'kgCO2e/kWh',
-          methodologyVersion: 'TEST_SRC@1.0',
-          emissionSourceCode: 'TEST_SRC',
-          emissionSourceVersion: '1.0',
-          factorSourceLink: 'https://app.scopeo.com/dashboard/factors?factorId=factor-preview-1',
-        },
-      ],
+      entries,
     },
   };
+}
+
+async function main() {
+  const reportYear = 2026;
+  const computed = buildComputed(reportYear);
 
   const reportData = buildGhgReportDocumentData({
     profile: {
@@ -115,8 +148,7 @@ async function main() {
     generatedAt: new Date().toLocaleDateString('pl-PL'),
   });
 
-  const raw = await renderToBuffer(<GhgReportDocument data={reportData} />);
-  const pdf = await normalizeGhgReportPdfToMaxPages(Buffer.from(raw), 3);
+  const pdf = Buffer.from(await renderToBuffer(<GhgReportDocument data={reportData} />));
 
   const reportsDir = path.join(process.cwd(), 'reports');
   await fs.mkdir(reportsDir, { recursive: true });
@@ -129,6 +161,7 @@ async function main() {
 
   console.log(`REPORT_REPO=${repoPath}`);
   console.log(`REPORT_DESKTOP=${desktopPath}`);
+  console.log(`CATEGORIES=${Object.keys(computed.byCategory).length} EVIDENCE_LINES=${computed.evidenceTrail?.entries.length ?? 0}`);
 }
 
 main().catch((e) => {

@@ -55,6 +55,12 @@ const styles = StyleSheet.create({
   footer: { position: 'absolute', left: 36, right: 36, bottom: 18, fontSize: 7.5, color: '#64748b', textAlign: 'center' },
 });
 
+/** Limity wyswietlania w PDF (nie obcinac dokumentu do 3 stron — tracone byly listy dowodow). */
+export const GHG_REPORT_PIE_TOP_N = 10;
+export const GHG_REPORT_TABLE_MAX_ROWS = 30;
+export const GHG_REPORT_EVIDENCE_MAX_ROWS = 30;
+export const GHG_REPORT_SCOPE3_MATRIX_MAX_ROWS = 30;
+
 export type GhgReportDocumentData = {
   companyName: string;
   reportingYear: number;
@@ -233,17 +239,20 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
   const sortedCategories = Object.entries(data.byCategory)
     .sort(([, a], [, b]) => b - a)
     .filter(([, v]) => v > 0);
-  const palette = ['#047857', '#059669', '#10b981', '#34d399', '#6ee7b7', '#84cc16', '#0ea5e9', '#6366f1'];
+  const palette = [
+    '#047857', '#059669', '#10b981', '#34d399', '#6ee7b7', '#84cc16', '#0ea5e9', '#6366f1', '#a855f7', '#ec4899',
+    '#f97316', '#eab308', '#14b8a6',
+  ];
   const topThreeShare = sortedCategories.slice(0, 3).reduce((sum, [, kg]) => sum + kg, 0) / (data.totalKg || 1);
   const categoryEvidenceMap = new Map(
     data.evidenceTrail?.aggregateEvidence?.categories?.map((item) => [item.categoryCode, item.evidenceId]) ?? []
   );
-  const pieInput = sortedCategories.slice(0, 6);
-  const restKg = sortedCategories.slice(6).reduce((sum, [, kg]) => sum + kg, 0);
+  const pieInput = sortedCategories.slice(0, GHG_REPORT_PIE_TOP_N);
+  const restKg = sortedCategories.slice(GHG_REPORT_PIE_TOP_N).reduce((sum, [, kg]) => sum + kg, 0);
   const pieData = restKg > 0 ? [...pieInput, ['Pozostale kategorie', restKg] as [string, number]] : pieInput;
-  const tableCategories = sortedCategories.slice(0, 8);
-  const evidenceEntriesLimited = (data.evidenceTrail?.entries ?? []).slice(0, 4);
-  const scope3MatrixLimited = (data.scope3Completeness?.matrix ?? []).slice(0, 4);
+  const tableCategories = sortedCategories.slice(0, GHG_REPORT_TABLE_MAX_ROWS);
+  const evidenceEntriesLimited = (data.evidenceTrail?.entries ?? []).slice(0, GHG_REPORT_EVIDENCE_MAX_ROWS);
+  const scope3MatrixLimited = (data.scope3Completeness?.matrix ?? []).slice(0, GHG_REPORT_SCOPE3_MATRIX_MAX_ROWS);
   let pieAngle = 0;
   const pieSegments = pieData.map(([code, kg], idx) => {
     const share = data.totalKg > 0 ? kg / data.totalKg : 0;
@@ -261,9 +270,12 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
     };
   });
 
+  const footerNote =
+    'Material operacyjno-zaradczy; nie stanowi certyfikowanej opinii audytorskiej ani certyfikatu zgodnosci.';
+
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={styles.page} wrap>
         <View style={styles.brandRow}>
           <Text style={styles.brand}>SCOPEO | ESG Intelligence</Text>
           <Text style={styles.confidential}>Poufne · tylko do uzytku wewnetrznego</Text>
@@ -370,18 +382,14 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
                 </View>
               ))}
               <Text style={{ fontSize: 8, color: '#64748b', marginTop: 4 }}>
-                Wykres prezentuje 6 najwiekszych kategorii oraz agregat pozostalych pozycji.
+                Wykres prezentuje {GHG_REPORT_PIE_TOP_N} najwiekszych kategorii oraz agregat pozostalych pozycji (jesli wystepuja).
               </Text>
             </View>
           </View>
         </View>
 
-        <Text style={styles.footer}>
-          Strona 1/3 · Raport wygenerowany przez Scopeo dnia {data.generatedAt}. Material ma charakter operacyjno-zarzadczy
-          i nie stanowi certyfikowanej opinii audytorskiej.
-        </Text>
-      </Page>
-      <Page size="A4" style={styles.page}>
+        <View break={true} />
+
         <View style={styles.brandRow}>
           <Text style={styles.brand}>SCOPEO | ESG Intelligence</Text>
           <Text style={styles.confidential}>Zalacznik analityczny</Text>
@@ -440,11 +448,8 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
           </View>
         </View>
 
-        <Text style={styles.footer}>
-          Strona 2/3 · Raport wygenerowany przez Scopeo dnia {data.generatedAt}. Dokument ma charakter formalny roboczy i nie stanowi certyfikatu zgodnosci.
-        </Text>
-      </Page>
-      <Page size="A4" style={styles.page}>
+        <View break={true} />
+
         <View style={styles.brandRow}>
           <Text style={styles.brand}>SCOPEO | ESG Intelligence</Text>
           <Text style={styles.confidential}>Zalacznik audytowy</Text>
@@ -458,14 +463,46 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>6. Formal Report Pack (skrot)</Text>
+          <Text style={styles.sectionTitle}>6. Formal Report Pack</Text>
           <View style={styles.methodologyWrap}>
-            <Text style={styles.methodologyLine}>• Metodyka: {data.formalReportPack?.methodology?.[0] ?? 'GHG Protocol Corporate Standard.'}</Text>
-            <Text style={styles.methodologyLine}>• Granice: {data.formalReportPack?.boundaries?.[0] ?? `Granica organizacyjna: ${formatBoundaryApproachLabel(data.boundaryApproach)}.`}</Text>
-            <Text style={styles.methodologyLine}>• Wykluczenia: {data.formalReportPack?.exclusions?.[0] ?? 'Mozliwe braki danych spoza dostarczonego zakresu.'}</Text>
-            <Text style={styles.methodologyLine}>• Niepewnosc: {data.formalReportPack?.uncertainty?.[0] ?? 'Poziom niepewnosci zalezy od jakosci danych zrodlowych.'}</Text>
-            <Text style={styles.methodologyLine}>• Odpowiedzialnosc: {data.formalReportPack?.responsibility?.[0] ?? 'Za dane wejsciowe odpowiada raportujaca organizacja.'}</Text>
-            <Text style={styles.methodologyLine}>• Assurance: {data.formalReportPack?.assuranceStatus?.[0] ?? 'External assurance: not performed.'}</Text>
+            <Text style={styles.methodologyTitle}>Metodyka</Text>
+            {(data.formalReportPack?.methodology ?? ['GHG Protocol Corporate Standard.']).map((line, i) => (
+              <Text key={`fr-m-${i}`} style={styles.methodologyLine}>
+                • {line}
+              </Text>
+            ))}
+            <Text style={[styles.methodologyTitle, { marginTop: 6 }]}>Granice i zakres</Text>
+            {(data.formalReportPack?.boundaries ?? [
+              `Granica organizacyjna: ${formatBoundaryApproachLabel(data.boundaryApproach)}.`,
+            ]).map((line, i) => (
+              <Text key={`fr-b-${i}`} style={styles.methodologyLine}>
+                • {line}
+              </Text>
+            ))}
+            <Text style={[styles.methodologyTitle, { marginTop: 6 }]}>Wykluczenia i ograniczenia</Text>
+            {(data.formalReportPack?.exclusions ?? ['Mozliwe braki danych spoza dostarczonego zakresu.']).map((line, i) => (
+              <Text key={`fr-e-${i}`} style={styles.methodologyLine}>
+                • {line}
+              </Text>
+            ))}
+            <Text style={[styles.methodologyTitle, { marginTop: 6 }]}>Niepewnosc</Text>
+            {(data.formalReportPack?.uncertainty ?? ['Poziom niepewnosci zalezy od jakosci danych zrodlowych.']).map((line, i) => (
+              <Text key={`fr-u-${i}`} style={styles.methodologyLine}>
+                • {line}
+              </Text>
+            ))}
+            <Text style={[styles.methodologyTitle, { marginTop: 6 }]}>Odpowiedzialnosc</Text>
+            {(data.formalReportPack?.responsibility ?? ['Za dane wejsciowe odpowiada raportujaca organizacja.']).map((line, i) => (
+              <Text key={`fr-r-${i}`} style={styles.methodologyLine}>
+                • {line}
+              </Text>
+            ))}
+            <Text style={[styles.methodologyTitle, { marginTop: 6 }]}>Assurance</Text>
+            {(data.formalReportPack?.assuranceStatus ?? ['External assurance: not performed.']).map((line, i) => (
+              <Text key={`fr-a-${i}`} style={styles.methodologyLine}>
+                • {line}
+              </Text>
+            ))}
           </View>
         </View>
 
@@ -551,9 +588,13 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
           </View>
         </View>
 
-        <Text style={styles.footer}>
-          Strona 3/3 · Raport wygenerowany przez Scopeo dnia {data.generatedAt}. Dokument ma charakter formalny roboczy i nie stanowi certyfikatu zgodnosci.
-        </Text>
+        <Text
+          fixed
+          style={styles.footer}
+          render={({ pageNumber, totalPages }) =>
+            `Strona ${pageNumber}/${totalPages} · Raport wygenerowany przez Scopeo dnia ${data.generatedAt}. ${footerNote}`
+          }
+        />
       </Page>
     </Document>
   );
