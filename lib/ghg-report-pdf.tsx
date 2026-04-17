@@ -270,12 +270,15 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
     };
   });
 
-  const footerNote =
-    'Material operacyjno-zaradczy; nie stanowi certyfikowanej opinii audytorskiej ani certyfikatu zgodnosci.';
+  const footerLine = (n: 1 | 2 | 3) =>
+    `Strona ${n}/3 · Raport wygenerowany przez Scopeo dnia ${data.generatedAt}. ` +
+    (n === 1
+      ? 'Material operacyjno-zaradczy; nie stanowi certyfikowanej opinii audytorskiej.'
+      : 'Dokument ma charakter formalny roboczy i nie stanowi certyfikatu zgodnosci.');
 
   return (
     <Document>
-      <Page size="A4" style={styles.page} wrap>
+      <Page size="A4" style={styles.page}>
         <View style={styles.brandRow}>
           <Text style={styles.brand}>SCOPEO | ESG Intelligence</Text>
           <Text style={styles.confidential}>Poufne · tylko do uzytku wewnetrznego</Text>
@@ -388,8 +391,10 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
           </View>
         </View>
 
-        <View break={true} />
+        <Text style={styles.footer}>{footerLine(1)}</Text>
+      </Page>
 
+      <Page size="A4" style={styles.page}>
         <View style={styles.brandRow}>
           <Text style={styles.brand}>SCOPEO | ESG Intelligence</Text>
           <Text style={styles.confidential}>Zalacznik analityczny</Text>
@@ -448,8 +453,10 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
           </View>
         </View>
 
-        <View break={true} />
+        <Text style={styles.footer}>{footerLine(2)}</Text>
+      </Page>
 
+      <Page size="A4" style={styles.page}>
         <View style={styles.brandRow}>
           <Text style={styles.brand}>SCOPEO | ESG Intelligence</Text>
           <Text style={styles.confidential}>Zalacznik audytowy</Text>
@@ -588,13 +595,7 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
           </View>
         </View>
 
-        <Text
-          fixed
-          style={styles.footer}
-          render={({ pageNumber, totalPages }) =>
-            `Strona ${pageNumber}/${totalPages} · Raport wygenerowany przez Scopeo dnia ${data.generatedAt}. ${footerNote}`
-          }
-        />
+        <Text style={styles.footer}>{footerLine(3)}</Text>
       </Page>
     </Document>
   );
