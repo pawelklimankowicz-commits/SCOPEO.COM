@@ -9,12 +9,30 @@ jobs:
     name: Deploy Production
     runs-on: ubuntu-latest
     environment: production
+    env:
+      VERCEL_TOKEN_EFFECTIVE: ${{ secrets.VERCEL_TOKEN || secrets.VERCEL_ACCESS_TOKEN }}
+      VERCEL_ORG_ID_EFFECTIVE: ${{ secrets.VERCEL_ORG_ID || secrets.ORG_ID }}
+      VERCEL_PROJECT_ID_EFFECTIVE: ${{ secrets.VERCEL_PROJECT_ID || secrets.PROJECT_ID }}
     steps:
       - uses: actions/checkout@v4
+      - name: Validate Vercel secrets
+        run: |
+          if [ -z "${VERCEL_TOKEN_EFFECTIVE}" ]; then
+            echo "Missing secret: VERCEL_TOKEN (or VERCEL_ACCESS_TOKEN)" >&2
+            exit 1
+          fi
+          if [ -z "${VERCEL_ORG_ID_EFFECTIVE}" ]; then
+            echo "Missing secret: VERCEL_ORG_ID (or ORG_ID)" >&2
+            exit 1
+          fi
+          if [ -z "${VERCEL_PROJECT_ID_EFFECTIVE}" ]; then
+            echo "Missing secret: VERCEL_PROJECT_ID (or PROJECT_ID)" >&2
+            exit 1
+          fi
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-token: ${{ env.VERCEL_TOKEN_EFFECTIVE }}
+          vercel-org-id: ${{ env.VERCEL_ORG_ID_EFFECTIVE }}
+          vercel-project-id: ${{ env.VERCEL_PROJECT_ID_EFFECTIVE }}
           vercel-args: '--prod'
