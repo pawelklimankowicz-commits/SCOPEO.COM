@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { auth } from '@/lib/auth';
 import { getOrCreateStripeCustomer, getPriceId, getSubscription } from '@/lib/billing';
-import { stripe, TRIAL_DAYS } from '@/lib/stripe';
+import { assertStripeConfigured, stripe, TRIAL_DAYS } from '@/lib/stripe';
 
 const schema = z.object({
   plan: z.enum(['MIKRO', 'STARTER', 'GROWTH', 'SCALE', 'ENTERPRISE']),
@@ -22,6 +22,7 @@ function canManage(role?: string | null) {
 }
 
 export async function POST(req: NextRequest) {
+  assertStripeConfigured();
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   const role = (session.user as any).role as string | null | undefined;

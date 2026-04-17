@@ -3,7 +3,7 @@ import { Resend } from 'resend';
 import type Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 import { planLimits } from '@/lib/billing';
-import { stripe } from '@/lib/stripe';
+import { assertStripeConfigured, stripe } from '@/lib/stripe';
 import { paymentFailedEmail, trialEndingEmail } from '@/lib/email-templates';
 
 function statusFromStripe(status: Stripe.Subscription.Status): 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'TRIALING' {
@@ -44,7 +44,7 @@ async function sendBillingEmail(to: string, subject: string, text: string, html?
   if (!resendKey) return;
   const resend = new Resend(resendKey);
   void resend.emails.send({
-    from: process.env.LEADS_FROM_EMAIL ?? 'noreply@scopeo.com',
+    from: process.env.LEADS_FROM_EMAIL ?? 'noreply@scopeo.pl',
     to,
     subject,
     html,
@@ -117,6 +117,7 @@ async function persistSubscription(input: {
 }
 
 export async function POST(req: NextRequest) {
+  assertStripeConfigured();
   const signature = req.headers.get('stripe-signature');
   if (!signature || !process.env.STRIPE_WEBHOOK_SECRET) {
     return NextResponse.json({ ok: false, error: 'Missing webhook signature' }, { status: 400 });

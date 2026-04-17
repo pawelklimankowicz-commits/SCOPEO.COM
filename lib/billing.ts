@@ -1,6 +1,6 @@
 import type { BillingInterval, Subscription, SubscriptionPlan } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
-import { PLANS, TRIAL_DAYS, stripe } from '@/lib/stripe';
+import { assertStripeConfigured, PLANS, TRIAL_DAYS, stripe } from '@/lib/stripe';
 import { createNotification } from '@/lib/notifications';
 
 export function planLimits(plan: SubscriptionPlan) {
@@ -10,6 +10,7 @@ export function planLimits(plan: SubscriptionPlan) {
 }
 
 export async function getOrCreateStripeCustomer(organizationId: string): Promise<string> {
+  assertStripeConfigured();
   const existing = await prisma.subscription.findUnique({
     where: { organizationId },
     select: { stripeCustomerId: true },

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getOrCreateStripeCustomer } from '@/lib/billing';
-import { stripe } from '@/lib/stripe';
+import { assertStripeConfigured, stripe } from '@/lib/stripe';
 
 function canManage(role?: string | null) {
   return role === 'OWNER' || role === 'ADMIN';
@@ -16,6 +16,7 @@ function appBaseUrl(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  assertStripeConfigured();
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   const role = (session.user as any).role as string | undefined;

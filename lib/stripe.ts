@@ -1,11 +1,16 @@
 import Stripe from 'stripe';
-import { assertProductionStripeEnv, isProductionRuntime } from '@/lib/production-env';
+import { isProductionRuntime } from '@/lib/production-env';
 
 const isProduction = isProductionRuntime();
-assertProductionStripeEnv();
 
 if (!process.env.STRIPE_SECRET_KEY && !isProduction) {
   console.warn('STRIPE_SECRET_KEY is missing; Stripe routes will fail until configured.');
+}
+
+export function assertStripeConfigured() {
+  if (!process.env.STRIPE_SECRET_KEY?.trim()) {
+    throw new Error('STRIPE_SECRET_KEY is required to use billing endpoints.');
+  }
 }
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_missing', {
