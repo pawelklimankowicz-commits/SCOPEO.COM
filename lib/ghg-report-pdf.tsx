@@ -302,7 +302,8 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
 
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
+      {/* wrap=false: domyslne wrap=true na Page rozdziela treść na kolejna stronę PDF — drugi <Page> zaczynał się wtedy „po pustej” stronie. */}
+      <Page size="A4" style={styles.page} wrap={false}>
         <View style={styles.brandRow}>
           <Text style={styles.brand}>SCOPEO | ESG Intelligence</Text>
           <Text style={styles.confidential}>Poufne · tylko do uzytku wewnetrznego</Text>
@@ -379,6 +380,22 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
           </View>
         </View>
 
+        <Text style={styles.footer}>{footerLine(1)}</Text>
+      </Page>
+
+      <Page size="A4" style={styles.page} wrap={false}>
+        <View style={styles.brandRow}>
+          <Text style={styles.brand}>SCOPEO | ESG Intelligence</Text>
+          <Text style={styles.confidential}>Zalacznik analityczny</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.title}>Szczegolowa Analiza Emisji</Text>
+          <Text style={styles.subtitle}>
+            {data.companyName} | Rok raportowania: {data.reportingYear}
+          </Text>
+        </View>
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>3. Struktura Emisji wg Kategorii (Wykres Kolowy)</Text>
           <View style={styles.pieWrap}>
@@ -413,22 +430,6 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
               </Text>
             </View>
           </View>
-        </View>
-
-        <Text style={styles.footer}>{footerLine(1)}</Text>
-      </Page>
-
-      <Page size="A4" style={styles.page}>
-        <View style={styles.brandRow}>
-          <Text style={styles.brand}>SCOPEO | ESG Intelligence</Text>
-          <Text style={styles.confidential}>Zalacznik analityczny</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.title}>Szczegolowa Analiza Emisji</Text>
-          <Text style={styles.subtitle}>
-            {data.companyName} | Rok raportowania: {data.reportingYear}
-          </Text>
         </View>
 
         <View style={styles.section}>
@@ -480,7 +481,7 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
         <Text style={styles.footer}>{footerLine(2)}</Text>
       </Page>
 
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={styles.page} wrap={true}>
         <View style={styles.brandRow}>
           <Text style={styles.brand}>SCOPEO | ESG Intelligence</Text>
           <Text style={styles.confidential}>Zalacznik audytowy</Text>
