@@ -5,7 +5,7 @@ import { FAQ_ASSISTANT_CATALOG } from '@/lib/faq-assistant-catalog';
 import { findFaqIntent, normalizeFaqText } from '@/lib/faq-assistant';
 
 const WELCOME =
-  'Wpisz pytanie (min. 3 znaki) lub otwórz listę pytań i kliknij pozycję — treść odpowiedzi zobaczysz po rozwinięciu panelu (przycisk + / − po prawej u góry).';
+  'Wpisz pytanie (min. 3 znaki) i wyślij strzałką, albo kliknij „Pokaż listę pytań”, wybierz pozycję — odpowiedź zobaczysz po kliknięciu + (panel po prawej u góry).';
 
 export default function FaqAssistantWidget() {
   const [panelOpen, setPanelOpen] = useState(false);
@@ -20,9 +20,10 @@ export default function FaqAssistantWidget() {
     [activeItemId]
   );
 
+  /** Krótki fragment w polu (< 2 znaki po normalizacji) nie zawęża listy — unikamy „pustej” listy po otwarciu. */
   const filteredItems = useMemo(() => {
     const s = normalizeFaqText(query);
-    if (!s) return FAQ_ASSISTANT_CATALOG;
+    if (!s || s.length < 2) return FAQ_ASSISTANT_CATALOG;
     return FAQ_ASSISTANT_CATALOG.filter((item) => {
       const hay = `${normalizeFaqText(item.question)} ${item.keywords.map(normalizeFaqText).join(' ')}`;
       return hay.includes(s);
@@ -112,12 +113,16 @@ export default function FaqAssistantWidget() {
       <div className="mkt-faq-agent-shell">
         <div className="mkt-faq-agent-bar">
           <div className="mkt-faq-agent-topline">
-            <span className="mkt-faq-agent-title">Asystent FAQ Scopeo</span>
+            <div className="mkt-faq-agent-title-block" id="mkt-faq-agent-heading">
+              <span className="mkt-faq-agent-title">Twój Wirtualny Asystent FAQ</span>
+              <span className="mkt-faq-agent-subtitle">W czym mogę Ci dziś pomóc?</span>
+            </div>
             <button
               type="button"
               className="mkt-faq-agent-panel-toggle"
               onClick={() => setPanelOpen((p) => !p)}
               aria-expanded={panelOpen}
+              aria-controls="mkt-faq-answer-panel"
               aria-label={panelOpen ? 'Ukryj panel odpowiedzi' : 'Pokaż panel odpowiedzi'}
             >
               {panelOpen ? '−' : '+'}
@@ -158,17 +163,19 @@ export default function FaqAssistantWidget() {
           <button
             type="button"
             className="mkt-faq-agent-list-toggle"
+            id="mkt-faq-list-toggle"
             onClick={() => setShowQuestionList((v) => !v)}
             aria-expanded={showQuestionList}
+            aria-controls="mkt-faq-question-list"
           >
-            {showQuestionList ? 'Ukryj' : 'Pokaż'} listę pytań ({FAQ_ASSISTANT_CATALOG.length})
+            {showQuestionList ? 'Ukryj listę pytań' : 'Pokaż listę pytań'}
           </button>
         </div>
 
         {showQuestionList ? (
-          <div className="mkt-faq-agent-list-wrap">
+          <div className="mkt-faq-agent-list-wrap" id="mkt-faq-question-list" role="region" aria-labelledby="mkt-faq-list-toggle">
             {filteredItems.length === 0 ? (
-              <p className="mkt-faq-agent-empty">Brak wyników — zmień tekst w polu powyżej.</p>
+              <p className="mkt-faq-agent-empty">Brak wyników — zmień tekst w polu powyżej (min. 2 znaki do filtrowania).</p>
             ) : (
               <ul className="mkt-faq-agent-chips">
                 {filteredItems.map((item) => (
@@ -192,7 +199,7 @@ export default function FaqAssistantWidget() {
         ) : null}
 
         {panelOpen ? (
-          <div className="mkt-faq-agent-panel">
+          <div className="mkt-faq-agent-panel" id="mkt-faq-answer-panel" role="region" aria-labelledby="mkt-faq-agent-heading">
             <div className="mkt-faq-agent-answer">
               {activeItem ? <p className="mkt-faq-agent-answer-q">{activeItem.question}</p> : null}
               <p className="mkt-faq-agent-answer-a">{answer}</p>
