@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import Image from 'next/image';
 
 type LockupProps = {
   size?: number;
@@ -14,12 +15,13 @@ type LockupProps = {
 
 export function BrandLogoMark({ size = 28 }: { size?: number }) {
   return (
-    <img
+    <Image
       src="/brand/scopeo-mark.svg"
       width={size}
       height={size}
       alt=""
       aria-hidden
+      unoptimized
       style={{ display: 'block', flexShrink: 0 }}
     />
   );

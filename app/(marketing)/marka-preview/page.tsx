@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { BrandLogoLockup, BrandLogoMark } from '@/components/BrandLogo';
 
@@ -36,7 +37,14 @@ export default function MarkaPreviewPage() {
             background: '#ffffff',
           }}
         >
-          <img src="/brand/scopeo-logo-lockup.svg" alt="Scopeo" style={{ height: 56, width: 'auto' }} />
+          <Image
+            src="/brand/scopeo-logo-lockup.svg"
+            alt="Scopeo"
+            width={232}
+            height={56}
+            unoptimized
+            style={{ height: 56, width: 'auto' }}
+          />
           <p className="mkt-footer-note" style={{ marginTop: 16, marginBottom: 0 }}>
             Pełny plik wektorowy: <code>/brand/scopeo-logo-lockup.svg</code>
           </p>
@@ -61,9 +69,12 @@ export default function MarkaPreviewPage() {
         >
           {[22, 28, 34, 42].map((h) => (
             <div key={h} style={{ textAlign: 'center' }}>
-              <img
+              <Image
                 src="/brand/scopeo-logo-lockup.svg"
                 alt=""
+                width={232}
+                height={56}
+                unoptimized
                 style={{ height: h, width: 'auto', display: 'block', margin: '0 auto 8px' }}
               />
               <span className="mkt-footer-note" style={{ fontSize: 12 }}>
