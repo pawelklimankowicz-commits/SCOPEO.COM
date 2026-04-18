@@ -39,8 +39,7 @@ export function BrandLogoMark({ size = 28 }: { size?: number }) {
 
 /**
  * Lockup: znak SVG + „Scopeo” + podtytuł w HTML.
- * Znak w trybie lockup jest **2×** większy niż wcześniej (powiększenie o 100%);
- * rozmiar pisma „Scopeo” / podtytułu bez zmian względem prop `size`.
+ * Wysokość znaku = wysokość bloku tekstu (oba wiersze + odstęp), żeby górne i dolne krawędzie były współliniowe z napisami.
  */
 export function BrandLogoLockup({
   size = 26,
@@ -60,10 +59,13 @@ export function BrandLogoLockup({
     );
   }
 
-  const baseMark = Math.max(28, Math.round(size * 1.95));
-  const markSize = baseMark * 2;
   const titleSize = Math.max(16, Math.round(size * 1.22));
   const tagSize = Math.max(7, Math.round(size * 0.4));
+  /** Współliniowość z kolumną tekstu: line-height ≈ wysokość linii + margin między wierszami. */
+  const lineBox = 1.08;
+  const textColumnHeight =
+    titleSize * lineBox + (showTagline ? 3 + tagSize * lineBox : 0);
+  const markSize = Math.max(20, Math.round(textColumnHeight));
 
   const gradient =
     wordmarkSurface === 'dark' ? SCOPEO_WORDMARK_GRADIENT_DARK : SCOPEO_WORDMARK_GRADIENT_LIGHT;
@@ -100,8 +102,15 @@ export function BrandLogoLockup({
       }}
     >
       <BrandLogoMark size={markSize} />
-      <span style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', lineHeight: 1.05 }}>
-        <span style={wordmarkStyle}>Scopeo</span>
+      <span
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          lineHeight: lineBox,
+        }}
+      >
+        <span style={{ ...wordmarkStyle, lineHeight: lineBox }}>Scopeo</span>
         {showTagline ? (
           <span
             style={{
@@ -111,6 +120,7 @@ export function BrandLogoLockup({
               letterSpacing: '0.14em',
               color: taglineColor,
               marginTop: 3,
+              lineHeight: lineBox,
             }}
           >
             ESG INTELLIGENCE
