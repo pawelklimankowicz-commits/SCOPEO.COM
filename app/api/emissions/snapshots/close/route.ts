@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { calculateOrganizationEmissions } from '@/lib/emissions';
+import { prisma } from '@/lib/prisma';
+import { evaluateSnapshotClosureBlocks, normalizeSnapshotGates } from '@/lib/report-quality-gates';
 import { createImmutableReportSnapshot } from '@/lib/report-snapshots';
 import { checkRateLimit, getClientIp } from '@/lib/security';
 
@@ -41,6 +43,24 @@ export async function POST(req: NextRequest) {
   const result = await calculateOrganizationEmissions(organizationId, reportYear, {
     persist: false,
   });
+
+  const carbonGates = await prisma.carbonProfile.findUnique({
+    where: { organizationId },
+    select: {
+      snapshotMinQualityScore: true,
+      snapshotMinScope3CoveragePct: true,
+      auditRiskMissingPctHigh: true,
+    },
+  });
+  const gates = normalizeSnapshotGates(carbonGates);
+  const closureBlocks = evaluateSnapshotClosureBlocks(result, gates);
+  if (closureBlocks.length > 0) {
+    return NextResponse.json(
+      { ok: false, error: closureBlocks.map((b) => b.messagePl).join(' '), blocks: closureBlocks },
+      { status: 400 }
+    );
+  }
+
   const snapshotResult = await createImmutableReportSnapshot({
     organizationId,
     authorUserId: String((session.user as { id?: string }).id ?? ''),

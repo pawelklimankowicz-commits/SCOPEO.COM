@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { EmissionsCharts } from '@/components/EmissionsCharts';
+import { ReportPdfTotalsPreference } from '@/components/ReportPdfTotalsPreference';
 import { prisma } from '@/lib/prisma';
 import { requireTenantMembership } from '@/lib/tenant';
 
@@ -8,7 +9,9 @@ export default async function DashboardReportPage({
 }: {
   searchParams?: Promise<{ year?: string }>;
 }) {
-  const { organizationId } = await requireTenantMembership();
+  const { organizationId, session } = await requireTenantMembership();
+  const role = (session.user as { role?: string }).role;
+  const canEdit = role === 'OWNER' || role === 'ADMIN';
   const params = searchParams ? await searchParams : undefined;
   const yearParam = Number(params?.year ?? '');
   const selectedYear = Number.isFinite(yearParam) && yearParam >= 2000 && yearParam <= 2100 ? yearParam : undefined;
@@ -94,6 +97,17 @@ export default async function DashboardReportPage({
           </Link>
         ) : null}
       </div>
+
+      {profile ? (
+        <ReportPdfTotalsPreference
+          initialBasis={profile.reportTotalDisplayBasis}
+          canEdit={canEdit}
+          yearQuery={selectedYear ? String(selectedYear) : ''}
+          snapshotMinQualityScore={profile.snapshotMinQualityScore}
+          snapshotMinScope3CoveragePct={profile.snapshotMinScope3CoveragePct}
+          auditRiskMissingPctHigh={profile.auditRiskMissingPctHigh}
+        />
+      ) : null}
 
       <EmissionsCharts data={emissions} />
 

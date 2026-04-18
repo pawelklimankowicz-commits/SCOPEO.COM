@@ -79,6 +79,9 @@ async function main() {
       boundaryApproach: 'operational_control',
       industry: 'Uslugi profesjonalne',
       ksefTokenMasked: '********',
+      supportsMarketBased: true,
+      hasGreenContracts: true,
+      reportTotalDisplayBasis: 'LB',
     },
   });
 

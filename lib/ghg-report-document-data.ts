@@ -17,10 +17,14 @@ export type GhgReportComputedInput = {
   scope2Breakdown?: {
     locationBasedKg?: number;
     marketBasedKg?: number;
+    totalLocationBasedKg?: number;
+    totalMarketBasedKg?: number;
   };
 };
 
-type ProfileLike = Pick<GhgReportDocumentData, 'companyName' | 'baseYear' | 'boundaryApproach' | 'industry'>;
+type ProfileLike = Pick<GhgReportDocumentData, 'companyName' | 'baseYear' | 'boundaryApproach' | 'industry'> & {
+  reportTotalDisplayBasis?: 'LB' | 'MB';
+};
 
 type LatestRecalc = {
   previousBaseYear: number;
@@ -47,6 +51,8 @@ export type BuildGhgReportDocumentDataInput = {
     hashSha256: string;
   } | null;
   latestBaseYearRecalculation?: LatestRecalc | null;
+  /** Nadpisuje pole z profilu (np. parametr zapytania do PDF). */
+  reportTotalDisplayBasis?: 'LB' | 'MB';
 };
 
 export function buildGhgReportDocumentData(input: BuildGhgReportDocumentDataInput): GhgReportDocumentData {
@@ -57,6 +63,30 @@ export function buildGhgReportDocumentData(input: BuildGhgReportDocumentDataInpu
     computed.scope2MarketKg ?? computed.scope2Breakdown?.marketBasedKg ?? computed.scope2
   );
   const boundaryLabel = formatBoundaryApproachLabel(profile.boundaryApproach);
+  const totalLocationBasedKg = Number(
+    computed.scope2Breakdown?.totalLocationBasedKg ?? computed.totalKg
+  );
+  const totalMarketBasedKg = Number(
+    computed.scope2Breakdown?.totalMarketBasedKg ?? computed.totalKg
+  );
+  const reportTotalDisplayBasis =
+    input.reportTotalDisplayBasis ?? profile.reportTotalDisplayBasis ?? 'LB';
+
+  const uncertaintyLines: string[] = [
+    'Wynik ma poziom niepewnosci zalezny od jakosci danych zrodlowych i przypisania wspolczynnikow.',
+    `Data Quality Score: ${(computed.dataQuality?.score ?? 100).toFixed(2)} / 100.`,
+    `Flagged impact (estimated/missing/assumed): ${(computed.dataQuality?.flaggedImpactPct ?? 0).toFixed(2)}% emisji calkowitej.`,
+  ];
+  const dq = computed.dataQuality;
+  if (dq?.auditRisk === 'high') {
+    uncertaintyLines.push(
+      `Automatyczna flaga jakosci: ${dq.auditRiskLabel ?? 'audit-risk high'} — udzial „missing” w emisji calkowitej przekracza prog ${Number(dq.auditRiskMissingPctThreshold ?? 0).toFixed(1)}%.`
+    );
+  } else if (dq?.auditRisk === 'elevated') {
+    uncertaintyLines.push(
+      'Automatyczna flaga jakosci: audit-risk elevated — udzial „missing” jest podwyzszony, ponizej progu „high”.'
+    );
+  }
 
   const formalReportPack: GhgReportDocumentData['formalReportPack'] = {
     methodology: [
@@ -64,6 +94,8 @@ export function buildGhgReportDocumentData(input: BuildGhgReportDocumentDataInpu
       'Podejscie obliczeniowe: activity-based i spend-based, zaleznie od dostepnosci danych zrodlowych.',
       'Baza faktorow: KOBiZE, UK Government, EPA oraz metodyki wersjonowane w aplikacji.',
       `Scope 2 LB/MB: LB = ${scope2LocationKg.toFixed(2)} kgCO2e, MB = ${scope2MarketKg.toFixed(2)} kgCO2e.`,
+      `Emisja calkowita organizacji (Scope 1+2+3): Location-based = ${totalLocationBasedKg.toFixed(2)} kgCO2e; Market-based = ${totalMarketBasedKg.toFixed(2)} kgCO2e.`,
+      `Domyslna metryka prezentacji sumy w aplikacji: ${reportTotalDisplayBasis === 'MB' ? 'Market-based' : 'Location-based'}.`,
     ],
     boundaries: [
       `Granica organizacyjna: ${boundaryLabel}.`,
@@ -130,5 +162,8 @@ export function buildGhgReportDocumentData(input: BuildGhgReportDocumentDataInpu
       : undefined,
     formalReportPack,
     generatedAt,
+    reportTotalDisplayBasis,
+    totalLocationBasedKg,
+    totalMarketBasedKg,
   };
 }

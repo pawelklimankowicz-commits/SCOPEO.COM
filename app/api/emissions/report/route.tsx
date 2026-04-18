@@ -23,6 +23,9 @@ export async function GET(req: NextRequest) {
   const reportYear = Number(req.nextUrl.searchParams.get('year'));
   const validYear = Number.isFinite(reportYear) && reportYear >= 2020 && reportYear <= 2100 ? reportYear : undefined;
   const snapshotId = req.nextUrl.searchParams.get('snapshotId')?.trim() || null;
+  const totalBasisRaw = (req.nextUrl.searchParams.get('totalBasis') ?? '').trim().toUpperCase();
+  const totalBasisOverride =
+    totalBasisRaw === 'LB' || totalBasisRaw === 'MB' ? (totalBasisRaw as 'LB' | 'MB') : null;
 
   const [profile, result, snapshot, latestBaseYearRecalculation] = await Promise.all([
     prisma.carbonProfile.findUnique({ where: { organizationId } }),
@@ -49,6 +52,10 @@ export async function GET(req: NextRequest) {
   }
   const snapshotPayload = snapshot?.payloadJson as
     | {
+        totals?: {
+          totalLocationBasedKg?: number;
+          totalMarketBasedKg?: number;
+        };
         byCategory?: Record<string, number>;
         lineCount?: number;
         dataQuality?: unknown;
@@ -65,6 +72,7 @@ export async function GET(req: NextRequest) {
         evidenceTrail?: unknown;
       }
     | undefined;
+  const snapshotTotals = snapshotPayload?.totals;
   const computed = snapshot
     ? {
         scope1: snapshot.scope1Kg,
@@ -75,7 +83,11 @@ export async function GET(req: NextRequest) {
         lineCount: snapshotPayload?.lineCount ?? 0,
         dataQuality: snapshotPayload?.dataQuality,
         scope3Completeness: snapshotPayload?.scope3Completeness,
-        scope2Breakdown: snapshotPayload?.scope2Breakdown,
+        scope2Breakdown: {
+          ...(snapshotPayload?.scope2Breakdown ?? {}),
+          totalLocationBasedKg: snapshotTotals?.totalLocationBasedKg ?? snapshot.totalKg,
+          totalMarketBasedKg: snapshotTotals?.totalMarketBasedKg ?? snapshot.totalKg,
+        },
         evidenceTrail: snapshotPayload?.evidenceTrail,
       }
     : result!;
@@ -86,9 +98,11 @@ export async function GET(req: NextRequest) {
       baseYear: profile.baseYear,
       boundaryApproach: profile.boundaryApproach,
       industry: profile.industry,
+      reportTotalDisplayBasis: profile.reportTotalDisplayBasis,
     },
     reportingYear: validYear ?? profile.reportingYear,
     computed: computed as GhgReportComputedInput,
+    reportTotalDisplayBasis: totalBasisOverride ?? undefined,
     snapshot: snapshot
       ? {
           version: snapshot.version,

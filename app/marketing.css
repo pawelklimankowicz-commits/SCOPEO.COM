@@ -96,9 +96,13 @@
 .mkt-logo-mark {
   width: 34px;
   height: 34px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 32% 28%, #ecfdf5 0%, #6ee7b7 28%, #10b981 52%, #064e3b 100%);
-  box-shadow: 0 2px 14px rgba(6, 78, 59, 0.35);
+  border-radius: 10px;
+  background-color: #ecfdf5;
+  background-image: url('/brand/scopeo-mark.svg');
+  background-size: 28px 28px;
+  background-repeat: no-repeat;
+  background-position: center;
+  box-shadow: 0 2px 14px rgba(6, 78, 59, 0.22);
 }
 
 .mkt-nav {

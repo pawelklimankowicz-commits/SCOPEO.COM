@@ -13,6 +13,12 @@ enum BoundaryApproach {
   equity_share
 }
 
+/** Sposób prezentacji sumy całkowitej (Scope 2 LB vs MB) w raporcie PDF / UI. */
+enum ReportTotalDisplayBasis {
+  LB
+  MB
+}
+
 enum Role {
   OWNER
   ADMIN
@@ -290,6 +296,14 @@ model CarbonProfile {
   hasGreenContracts         Boolean      @default(false)
   businessTravelIncluded    Boolean      @default(false)
   employeeCommutingIncluded Boolean      @default(false)
+  /** Domyślna metryka „total” w eksporcie raportu (Location-based vs Market-based). */
+  reportTotalDisplayBasis       ReportTotalDisplayBasis @default(LB)
+  /** Minimalny Data Quality Score (0–100) wymagany do zamknięcia snapshotu. */
+  snapshotMinQualityScore       Float                   @default(75)
+  /** Minimalne pokrycie macierzy Scope 3 (%) wymagane do zamknięcia snapshotu. */
+  snapshotMinScope3CoveragePct  Float                   @default(60)
+  /** Próg udziału „missing” w emisji całkowitej (%) powyżej którego ustawiana jest flaga audit-risk high. */
+  auditRiskMissingPctHigh       Float                   @default(12)
   notes                     String?
   organization              Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   createdAt                 DateTime     @default(now())

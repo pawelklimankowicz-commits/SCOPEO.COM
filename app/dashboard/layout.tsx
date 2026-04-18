@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { BrandLogoLockup } from '@/components/BrandLogo';
 import LogoutButton from '@/components/LogoutButton';
 import WorkspaceSwitcher from '@/components/workspace-switcher';
 import AuthSessionProvider from '@/components/AuthSessionProvider';
@@ -43,7 +44,9 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-            <span style={{ color: '#16a34a', fontWeight: 700, fontSize: 18 }}>Scopeo</span>
+            <Link href="/dashboard" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <BrandLogoLockup size={24} wordmarkColor="#4ade80" />
+            </Link>
             <span style={{ color: '#475569', fontSize: 13 }}>{membership.organization.name}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

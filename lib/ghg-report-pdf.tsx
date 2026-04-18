@@ -31,6 +31,28 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 12, fontWeight: 'bold', marginBottom: 8, color: '#0f172a' },
   summaryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   summaryCard: { width: '48.8%', borderWidth: 1, borderColor: '#86efac', borderRadius: 10, padding: 10, backgroundColor: '#f0fdf4' },
+  summaryCardWide: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#86efac',
+    borderRadius: 10,
+    padding: 10,
+    backgroundColor: '#f0fdf4',
+  },
+  summaryDualInner: {
+    flex: 1,
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+    backgroundColor: '#ffffff',
+  },
+  summaryDualInnerActive: {
+    borderWidth: 2,
+    borderColor: '#059669',
+    backgroundColor: '#ecfdf5',
+  },
   cardLabel: { fontSize: 8, color: '#475569', marginBottom: 4 },
   cardValue: { fontSize: 16, fontWeight: 'bold', color: '#059669' },
   cardSub: { fontSize: 8, color: '#64748b', marginTop: 2 },
@@ -73,6 +95,12 @@ export type GhgReportDocumentData = {
   scope2MarketKg?: number;
   scope3: number;
   totalKg: number;
+  /** Suma Scope 1+2(LB)+3 — spójna z `totalKg` przy pełnym breakdownie. */
+  totalLocationBasedKg?: number;
+  /** Suma Scope 1+2(MB)+3 — wymaga włączonego MB w profilu. */
+  totalMarketBasedKg?: number;
+  /** Która suma jest traktowana jako „główna” w UI eksportu (podświetlenie na str. 1). */
+  reportTotalDisplayBasis?: 'LB' | 'MB';
   byCategory: Record<string, number>;
   linesCount: number;
   generatedAt: string;
@@ -83,6 +111,9 @@ export type GhgReportDocumentData = {
     impactByFlagKg?: { estimated?: number; missing?: number; assumed?: number };
     impactByFlagPct?: { estimated?: number; missing?: number; assumed?: number };
     lineCountsByFlag?: { estimated?: number; missing?: number; assumed?: number };
+    auditRisk?: 'none' | 'elevated' | 'high';
+    auditRiskMissingPctThreshold?: number;
+    auditRiskLabel?: string;
   };
   scope3Completeness?: {
     summary?: {
@@ -196,7 +227,7 @@ function categoryLabel(code: string): string {
 export const GHG_REPORT_CHECKLIST_11 = [
   'Granica organizacyjna i rok raportu zgodne z profilem carbon.',
   'Agregacja Scope 1 / 2 / 3 zgodna z sumami kategorii i dowodami linii.',
-  'Scope 2 LB i MB oraz delta MB-LB opisane przy danych energetycznych.',
+  'Scope 2 LB i MB, sumy calkowite organizacji LB/MB na stronie 1 oraz delta MB-LB opisane przy danych energetycznych.',
   'Kompletna tabela kategorii z udzialami procentowymi i identyfikatorami EV-CAT-*.',
   'Evidence trail: kazda pozycja raportowa mapowana do faktury, linii i metodyki.',
   'Data Quality Score i flagged impact zgodne z flagami estymacji / brakow.',
@@ -222,6 +253,28 @@ function describePieArc(cx: number, cy: number, radius: number, startAngle: numb
   return `M ${cx} ${cy} L ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y} Z`;
 }
 
+function ScopeoPdfBrandRow({ rightLabel }: { rightLabel: string }) {
+  return (
+    <View style={styles.brandRow}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <Svg width={22} height={22} viewBox="0 0 32 32">
+          <Path
+            d="M16 2 L28 8.5 V16.5 C28 23.5 22 28.5 16 30 C10 28.5 4 23.5 4 16.5 V8.5 Z"
+            fill="#059669"
+            stroke="#064e3b"
+            strokeWidth={0.35}
+          />
+          <Path d="M9 14c2.5-4 11.5-4 14 0" stroke="#a7f3d0" strokeWidth={1.15} fill="none" />
+          <Path d="M16 18v6M13 21h6" stroke="#ccfbf1" strokeWidth={0.9} />
+          <Circle cx={23} cy={11} r={3} fill="#22d3ee" opacity={0.92} />
+        </Svg>
+        <Text style={styles.brand}>Scopeo | ESG Intelligence</Text>
+      </View>
+      <Text style={styles.confidential}>{rightLabel}</Text>
+    </View>
+  );
+}
+
 export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
   const resolvedReportNumber =
     data.reportNumber ??
@@ -240,6 +293,10 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
   const scope3CoveragePct = Number(data.scope3Completeness?.summary?.coveragePct ?? 0);
   const scope3CoveredCount = Number(data.scope3Completeness?.summary?.coveredCount ?? 0);
   const scope3TotalCount = Number(data.scope3Completeness?.summary?.totalCount ?? 0);
+  const totalLocationBasedKg = Number(data.totalLocationBasedKg ?? data.totalKg);
+  const totalMarketBasedKg = Number(data.totalMarketBasedKg ?? data.totalKg);
+  const reportTotalDisplayBasis = data.reportTotalDisplayBasis ?? 'LB';
+  const auditRiskLabel = data.dataQuality?.auditRiskLabel;
   const recalculationDeltaPct = Number(data.latestBaseYearRecalculation?.impactSummary?.deltaPct ?? 0);
   const recalculationDeltaKg = Number(data.latestBaseYearRecalculation?.impactSummary?.deltaKg ?? 0);
   const recalculationMaterial = Boolean(data.latestBaseYearRecalculation?.impactSummary?.materialThresholdExceeded ?? false);
@@ -304,10 +361,7 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
     <Document>
       {/* wrap=false: domyslne wrap=true na Page rozdziela treść na kolejna stronę PDF — drugi <Page> zaczynał się wtedy „po pustej” stronie. */}
       <Page size="A4" style={styles.page} wrap={false}>
-        <View style={styles.brandRow}>
-          <Text style={styles.brand}>SCOPEO | ESG Intelligence</Text>
-          <Text style={styles.confidential}>Poufne · tylko do uzytku wewnetrznego</Text>
-        </View>
+        <ScopeoPdfBrandRow rightLabel="Poufne · tylko do uzytku wewnetrznego" />
 
         <View style={styles.section}>
           <Text style={styles.title}>Raport Emisji GHG (ESG)</Text>
@@ -354,6 +408,9 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
               <Text style={styles.cardLabel}>Data Quality Score</Text>
               <Text style={styles.cardValue}>{qualityScore.toFixed(1)} / 100</Text>
               <Text style={styles.cardSub}>Flagged impact: {qualityFlaggedPct.toFixed(1)}% emisji</Text>
+              {auditRiskLabel ? (
+                <Text style={[styles.cardSub, { marginTop: 4, color: '#b45309' }]}>Automatyczna flaga: {auditRiskLabel}</Text>
+              ) : null}
             </View>
             <View style={styles.summaryCard}>
               <Text style={styles.cardLabel}>Scope 3 Completeness</Text>
@@ -384,10 +441,7 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
       </Page>
 
       <Page size="A4" style={styles.page} wrap={false}>
-        <View style={styles.brandRow}>
-          <Text style={styles.brand}>SCOPEO | ESG Intelligence</Text>
-          <Text style={styles.confidential}>Zalacznik analityczny</Text>
-        </View>
+        <ScopeoPdfBrandRow rightLabel="Zalacznik analityczny" />
 
         <View style={styles.section}>
           <Text style={styles.title}>Szczegolowa Analiza Emisji</Text>
@@ -482,10 +536,7 @@ export function GhgReportDocument({ data }: { data: GhgReportDocumentData }) {
       </Page>
 
       <Page size="A4" style={styles.page} wrap={true}>
-        <View style={styles.brandRow}>
-          <Text style={styles.brand}>SCOPEO | ESG Intelligence</Text>
-          <Text style={styles.confidential}>Zalacznik audytowy</Text>
-        </View>
+        <ScopeoPdfBrandRow rightLabel="Zalacznik audytowy" />
 
         <View style={styles.section}>
           <Text style={styles.title}>Audit Annex i Jakosc Danych</Text>

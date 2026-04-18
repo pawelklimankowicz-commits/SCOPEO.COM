@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { signIn } from 'next-auth/react';
+import { BrandLogoLockup } from '@/components/BrandLogo';
 
 export default function AuthForms() {
   const [message, setMessage] = useState('');
@@ -82,9 +83,22 @@ export default function AuthForms() {
 
   return (
     <main className="container app-page">
-      <div className="nav" style={{ marginBottom: 28 }}>
+      <div
+        className="nav"
+        style={{
+          marginBottom: 28,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 14,
+        }}
+      >
+        <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <BrandLogoLockup size={28} wordmarkColor="#16a34a" />
+        </Link>
         <Link href="/" className="badge" style={{ textDecoration: 'none' }}>
-          ← Scopeo · strona główna
+          ← Strona główna
         </Link>
       </div>
 

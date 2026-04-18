@@ -68,6 +68,12 @@ export async function createImmutableReportSnapshot(params: {
       scope2MarketKg: params.result.scope2MarketKg ?? params.result.scope2,
       scope3Kg: params.result.scope3,
       totalKg: params.result.totalKg,
+      totalLocationBasedKg:
+        (params.result.scope2Breakdown as { totalLocationBasedKg?: number } | undefined)
+          ?.totalLocationBasedKg ?? params.result.totalKg,
+      totalMarketBasedKg:
+        (params.result.scope2Breakdown as { totalMarketBasedKg?: number } | undefined)
+          ?.totalMarketBasedKg ?? params.result.totalKg,
     },
     byCategory: Object.keys(params.result.byCategory)
       .sort()

@@ -1,3 +1,8 @@
+import {
+  DEFAULT_AUDIT_RISK_MISSING_PCT_HIGH,
+  resolveAuditRiskLevel,
+} from '@/lib/report-quality-gates';
+
 function roundKg(n: number) {
   return Math.round(n * 1e6) / 1e6;
 }
@@ -194,6 +199,7 @@ export async function calculateOrganizationEmissions(
     select: {
       supportsMarketBased: true,
       hasGreenContracts: true,
+      auditRiskMissingPctHigh: true,
     },
   });
   const maxLines = Math.max(
@@ -435,6 +441,11 @@ export async function calculateOrganizationEmissions(
   const totalFlaggedImpactKg = dataQualityImpactKg.estimated + dataQualityImpactKg.missing + dataQualityImpactKg.assumed;
   const flaggedImpactPct = totalKg > 0 ? (totalFlaggedImpactKg / totalKg) * 100 : 0;
   const dataQualityScore = Math.max(0, Math.min(100, Number((100 - flaggedImpactPct).toFixed(2))));
+  const missingImpactPct = totalKg > 0 ? (dataQualityImpactKg.missing / totalKg) * 100 : 0;
+  const auditRiskMissingPctThreshold = Number(
+    carbonProfile?.auditRiskMissingPctHigh ?? DEFAULT_AUDIT_RISK_MISSING_PCT_HIGH
+  );
+  const auditRisk = resolveAuditRiskLevel(missingImpactPct, auditRiskMissingPctThreshold);
   const dataQuality = {
     score: dataQualityScore,
     flaggedImpactKg: totalFlaggedImpactKg,
@@ -442,7 +453,7 @@ export async function calculateOrganizationEmissions(
     impactByFlagKg: dataQualityImpactKg,
     impactByFlagPct: {
       estimated: totalKg > 0 ? (dataQualityImpactKg.estimated / totalKg) * 100 : 0,
-      missing: totalKg > 0 ? (dataQualityImpactKg.missing / totalKg) * 100 : 0,
+      missing: missingImpactPct,
       assumed: totalKg > 0 ? (dataQualityImpactKg.assumed / totalKg) * 100 : 0,
     },
     lineCountsByFlag: dataQualityFlagCounts,
@@ -451,6 +462,14 @@ export async function calculateOrganizationEmissions(
       missing: 'Brak przypisanego faktora emisji dla pozycji.',
       assumed: 'Wartosc aktywnosci wyliczona z zalozenia lub domyslnie 0 (metoda ACTIVITY).',
     },
+    auditRisk,
+    auditRiskMissingPctThreshold: auditRiskMissingPctThreshold,
+    auditRiskLabel:
+      auditRisk === 'high'
+        ? 'audit-risk high'
+        : auditRisk === 'elevated'
+          ? 'audit-risk elevated'
+          : 'audit-risk none',
   };
   const aggregateEvidence = {
     total: {
