@@ -4,16 +4,17 @@ import { useMemo, useState } from 'react';
 import { FAQ_ASSISTANT_CATALOG } from '@/lib/faq-assistant-catalog';
 import { findFaqIntent, normalizeFaqText } from '@/lib/faq-assistant';
 
-const FIRST = FAQ_ASSISTANT_CATALOG[0];
+const INTRO = FAQ_ASSISTANT_CATALOG.find((x) => x.id === 'faq-intro-product');
+const FIRST = INTRO ?? FAQ_ASSISTANT_CATALOG[0];
 
 export default function FaqAssistantWidget() {
-  const [expanded, setExpanded] = useState(true);
-  const [search, setSearch] = useState('');
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [showQuestionList, setShowQuestionList] = useState(false);
   const [query, setQuery] = useState('');
   const [activeItemId, setActiveItemId] = useState<string>(FIRST?.id ?? '');
   const [answer, setAnswer] = useState<string>(
     FIRST?.answer ??
-      'Zapytaj o onboarding, KSeF, emisje Scope 1–3, cennik lub bezpieczeństwo danych — wybierz pytanie z listy lub wpisz własne.'
+      'Zapytaj o onboarding, KSeF, emisje Scope 1–3, cennik lub bezpieczeństwo danych — wpisz pytanie lub rozwiń listę gotowych pytań.'
   );
   const [loading, setLoading] = useState(false);
 
@@ -23,20 +24,20 @@ export default function FaqAssistantWidget() {
   );
 
   const filteredItems = useMemo(() => {
-    const s = normalizeFaqText(search);
+    const s = normalizeFaqText(query);
     if (!s) return FAQ_ASSISTANT_CATALOG;
     return FAQ_ASSISTANT_CATALOG.filter((item) => {
       const hay = `${normalizeFaqText(item.question)} ${item.keywords.map(normalizeFaqText).join(' ')}`;
       return hay.includes(s);
     });
-  }, [search]);
+  }, [query]);
 
-  /** Natychmiastowa odpowiedź z katalogu (bez czekania na sieć). */
   function applyCatalogItem(id: string) {
     const item = FAQ_ASSISTANT_CATALOG.find((i) => i.id === id);
     if (!item) return;
     setActiveItemId(id);
     setAnswer(item.answer);
+    setPanelOpen(true);
   }
 
   async function fetchAssistantAnswer(question: string, preferLocalId?: string | null) {
@@ -83,12 +84,10 @@ export default function FaqAssistantWidget() {
     }
   }
 
-  /** Gotowe pytanie — wyłącznie katalog (natychmiast, bez migotania „ładowania”). */
   function handleChipClick(id: string) {
     applyCatalogItem(id);
   }
 
-  /** Własne pytanie: najpierw lokalne dopasowanie, potem API. */
   async function handleAsk() {
     const question = query.trim();
     if (question.length < 3) return;
@@ -97,85 +96,96 @@ export default function FaqAssistantWidget() {
     if (local) {
       setActiveItemId(local.id);
       setAnswer(local.answer);
+      setPanelOpen(true);
     } else {
-      setAnswer('Analizuję pytanie…');
+      setAnswer('Szukam odpowiedzi…');
+      setPanelOpen(true);
     }
 
     await fetchAssistantAnswer(question, local?.id ?? null);
   }
 
   return (
-    <div className="mkt-faq-agent" aria-live="polite">
+    <div className={`mkt-faq-agent${panelOpen || showQuestionList ? ' mkt-faq-agent--expanded' : ''}`} aria-live="polite">
       <div className="mkt-faq-agent-shell">
-        <button
-          type="button"
-          className="mkt-faq-agent-toggle"
-          onClick={() => setExpanded((prev) => !prev)}
-          aria-expanded={expanded}
-          aria-label={expanded ? 'Zwiń asystenta FAQ' : 'Rozwiń asystenta FAQ'}
-        >
-          <span>Asystent FAQ Scopeo</span>
-          <span aria-hidden>{expanded ? '−' : '+'}</span>
-        </button>
-
-        {expanded ? (
-          <div className="mkt-faq-agent-body">
-            <p className="mkt-faq-agent-count">{FAQ_ASSISTANT_CATALOG.length} pytań w katalogu — wpisz fragment, aby zawęzić listę.</p>
+        <div className="mkt-faq-agent-bar">
+          <button
+            type="button"
+            className="mkt-faq-agent-label"
+            onClick={() => setPanelOpen((p) => !p)}
+            aria-expanded={panelOpen}
+            aria-label={panelOpen ? 'Zwiń panel odpowiedzi' : 'Rozwiń panel odpowiedzi'}
+          >
+            Asystent FAQ
+          </button>
+          <div className="mkt-faq-agent-input-row">
             <input
-              type="search"
-              className="mkt-faq-agent-search"
-              placeholder="Szukaj w pytaniach…"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              aria-label="Szukaj w katalogu pytań"
+              type="text"
+              className="mkt-faq-agent-input"
+              placeholder="Zapytaj o Scopeo lub wpisz fragment z katalogu…"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  void handleAsk();
+                }
+              }}
+              aria-label="Pytanie do asystenta FAQ"
+              autoComplete="off"
             />
-            <div className="mkt-faq-agent-chips" role="list">
-              {filteredItems.length === 0 ? (
-                <p className="mkt-faq-agent-empty">Brak wyników — zmień frazę wyszukiwania.</p>
-              ) : (
-                filteredItems.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    role="listitem"
-                    className={`mkt-faq-agent-chip${item.id === activeItemId ? ' mkt-faq-agent-chip--active' : ''}`}
-                    onClick={() => handleChipClick(item.id)}
-                  >
-                    {item.question}
-                  </button>
-                ))
-              )}
-            </div>
+            <button
+              type="button"
+              className="mkt-faq-agent-send"
+              onClick={() => void handleAsk()}
+              disabled={loading || query.trim().length < 3}
+              aria-label="Wyślij pytanie"
+            >
+              ↑
+            </button>
+          </div>
+          <button
+            type="button"
+            className="mkt-faq-agent-list-toggle"
+            onClick={() => setShowQuestionList((v) => !v)}
+            aria-expanded={showQuestionList}
+          >
+            {showQuestionList ? 'Ukryj' : 'Pokaż'} listę pytań ({FAQ_ASSISTANT_CATALOG.length})
+          </button>
+        </div>
 
+        {showQuestionList ? (
+          <div className="mkt-faq-agent-list-wrap">
+            {filteredItems.length === 0 ? (
+              <p className="mkt-faq-agent-empty">Brak wyników — zmień tekst w polu powyżej.</p>
+            ) : (
+              <ul className="mkt-faq-agent-chips">
+                {filteredItems.map((item) => (
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      className={`mkt-faq-agent-chip${item.id === activeItemId ? ' mkt-faq-agent-chip--active' : ''}`}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        handleChipClick(item.id);
+                      }}
+                    >
+                      {item.question}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ) : null}
+
+        {panelOpen ? (
+          <div className="mkt-faq-agent-panel">
             <div className="mkt-faq-agent-answer">
               {activeItem ? <p className="mkt-faq-agent-answer-q">{activeItem.question}</p> : null}
               <p className="mkt-faq-agent-answer-a">{answer}</p>
               {loading ? <p className="mkt-faq-agent-answer-wait">Łączę z asystentem…</p> : null}
-            </div>
-
-            <div className="mkt-faq-agent-input-row">
-              <input
-                type="text"
-                className="mkt-faq-agent-input"
-                placeholder="Zadaj pytanie o Scopeo (min. 3 znaki)"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault();
-                    void handleAsk();
-                  }
-                }}
-              />
-              <button
-                type="button"
-                className="mkt-faq-agent-send"
-                onClick={() => void handleAsk()}
-                disabled={loading || query.trim().length < 3}
-                aria-label="Wyślij pytanie"
-              >
-                ↑
-              </button>
             </div>
           </div>
         ) : null}

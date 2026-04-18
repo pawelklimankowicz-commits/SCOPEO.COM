@@ -13,6 +13,23 @@ function e(id: string, question: string, answer: string, keywords: string[]): Fa
   return { id, question, answer, keywords };
 }
 
+/** Stały wpis — dopasowanie „co to jest Scopeo?” itd. (zawsze pierwszy w tablicy eksportowanej). */
+export const FAQ_INTRO_PRODUCT: FaqCatalogEntry = e(
+  'faq-intro-product',
+  'Czym jest Scopeo?',
+  'Scopeo to platforma SaaS do śladu węglowego organizacji: łączy dane z KSeF i operacji, liczy emisje Scope 1–3 w ujęciu zgodnym z GHG Protocol, prowadzi evidence trail (powiązanie wyników z fakturą i czynnikiem) i generuje raporty m.in. w PDF oraz eksporty przydatne pod CSRD/ESRS. Nie zastępuje audytora zewnętrznego — wspiera zespół i doradcę w przygotowaniu danych.',
+  [
+    'co to jest scopeo',
+    'czym jest scopeo',
+    'co to scopeo',
+    'kim jest scopeo',
+    'opis scopeo',
+    'wprowadzenie',
+    'platforma esg',
+    'co to znaczy scopeo',
+  ]
+);
+
 const SCOPE3_TOPICS: Array<{ q: string; a: string; k: string[] }> = [
   {
     q: 'Czy Scopeo obejmuje Scope 3 kategorię 1 (zakupy)?',
@@ -332,5 +349,5 @@ function buildCatalog(): FaqCatalogEntry[] {
   return out;
 }
 
-/** Dokładnie 100 pozycji (kolejność: OPS → Scope 3 → MORE). */
-export const FAQ_ASSISTANT_CATALOG: FaqCatalogEntry[] = buildCatalog().slice(0, 100);
+/** Dokładnie 100 pozycji: najpierw wprowadzenie produktu, potem OPS → Scope 3 → MORE (ucięte do limitu). */
+export const FAQ_ASSISTANT_CATALOG: FaqCatalogEntry[] = [FAQ_INTRO_PRODUCT, ...buildCatalog()].slice(0, 100);

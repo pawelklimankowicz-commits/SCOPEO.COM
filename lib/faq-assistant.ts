@@ -9,6 +9,7 @@ export function normalizeFaqText(value: string) {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/\s+/g, ' ')
+    .replace(/[?!.,;:]+$/g, '')
     .trim();
 }
 
@@ -21,6 +22,18 @@ export function findFaqIntent(question: string): FaqIntent | null {
 
   for (const entry of FAQ_ASSISTANT_CATALOG) {
     if (normalizeFaqText(entry.question) === normalized) return entry;
+  }
+
+  const intro = FAQ_ASSISTANT_CATALOG.find((x) => x.id === 'faq-intro-product');
+  if (intro) {
+    const productOverview =
+      normalized.includes('scopeo') &&
+      /(co to( jest)?|czym jest|czym to|kim jest|opisz|wprowadz|what is|poznaj)/.test(normalized);
+    if (productOverview) return intro;
+    for (const kw of intro.keywords) {
+      const nk = normalizeFaqText(kw);
+      if (nk.length >= 8 && normalized.includes(nk)) return intro;
+    }
   }
 
   let best: { intent: FaqIntent; score: number } | null = null;
