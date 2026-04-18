@@ -4,22 +4,19 @@ import { useMemo, useState } from 'react';
 import { FAQ_ASSISTANT_CATALOG } from '@/lib/faq-assistant-catalog';
 import { findFaqIntent, normalizeFaqText } from '@/lib/faq-assistant';
 
-const INTRO = FAQ_ASSISTANT_CATALOG.find((x) => x.id === 'faq-intro-product');
-const FIRST = INTRO ?? FAQ_ASSISTANT_CATALOG[0];
+const WELCOME =
+  'Wpisz pytanie (min. 3 znaki) lub otwórz listę pytań i kliknij pozycję — treść odpowiedzi zobaczysz po rozwinięciu panelu (przycisk + / − po prawej u góry).';
 
 export default function FaqAssistantWidget() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [showQuestionList, setShowQuestionList] = useState(false);
   const [query, setQuery] = useState('');
-  const [activeItemId, setActiveItemId] = useState<string>(FIRST?.id ?? '');
-  const [answer, setAnswer] = useState<string>(
-    FIRST?.answer ??
-      'Zapytaj o onboarding, KSeF, emisje Scope 1–3, cennik lub bezpieczeństwo danych — wpisz pytanie lub rozwiń listę gotowych pytań.'
-  );
+  const [activeItemId, setActiveItemId] = useState('');
+  const [answer, setAnswer] = useState(WELCOME);
   const [loading, setLoading] = useState(false);
 
   const activeItem = useMemo(
-    () => FAQ_ASSISTANT_CATALOG.find((item) => item.id === activeItemId) ?? null,
+    () => (activeItemId ? FAQ_ASSISTANT_CATALOG.find((item) => item.id === activeItemId) ?? null : null),
     [activeItemId]
   );
 
@@ -40,7 +37,8 @@ export default function FaqAssistantWidget() {
     setPanelOpen(true);
   }
 
-  async function fetchAssistantAnswer(question: string, preferLocalId?: string | null) {
+  /** Tylko gdy brak dopasowania w katalogu — unikamy nadpisywania pewnej odpowiedzi z katalogu przez LLM / błąd sieci. */
+  async function fetchAssistantAnswer(question: string) {
     setLoading(true);
     try {
       const controller = new AbortController();
@@ -59,26 +57,26 @@ export default function FaqAssistantWidget() {
       } finally {
         clearTimeout(timeout);
       }
-      const payload = (await response.json()) as { ok?: boolean; answer?: string; matchedIntent?: string | null };
+      const payload = (await response.json()) as {
+        ok?: boolean;
+        answer?: string;
+        matchedIntent?: string | null;
+      };
       if (response.ok && payload?.ok && payload.answer) {
         setAnswer(payload.answer);
         if (payload.matchedIntent) {
           const hit = FAQ_ASSISTANT_CATALOG.find((x) => x.id === payload.matchedIntent);
           if (hit) setActiveItemId(hit.id);
-        } else if (preferLocalId) {
-          setActiveItemId(preferLocalId);
         }
-      } else if (!preferLocalId) {
+      } else {
         setAnswer(
           'Nie mogę teraz pobrać odpowiedzi automatycznej. Spróbuj ponownie za chwilę lub napisz do nas przez formularz kontaktowy.'
         );
       }
     } catch {
-      if (!preferLocalId) {
-        setAnswer(
-          'Nie mogę teraz pobrać odpowiedzi automatycznej. Spróbuj ponownie za chwilę lub napisz do nas przez formularz kontaktowy.'
-        );
-      }
+      setAnswer(
+        'Nie mogę teraz pobrać odpowiedzi automatycznej. Spróbuj ponownie za chwilę lub napisz do nas przez formularz kontaktowy.'
+      );
     } finally {
       setLoading(false);
     }
@@ -97,38 +95,50 @@ export default function FaqAssistantWidget() {
       setActiveItemId(local.id);
       setAnswer(local.answer);
       setPanelOpen(true);
-    } else {
-      setAnswer('Szukam odpowiedzi…');
-      setPanelOpen(true);
+      return;
     }
 
-    await fetchAssistantAnswer(question, local?.id ?? null);
+    setActiveItemId('');
+    setAnswer('Szukam odpowiedzi…');
+    setPanelOpen(true);
+    await fetchAssistantAnswer(question);
   }
 
   return (
-    <div className={`mkt-faq-agent${panelOpen || showQuestionList ? ' mkt-faq-agent--expanded' : ''}`} aria-live="polite">
+    <div
+      className={`mkt-faq-agent${panelOpen || showQuestionList ? ' mkt-faq-agent--expanded' : ''}`}
+      aria-live="polite"
+    >
       <div className="mkt-faq-agent-shell">
         <div className="mkt-faq-agent-bar">
-          <button
-            type="button"
-            className="mkt-faq-agent-label"
-            onClick={() => setPanelOpen((p) => !p)}
-            aria-expanded={panelOpen}
-            aria-label={panelOpen ? 'Zwiń panel odpowiedzi' : 'Rozwiń panel odpowiedzi'}
-          >
-            Asystent FAQ
-          </button>
+          <div className="mkt-faq-agent-topline">
+            <span className="mkt-faq-agent-title">Asystent FAQ Scopeo</span>
+            <button
+              type="button"
+              className="mkt-faq-agent-panel-toggle"
+              onClick={() => setPanelOpen((p) => !p)}
+              aria-expanded={panelOpen}
+              aria-label={panelOpen ? 'Ukryj panel odpowiedzi' : 'Pokaż panel odpowiedzi'}
+            >
+              {panelOpen ? '−' : '+'}
+            </button>
+          </div>
+
           <div className="mkt-faq-agent-input-row">
             <input
               type="text"
               className="mkt-faq-agent-input"
-              placeholder="Zapytaj o Scopeo lub wpisz fragment z katalogu…"
+              placeholder="Np. Co to jest Scopeo?, KSeF, Scope 3, cennik…"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
                   event.preventDefault();
                   void handleAsk();
+                }
+                if (event.key === 'Escape') {
+                  setShowQuestionList(false);
+                  setPanelOpen(false);
                 }
               }}
               aria-label="Pytanie do asystenta FAQ"
@@ -144,6 +154,7 @@ export default function FaqAssistantWidget() {
               ↑
             </button>
           </div>
+
           <button
             type="button"
             className="mkt-faq-agent-list-toggle"

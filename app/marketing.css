@@ -1405,23 +1405,41 @@
 }
 
 .mkt-faq-agent-bar {
-  padding: 10px 12px 10px;
+  padding: 8px 10px 8px;
   display: flex;
   flex-direction: column;
+  gap: 6px;
+}
+
+.mkt-faq-agent-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
 }
 
-.mkt-faq-agent-label {
-  align-self: flex-start;
-  border: none;
-  background: transparent;
-  color: var(--mkt-headline);
+.mkt-faq-agent-title {
+  font-size: 0.78rem;
   font-weight: 700;
-  font-size: 0.8rem;
-  padding: 2px 0;
+  color: var(--mkt-headline);
+  letter-spacing: -0.01em;
+}
+
+.mkt-faq-agent-panel-toggle {
+  flex-shrink: 0;
+  width: 32px;
+  height: 28px;
+  border: 1px solid rgba(6, 78, 59, 0.25);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--mkt-headline);
+  font-size: 0.7rem;
+  line-height: 1;
   cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+}
+
+.mkt-faq-agent-panel-toggle:hover {
+  background: #ffffff;
 }
 
 .mkt-faq-agent-list-toggle {
@@ -1538,20 +1556,31 @@
   min-width: 0;
   border-radius: 10px;
   border: 1px solid #86efac;
-  padding: 10px 12px;
+  padding: 9px 11px;
   font-size: 0.95rem;
+  font-weight: 600;
   background: #ffffff;
-  color: #0f172a;
+  color: #020617;
+  caret-color: #047857;
 }
 
 .mkt-faq-agent-input::placeholder {
-  color: #475569;
+  color: #334155;
   opacity: 1;
+  font-weight: 500;
 }
 
 .mkt-faq-agent-input:focus {
   outline: 2px solid #34d399;
   outline-offset: 1px;
+}
+
+.mkt-faq-agent-input:-webkit-autofill,
+.mkt-faq-agent-input:-webkit-autofill:hover,
+.mkt-faq-agent-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #020617;
+  transition: background-color 9999s ease-out;
+  box-shadow: 0 0 0 1000px #ffffff inset;
 }
 
 .mkt-faq-agent-send {
