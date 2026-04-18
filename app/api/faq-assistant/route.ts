@@ -3,18 +3,24 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { checkRateLimit, getClientIp } from '@/lib/security';
 import { buildFaqSystemPrompt, findFaqIntent, normalizeFaqText } from '@/lib/faq-assistant';
+import { FAQ_ASSISTANT_GENERIC, resolveFaqFromCatalog } from '@/lib/faq-assistant-resolve';
 import { createHash } from 'node:crypto';
 
 function hashIp(ip: string) {
   return createHash('sha256').update(ip).digest('hex');
 }
 
-async function generateLlmAnswer(question: string) {
+async function generateLlmAnswer(question: string, catalogHint: string | null) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return null;
 
+  const userContent =
+    catalogHint && catalogHint.length > 0
+      ? `${question}\n\n[Oficjalna odpowiedź z FAQ produktu — zachowaj zgodność faktów; możesz skrócić lub przeformułować po polsku, max 4 zdania:]\n${catalogHint}`
+      : question;
+
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 4500);
+  const timeout = setTimeout(() => controller.abort(), 14_000);
   let response: Response;
   try {
     response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -25,11 +31,14 @@ async function generateLlmAnswer(question: string) {
       },
       body: JSON.stringify({
         model: process.env.FAQ_ASSISTANT_MODEL || 'gpt-4o-mini',
-        temperature: 0.2,
-        max_tokens: 320,
+        temperature: 0.25,
+        max_tokens: 400,
         messages: [
-          { role: 'system', content: buildFaqSystemPrompt() },
-          { role: 'user', content: question },
+          {
+            role: 'system',
+            content: `${buildFaqSystemPrompt()}\n\nPriorytet: odpowiadaj jak asystent AI produktu. Gdy dostaniesz blok [Oficjalna odpowiedź z FAQ], musi on być zgodny z faktami — nie przeczyń treści FAQ.`,
+          },
+          { role: 'user', content: userContent },
         ],
       }),
       signal: controller.signal,
@@ -53,7 +62,7 @@ export async function POST(req: NextRequest) {
   const organizationId = (session?.user as { organizationId?: string } | undefined)?.organizationId ?? null;
   const limit = await checkRateLimit(`faq-assistant:${organizationId ?? 'anon'}:${ip}`, {
     windowMs: 60_000,
-    maxRequests: 20,
+    maxRequests: 24,
   });
   if (!limit.ok) {
     return NextResponse.json(
@@ -72,24 +81,34 @@ export async function POST(req: NextRequest) {
   }
 
   const normalizedQuestion = normalizeFaqText(question);
-  const matchedIntent = findFaqIntent(question);
-  // Instant fallback keeps widget responsive even when LLM/network is slow.
-  let answer = matchedIntent?.answer ?? null;
-  let source: 'llm' | 'fallback' = 'fallback';
+  const catalogResolved = resolveFaqFromCatalog(question);
+  const catalogHint = catalogResolved?.answer ?? null;
+  /** Dopasowanie do logów — preferuj strict intent, inaczej relaxed. */
+  const matchedIntent = findFaqIntent(question)?.id ?? catalogResolved?.matchedIntent ?? null;
+
+  let answer: string;
+  let source: 'llm' | 'catalog' | 'catalog_relaxed' | 'generic' | 'fallback' = 'generic';
 
   try {
-    const llmAnswer = await generateLlmAnswer(question);
+    const llmAnswer = await generateLlmAnswer(question, catalogHint);
     if (llmAnswer) {
       answer = llmAnswer;
       source = 'llm';
+    } else if (catalogResolved) {
+      answer = catalogResolved.answer;
+      source = catalogResolved.tier === 'relaxed' ? 'catalog_relaxed' : 'catalog';
+    } else {
+      answer = FAQ_ASSISTANT_GENERIC;
+      source = 'generic';
     }
   } catch {
-    // fallback response remains active
-  }
-
-  if (!answer) {
-    answer =
-      'Mogę pomóc w onboardingu Scopeo, dodaniu danych firmy, podłączeniu KSeF, emisjach Scope 1-3, cenniku i bezpieczeństwie. Napisz proszę pytanie bardziej szczegółowo.';
+    if (catalogResolved) {
+      answer = catalogResolved.answer;
+      source = catalogResolved.tier === 'relaxed' ? 'catalog_relaxed' : 'catalog';
+    } else {
+      answer = FAQ_ASSISTANT_GENERIC;
+      source = 'fallback';
+    }
   }
 
   const responseMs = Date.now() - startMs;
@@ -103,7 +122,7 @@ export async function POST(req: NextRequest) {
         normalizedQuestion,
         answerPreview: answer.slice(0, 500),
         source,
-        matchedIntent: matchedIntent?.id ?? null,
+        matchedIntent,
         responseMs,
         ipHash: hashIp(ip),
       },
@@ -116,7 +135,7 @@ export async function POST(req: NextRequest) {
     ok: true,
     answer,
     source,
-    matchedIntent: matchedIntent?.id ?? null,
+    matchedIntent,
     responseMs,
   });
 }

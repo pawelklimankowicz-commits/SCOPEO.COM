@@ -13,6 +13,27 @@ export function normalizeFaqText(value: string) {
     .trim();
 }
 
+/** Wynik dopasowania pytania do jednego wpisu katalogu (do intentu i trybu „relaxed”). */
+export function scoreEntryAgainstQuestion(normalized: string, entry: FaqCatalogEntry): { score: number; kwBonus: number } {
+  let score = 0;
+  let kwBonus = 0;
+  const nq = normalizeFaqText(entry.question);
+  for (const kw of entry.keywords) {
+    const nk = normalizeFaqText(kw);
+    if (nk && normalized.includes(nk)) {
+      score += 3;
+      kwBonus += nk.length;
+    }
+  }
+  const words = normalized.split(/\s+/).filter((w) => w.length > 2);
+  for (const w of words) {
+    if (nq.includes(w)) score += 1;
+  }
+  if (normalized.length >= 10 && nq.includes(normalized)) score += 6;
+  if (normalized.length >= 10 && normalized.includes(nq)) score += 5;
+  return { score, kwBonus };
+}
+
 /**
  * Dopasowanie pytania do wpisu katalogu (exact → słowa kluczowe → częściowe pokrycie treści pytania).
  */
@@ -38,18 +59,7 @@ export function findFaqIntent(question: string): FaqIntent | null {
 
   let best: { intent: FaqIntent; score: number } | null = null;
   for (const entry of FAQ_ASSISTANT_CATALOG) {
-    let score = 0;
-    const nq = normalizeFaqText(entry.question);
-    for (const kw of entry.keywords) {
-      const nk = normalizeFaqText(kw);
-      if (nk && normalized.includes(nk)) score += 3;
-    }
-    const words = normalized.split(' ').filter((w) => w.length > 2);
-    for (const w of words) {
-      if (nq.includes(w)) score += 1;
-    }
-    if (normalized.length >= 10 && nq.includes(normalized)) score += 6;
-    if (normalized.length >= 10 && normalized.includes(nq)) score += 5;
+    const { score } = scoreEntryAgainstQuestion(normalized, entry);
     if (!best || score > best.score) best = { intent: entry, score };
   }
 
