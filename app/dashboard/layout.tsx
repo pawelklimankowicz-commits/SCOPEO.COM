@@ -45,7 +45,12 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
             <Link href="/dashboard" style={{ textDecoration: 'none', color: 'inherit' }}>
-              <BrandLogoLockup size={24} wordmarkColor="#4ade80" />
+              <BrandLogoLockup
+                size={24}
+                withWordmark
+                wordmarkColor="#86efac"
+                taglineColor="#94a3b8"
+              />
             </Link>
             <span style={{ color: '#475569', fontSize: 13 }}>{membership.organization.name}</span>
           </div>

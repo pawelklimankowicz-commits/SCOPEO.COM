@@ -1,47 +1,7 @@
-type FaqIntent = {
-  id: string;
-  question: string;
-  answer: string;
-  keywords: string[];
-};
+import { FAQ_ASSISTANT_CATALOG, type FaqCatalogEntry } from '@/lib/faq-assistant-catalog';
 
-export const FAQ_ASSISTANT_INTENTS: FaqIntent[] = [
-  {
-    id: 'ksef-connect',
-    question: 'Jak podłączyć Scopeo do KSeF?',
-    answer:
-      'Wejdź w Ustawienia i dodaj token autoryzacyjny KSeF. Po poprawnej weryfikacji Scopeo automatycznie pobiera faktury i uruchamia przeliczenia emisji.',
-    keywords: ['ksef', 'token', 'podlaczyc', 'polaczyc', 'integracja'],
-  },
-  {
-    id: 'company-data',
-    question: 'Jak poprawnie dodać dane firmy?',
-    answer:
-      'W onboardingu uzupełnij: nazwę firmy, NIP, branżę, rok raportowania, rok bazowy i granice raportowania. Te pola bezpośrednio wpływają na poprawność raportu.',
-    keywords: ['firma', 'nip', 'dane', 'onboarding', 'rok bazowy', 'granice'],
-  },
-  {
-    id: 'scope-coverage',
-    question: 'Czy Scopeo liczy Scope 1, 2 i 3?',
-    answer:
-      'Tak, Scopeo obsługuje Scope 1, Scope 2 i Scope 3, z evidence trail i raportem zgodnym z metodyką GHG Protocol.',
-    keywords: ['scope', 'scope 1', 'scope 2', 'scope 3', 'ghg'],
-  },
-  {
-    id: 'pricing',
-    question: 'Od czego zależy cena?',
-    answer:
-      'Cena zależy od planu, liczby użytkowników i liczby połączeń KSeF. Szczegóły znajdziesz w sekcji cennik.',
-    keywords: ['cena', 'cennik', 'plan', 'koszt', 'abonament'],
-  },
-  {
-    id: 'security',
-    question: 'Czy dane są bezpieczne?',
-    answer:
-      'Tak. Dane są izolowane per organizacja, dostęp jest oparty o role, a przetwarzanie odbywa się zgodnie z polityką prywatności i wymaganiami bezpieczeństwa.',
-    keywords: ['bezpieczenstwo', 'rodo', 'dane', 'prywatnosc'],
-  },
-];
+/** Kompatybilność z API / Prisma (matchedIntent). */
+export type FaqIntent = FaqCatalogEntry;
 
 export function normalizeFaqText(value: string) {
   return value
@@ -52,27 +12,42 @@ export function normalizeFaqText(value: string) {
     .trim();
 }
 
-export function findFaqIntent(question: string) {
+/**
+ * Dopasowanie pytania do wpisu katalogu (exact → słowa kluczowe → częściowe pokrycie treści pytania).
+ */
+export function findFaqIntent(question: string): FaqIntent | null {
   const normalized = normalizeFaqText(question);
   if (!normalized) return null;
 
-  let best: { intent: FaqIntent; score: number } | null = null;
-  for (const intent of FAQ_ASSISTANT_INTENTS) {
-    const score = intent.keywords.reduce(
-      (acc, keyword) => (normalized.includes(normalizeFaqText(keyword)) ? acc + 1 : acc),
-      0
-    );
-    if (!best || score > best.score) best = { intent, score };
+  for (const entry of FAQ_ASSISTANT_CATALOG) {
+    if (normalizeFaqText(entry.question) === normalized) return entry;
   }
 
-  if (!best || best.score === 0) return null;
+  let best: { intent: FaqIntent; score: number } | null = null;
+  for (const entry of FAQ_ASSISTANT_CATALOG) {
+    let score = 0;
+    const nq = normalizeFaqText(entry.question);
+    for (const kw of entry.keywords) {
+      const nk = normalizeFaqText(kw);
+      if (nk && normalized.includes(nk)) score += 3;
+    }
+    const words = normalized.split(' ').filter((w) => w.length > 2);
+    for (const w of words) {
+      if (nq.includes(w)) score += 1;
+    }
+    if (normalized.length >= 10 && nq.includes(normalized)) score += 6;
+    if (normalized.length >= 10 && normalized.includes(nq)) score += 5;
+    if (!best || score > best.score) best = { intent: entry, score };
+  }
+
+  if (!best || best.score < 2) return null;
   return best.intent;
 }
 
 export function buildFaqSystemPrompt() {
-  const intentsSummary = FAQ_ASSISTANT_INTENTS.map(
-    (intent) => `- ${intent.id}: ${intent.question} => ${intent.answer}`
-  ).join('\n');
+  const intentsSummary = FAQ_ASSISTANT_CATALOG.slice(0, 22)
+    .map((intent) => `- ${intent.id}: ${intent.question} => ${intent.answer}`)
+    .join('\n');
 
   return [
     'Jesteś asystentem FAQ Scopeo.',
@@ -80,7 +55,8 @@ export function buildFaqSystemPrompt() {
     'Skup się na onboardingu, danych firmy, podłączeniu KSeF, emisjach Scope 1-3, cenniku i bezpieczeństwie.',
     'Jeżeli pytanie wykracza poza zakres produktu, zaproponuj kontakt przez formularz /kontakt.',
     'Nie wymyślaj nieistniejących funkcji.',
-    'Baza odpowiedzi referencyjnych:',
+    'Baza odpowiedzi referencyjnych (skrót):',
     intentsSummary,
+    `… oraz ${Math.max(0, FAQ_ASSISTANT_CATALOG.length - 22)} innych pozycji katalogu produktu.`,
   ].join('\n');
 }

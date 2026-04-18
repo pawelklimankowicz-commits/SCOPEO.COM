@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 232 56" role="img" aria-label="Scopeo">
+  <defs>
+    <linearGradient id="logo-void" x1="8%" y1="0%" x2="92%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="55%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="logo-rim" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#5eead4"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="logo-pulse" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#a7f3d0"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(1,0) scale(0.8125)">
+    <path
+      fill="url(#logo-void)"
+      stroke="url(#logo-rim)"
+      stroke-width="1.2"
+      d="M32 4 L56 16v20c0 12-10 22-24 24C18 58 8 48 8 36V16L32 4Z"
+    />
+    <path
+      d="M22 15 C14 22 14 42 22 49"
+      fill="none"
+      stroke="#22d3ee"
+      stroke-width="1.35"
+      stroke-linecap="round"
+      stroke-dasharray="3.2 2.4"
+      opacity="0.95"
+    />
+    <path
+      d="M42 15 C50 22 50 42 42 49"
+      fill="none"
+      stroke="#22d3ee"
+      stroke-width="1.35"
+      stroke-linecap="round"
+      stroke-dasharray="3.2 2.4"
+      opacity="0.95"
+    />
+    <rect x="29.5" y="19" width="5" height="26" rx="1.6" fill="url(#logo-pulse)" stroke="#022c22" stroke-width="0.35" opacity="0.95"/>
+    <path d="M14 40 Q32 36 50 40" fill="none" stroke="#059669" stroke-width="0.75" stroke-linecap="round" opacity="0.55"/>
+    <path d="M15 43 Q32 39 49 43" fill="none" stroke="#059669" stroke-width="0.75" stroke-linecap="round" opacity="0.7"/>
+    <path d="M16 46 Q32 42 48 46" fill="none" stroke="#10b981" stroke-width="0.85" stroke-linecap="round" opacity="0.85"/>
+    <path d="M13 12 L18 17 L10 17 Z" fill="none" stroke="#67e8f9" stroke-width="0.95" stroke-linejoin="miter" opacity="0.85"/>
+    <circle cx="48" cy="19" r="5.2" fill="#22d3ee" stroke="#0f172a" stroke-width="0.85"/>
+    <path d="M45.7 19h4.6M48 16.7v4.6" stroke="#0f172a" stroke-width="1.2" stroke-linecap="round"/>
+    <circle cx="48" cy="19" r="1.35" fill="#ecfeff" opacity="0.95"/>
+  </g>
+  <text
+    x="60"
+    y="38.5"
+    font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif"
+    font-size="28"
+    font-weight="700"
+    letter-spacing="-0.06em"
+    fill="#064e3b"
+  >
+    Scopeo
+  </text>
+  <text
+    x="60"
+    y="50"
+    font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif"
+    font-size="9.5"
+    font-weight="600"
+    letter-spacing="0.18em"
+    fill="#64748b"
+  >
+    ESG INTELLIGENCE
+  </text>
+</svg>

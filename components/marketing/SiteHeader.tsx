@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { BrandLogoLockup } from '@/components/BrandLogo';
 
 const links = [
   { href: '/produkt', label: 'Produkt' },
@@ -18,9 +19,13 @@ export default function SiteHeader() {
   return (
     <header className="mkt-header">
       <div className="mkt-inner mkt-header-inner">
-        <Link href="/" className="mkt-logo" onClick={() => setOpen(false)}>
-          <span className="mkt-logo-mark" aria-hidden />
-          Scopeo
+        <Link href="/" className="mkt-logo" onClick={() => setOpen(false)} aria-label="Scopeo — strona główna">
+          <BrandLogoLockup
+            size={19}
+            withWordmark
+            wordmarkColor="var(--mkt-headline)"
+            taglineColor="#475569"
+          />
         </Link>
 
         <button

@@ -95,7 +95,12 @@ export default function AuthForms() {
         }}
       >
         <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-          <BrandLogoLockup size={28} wordmarkColor="#16a34a" />
+          <BrandLogoLockup
+            size={28}
+            withWordmark
+            wordmarkColor="#15803d"
+            taglineColor="#64748b"
+          />
         </Link>
         <Link href="/" className="badge" style={{ textDecoration: 'none' }}>
           ← Strona główna

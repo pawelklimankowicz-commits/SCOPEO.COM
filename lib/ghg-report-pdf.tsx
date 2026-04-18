@@ -256,19 +256,77 @@ function describePieArc(cx: number, cy: number, radius: number, startAngle: numb
 function ScopeoPdfBrandRow({ rightLabel }: { rightLabel: string }) {
   return (
     <View style={styles.brandRow}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <Svg width={22} height={22} viewBox="0 0 32 32">
-          <Path
-            d="M16 2 L28 8.5 V16.5 C28 23.5 22 28.5 16 30 C10 28.5 4 23.5 4 16.5 V8.5 Z"
-            fill="#059669"
-            stroke="#064e3b"
-            strokeWidth={0.35}
-          />
-          <Path d="M9 14c2.5-4 11.5-4 14 0" stroke="#a7f3d0" strokeWidth={1.15} fill="none" />
-          <Path d="M16 18v6M13 21h6" stroke="#ccfbf1" strokeWidth={0.9} />
-          <Circle cx={23} cy={11} r={3} fill="#22d3ee" opacity={0.92} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <Svg width={128} height={31} viewBox="0 0 232 56">
+          <G transform="translate(1,2) scale(0.8125)">
+            <Path
+              d="M32 4 L56 16v20c0 12-10 22-24 24C18 58 8 48 8 36V16L32 4Z"
+              fill="#0f172a"
+              stroke="#34d399"
+              strokeWidth={1.2}
+            />
+            <Path
+              d="M22 15 C14 22 14 42 22 49"
+              stroke="#22d3ee"
+              strokeWidth={1.35}
+              fill="none"
+              strokeLinecap="round"
+              strokeDasharray="3 2"
+            />
+            <Path
+              d="M42 15 C50 22 50 42 42 49"
+              stroke="#22d3ee"
+              strokeWidth={1.35}
+              fill="none"
+              strokeLinecap="round"
+              strokeDasharray="3 2"
+            />
+            <Path d="M29.5 19 h5 v26 h-5 Z" fill="#10b981" stroke="#022c22" strokeWidth={0.35} />
+            <Path
+              d="M14 40 Q32 36 50 40"
+              stroke="#059669"
+              strokeWidth={0.75}
+              fill="none"
+              strokeLinecap="round"
+            />
+            <Path
+              d="M16 46 Q32 42 48 46"
+              stroke="#10b981"
+              strokeWidth={0.85}
+              fill="none"
+              strokeLinecap="round"
+            />
+            <Path d="M13 12 L18 17 L10 17 Z" stroke="#67e8f9" strokeWidth={0.95} fill="none" strokeLinejoin="miter" />
+            <Circle cx={48} cy={19} r={5.2} fill="#22d3ee" stroke="#0f172a" strokeWidth={0.85} />
+            <Path d="M45.7 19h4.6M48 16.7v4.6" stroke="#0f172a" strokeWidth={1.2} strokeLinecap="round" />
+          </G>
+          <Text
+            x={58}
+            y={38}
+            style={{
+              fontFamily: PDF_FONT_FAMILY,
+              fontWeight: 700,
+              fontSize: 26,
+              letterSpacing: -1.2,
+              fill: '#ecfdf5',
+            }}
+          >
+            Scopeo
+          </Text>
+          <Text
+            x={58}
+            y={50}
+            style={{
+              fontFamily: PDF_FONT_FAMILY,
+              fontSize: 8.5,
+              fontWeight: 600,
+              letterSpacing: 2.2,
+              fill: '#64748b',
+            }}
+          >
+            ESG INTELLIGENCE
+          </Text>
         </Svg>
-        <Text style={styles.brand}>Scopeo | ESG Intelligence</Text>
       </View>
       <Text style={styles.confidential}>{rightLabel}</Text>
     </View>

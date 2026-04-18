@@ -1,14 +1,55 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Scopeo">
   <defs>
-    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#34d399"/>
-      <stop offset="55%" stop-color="#059669"/>
-      <stop offset="100%" stop-color="#064e3b"/>
+    <linearGradient id="scopeo-void" x1="8%" y1="0%" x2="92%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="55%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="scopeo-rim" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#5eead4"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="scopeo-pulse" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#a7f3d0"/>
+      <stop offset="100%" stop-color="#059669"/>
     </linearGradient>
   </defs>
-  <path d="M32 4 56 16v20c0 12-10 22-24 24C18 58 8 48 8 36V16L32 4Z" fill="url(#g)" stroke="#022c22" stroke-width="1.1"/>
-  <path d="M18 36c5-11 23-11 28 0" stroke="#a7f3d0" stroke-width="2.4" stroke-linecap="round" fill="none"/>
-  <path d="M32 40v14M26 46h12" stroke="#ecfdf5" stroke-width="2" stroke-linecap="round"/>
-  <circle cx="46" cy="22" r="7" fill="#22d3ee" opacity="0.95"/>
-  <path d="M43 22h6M46 19v6" stroke="#0f172a" stroke-width="1.6" stroke-linecap="round"/>
+  <!-- Tarcza -->
+  <path
+    fill="url(#scopeo-void)"
+    stroke="url(#scopeo-rim)"
+    stroke-width="1.2"
+    d="M32 4 L56 16v20c0 12-10 22-24 24C18 58 8 48 8 36V16L32 4Z"
+  />
+  <!-- Wewnętrzna „soczewka pomiarowa”: dwa nawiasy z przerywaną obwódnicą -->
+  <path
+    d="M22 15 C14 22 14 42 22 49"
+    fill="none"
+    stroke="#22d3ee"
+    stroke-width="1.35"
+    stroke-linecap="round"
+    stroke-dasharray="3.2 2.4"
+    opacity="0.95"
+  />
+  <path
+    d="M42 15 C50 22 50 42 42 49"
+    fill="none"
+    stroke="#22d3ee"
+    stroke-width="1.35"
+    stroke-linecap="round"
+    stroke-dasharray="3.2 2.4"
+    opacity="0.95"
+  />
+  <!-- Centralny impuls / „live signal” -->
+  <rect x="29.5" y="19" width="5" height="26" rx="1.6" fill="url(#scopeo-pulse)" stroke="#022c22" stroke-width="0.35" opacity="0.95"/>
+  <!-- Topografia = ślad środowiskowy, trzy linie -->
+  <path d="M14 40 Q32 36 50 40" fill="none" stroke="#059669" stroke-width="0.75" stroke-linecap="round" opacity="0.55"/>
+  <path d="M15 43 Q32 39 49 43" fill="none" stroke="#059669" stroke-width="0.75" stroke-linecap="round" opacity="0.7"/>
+  <path d="M16 46 Q32 42 48 46" fill="none" stroke="#10b981" stroke-width="0.85" stroke-linecap="round" opacity="0.85"/>
+  <!-- Mikro-pryzmat: „światło / refrakcja danych” -->
+  <path d="M13 12 L18 17 L10 17 Z" fill="none" stroke="#67e8f9" stroke-width="0.95" stroke-linejoin="miter" opacity="0.85"/>
+  <!-- Hub telemetryczny (mniejszy, żeby nie konkurował z nawiasami) -->
+  <circle cx="48" cy="19" r="5.2" fill="#22d3ee" stroke="#0f172a" stroke-width="0.85"/>
+  <path d="M45.7 19h4.6M48 16.7v4.6" stroke="#0f172a" stroke-width="1.2" stroke-linecap="round"/>
+  <circle cx="48" cy="19" r="1.35" fill="#ecfeff" opacity="0.95"/>
 </svg>

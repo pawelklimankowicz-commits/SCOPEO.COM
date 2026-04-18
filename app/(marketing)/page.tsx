@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { BrandLogoLockup } from '@/components/BrandLogo';
 import LandingVideo from '@/components/marketing/LandingVideo';
 import LeadForm from '@/components/marketing/LeadForm';
 import {
@@ -24,6 +25,14 @@ export default function MarketingHomePage() {
       <section className="mkt-hero">
         <div className="mkt-inner mkt-hero-grid">
           <div>
+            <div className="mkt-hero-brand">
+              <BrandLogoLockup
+                size={24}
+                withWordmark
+                wordmarkColor="var(--mkt-headline)"
+                taglineColor="#475569"
+              />
+            </div>
             <p className="mkt-hero-badge">KSeF · Scope 1–3 · CSRD 2026</p>
             <h1 className="mkt-hero-title">
               Od Twoich faktur w KSeF<br />do pełnego raportu śladu węglowego

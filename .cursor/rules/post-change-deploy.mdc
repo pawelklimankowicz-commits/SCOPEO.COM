@@ -3,14 +3,14 @@ description: Po każdej zmianie kodu — push na GitHub i deploy na Vercel do su
 alwaysApply: true
 ---
 
-# Deploy po zmianach
+# Deploy po zmianach (obowiązkowe dla agenta)
 
-Po **każdej** wprowadzonej zmianie w tym repozytorium:
+Po **każdej** sesji, w której zmieniono pliki w tym repozytorium, agent **nie kończy zadania**, dopóki nie wykona poniższych kroków (chyba że użytkownik wyraźnie zabroni pusha lub brak jest dostępu sieciowego — wtedy napisz to wprost).
 
-1. Uruchom walidację: `npm run typecheck` oraz `npm run lint` (i testy, jeśli dotyczy zmiany).
-2. Zrób commit z czytelnym opisem.
-3. Wypchnij na GitHub: `git push origin main` (lub aktualny branch).
-4. Wdróż na Vercel: po pushu na `main` uruchamia się workflow `.github/workflows/deploy.yml` (CLI `npx vercel deploy`). Lokalnie możesz też: `npx vercel --prod --yes`.
-5. Przy błędach: napraw, powtórz od kroku 1 aż do **zielonego** wyniku (build/deploy), w tym sprawdź logi GitHub Actions dla jobu „Deploy Production”.
+1. Walidacja: `npm run typecheck` oraz `npm run lint` (oraz testy, jeśli dotyczą zmiany).
+2. `git add` tylko pliki projektu (patrz wyjątki poniżej), **commit** z czytelnym opisem po polsku lub angielsku.
+3. **Push:** `git push origin main` (lub aktualny branch śledzący `origin`).
+4. **Vercel:** push na `main` ma uruchomić deployment (GitHub ↔ Vercel lub workflow `.github/workflows/deploy.yml`, jeśli istnieje). Jeśli integracja Git nie deployuje, uruchom: `npx vercel deploy --prod --yes` z katalogu repo (wymaga zalogowanego CLI / tokenu).
+5. Przy błędach builda lub deploya: napraw i powtórz od kroku 1 aż wynik jest **zielony**; przy Actions sprawdź job „Deploy Production” / logi Vercel.
 
-Nie commituj artefaktów lokalnych (screenshoty, `video.mp4`, `reports/*.pdf`, `supabase/.temp/`, `tsconfig.tsbuildinfo`) chyba że użytkownik wyraźnie tego zażąda.
+Nie commituj artefaktów lokalnych: zrzuty ekranu (`Zrzut ekranu*.png`), `video.mp4`, `reports/*.pdf`, `supabase/.temp/`, `tsconfig.tsbuildinfo`, chyba że użytkownik wyraźnie tego zażąda.

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { BrandLogoLockup } from '@/components/BrandLogo';
 import CookieSettingsButton from '@/components/marketing/CookieSettingsButton';
 
 export default function SiteFooter() {
@@ -11,18 +12,24 @@ export default function SiteFooter() {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 10,
               marginBottom: 12,
-              fontWeight: 700,
-              fontSize: '1.125rem',
             }}
           >
-            <span className="mkt-logo-mark" aria-hidden />
-            Scopeo
+            <BrandLogoLockup
+              size={18}
+              withWordmark
+              wordmarkColor="var(--mkt-headline)"
+              taglineColor="#64748b"
+            />
           </div>
           <p className="mkt-footer-note">
             Ślad węglowy z danych KSeF — import, Scope 1–3, workflow akceptacji i pełny audit trail
             w jednym miejscu.
+          </p>
+          <p style={{ marginTop: 10, marginBottom: 0 }}>
+            <Link href="/marka-preview" className="mkt-footer-note" style={{ fontSize: 13 }}>
+              Podgląd marki (design)
+            </Link>
           </p>
         </div>
         <div>

@@ -93,6 +93,12 @@
   text-decoration: none;
 }
 
+.mkt-logo img {
+  display: block;
+  height: 34px;
+  width: auto;
+}
+
 .mkt-logo-mark {
   width: 34px;
   height: 34px;
@@ -288,6 +294,10 @@
 }
 
 /* Typography */
+.mkt-hero-brand {
+  margin-bottom: 18px;
+}
+
 .mkt-hero-badge {
   display: inline-flex;
   align-items: center;
@@ -1408,10 +1418,50 @@
   padding: 0 12px 12px;
 }
 
+.mkt-faq-agent-count {
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  color: #166534;
+  line-height: 1.35;
+}
+
+.mkt-faq-agent-search {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 10px;
+  border: 1px solid #86efac;
+  padding: 8px 11px;
+  font-size: 0.88rem;
+  margin-bottom: 10px;
+  background: #ffffff;
+}
+
+.mkt-faq-agent-search:focus {
+  outline: 2px solid #34d399;
+  outline-offset: 1px;
+}
+
 .mkt-faq-agent-chips {
   display: grid;
   gap: 8px;
   margin-bottom: 10px;
+  max-height: min(42vh, 320px);
+  overflow-y: auto;
+  padding-right: 4px;
+  overscroll-behavior: contain;
+}
+
+.mkt-faq-agent-empty {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #64748b;
+  padding: 8px 4px;
+}
+
+.mkt-faq-agent-chip--active {
+  border-color: #059669 !important;
+  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.25);
+  background: #ffffff !important;
 }
 
 .mkt-faq-agent-chip {
@@ -1450,6 +1500,13 @@
   font-size: 0.9rem;
   color: #0f172a;
   line-height: 1.5;
+}
+
+.mkt-faq-agent-answer-wait {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  color: #64748b;
+  font-style: italic;
 }
 
 .mkt-faq-agent-input-row {
