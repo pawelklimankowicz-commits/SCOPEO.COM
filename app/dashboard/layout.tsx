@@ -48,7 +48,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
               <BrandLogoLockup
                 size={24}
                 withWordmark
-                wordmarkColor="#86efac"
+                wordmarkSurface="dark"
                 taglineColor="#94a3b8"
               />
             </Link>

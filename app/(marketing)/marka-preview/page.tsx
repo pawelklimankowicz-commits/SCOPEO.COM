@@ -97,12 +97,7 @@ export default function MarkaPreviewPage() {
             border: '1px solid #1e293b',
           }}
         >
-          <BrandLogoLockup
-            size={22}
-            withWordmark
-            wordmarkColor="#86efac"
-            taglineColor="#94a3b8"
-          />
+          <BrandLogoLockup size={22} withWordmark wordmarkSurface="dark" taglineColor="#94a3b8" />
           <p style={{ marginTop: 16, marginBottom: 0, fontSize: 13, color: '#94a3b8' }}>
             Na ciemnym tle używamy komponentu React (HTML + znak) — tak jak w dashboardzie.
           </p>

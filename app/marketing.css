@@ -93,9 +93,10 @@
   text-decoration: none;
 }
 
+/* Rozmiar znaku ustawia komponent (Next/Image); nie wymuszaj wysokości — psuje powiększenie lockupu. */
 .mkt-logo img {
   display: block;
-  height: 34px;
+  height: auto;
   width: auto;
 }
 
