@@ -28,7 +28,7 @@ export function findFaqIntent(question: string): FaqIntent | null {
   if (intro) {
     const productOverview =
       normalized.includes('scopeo') &&
-      /(co to( jest)?|czym jest|czym to|kim jest|opisz|wprowadz|what is|poznaj)/.test(normalized);
+      /(co to( jest)?|czym (jest|to)( jest)?|kim jest|opisz|wprowadz|what is|poznaj)/.test(normalized);
     if (productOverview) return intro;
     for (const kw of intro.keywords) {
       const nk = normalizeFaqText(kw);
