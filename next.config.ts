@@ -4,6 +4,12 @@ import { withSentryConfig } from '@sentry/nextjs';
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(__dirname),
+  async redirects() {
+    return [
+      { source: '/carbon-footprint', destination: '/slad-weglowy', permanent: true },
+      { source: '/sladweglowy', destination: '/slad-weglowy', permanent: true },
+    ];
+  },
   // CSP is set in middleware.ts (per-request nonce + strict-dynamic) so App Router scripts work.
   async headers() {
     return [

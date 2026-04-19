@@ -2,6 +2,35 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
+const CARBON_PAGE_CANONICAL = '/slad-weglowy';
+
+/** Alias URL-i często wpisywane zamiast ASCII `/slad-weglowy` → unikamy „martwego” linku. */
+function resolveCarbonFootprintAlias(pathname: string): string | null {
+  let decoded = pathname;
+  try {
+    decoded = decodeURIComponent(pathname);
+  } catch {
+    /* zostaw surowy pathname */
+  }
+  if (decoded.length > 1 && decoded.endsWith('/')) {
+    decoded = decoded.slice(0, -1);
+  }
+  const key = decoded.normalize('NFC').toLowerCase();
+  const aliases = new Set(
+    [
+      '/carbon-footprint',
+      '/sladweglowy',
+      '/slad-węglowy',
+      '/ślad-węglowy',
+      '/ślad-weglowy',
+    ].map((s) => s.normalize('NFC').toLowerCase()),
+  );
+  if (aliases.has(key)) {
+    return CARBON_PAGE_CANONICAL;
+  }
+  return null;
+}
+
 function generateNonce(): string {
   const bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);
@@ -11,9 +40,16 @@ function generateNonce(): string {
 }
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const carbonDest = resolveCarbonFootprintAlias(pathname);
+  if (carbonDest) {
+    const url = request.nextUrl.clone();
+    url.pathname = carbonDest;
+    return NextResponse.redirect(url, 308);
+  }
+
   const nonce = generateNonce();
   const isDev = process.env.NODE_ENV === 'development';
-  const { pathname } = request.nextUrl;
 
   const token = await getToken({
     req: request,

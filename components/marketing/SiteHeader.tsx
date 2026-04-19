@@ -6,6 +6,7 @@ import { BrandLogoLockup } from '@/components/BrandLogo';
 
 const links = [
   { href: '/produkt', label: 'Produkt' },
+  { href: '/slad-weglowy', label: 'Ślad węglowy' },
   { href: '/jak-dziala', label: 'Jak działa' },
   { href: '/cennik', label: 'Cennik' },
   { href: '/wiedza/rynek-i-metodyka', label: 'Wiedza' },

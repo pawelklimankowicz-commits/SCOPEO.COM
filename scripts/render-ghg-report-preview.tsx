@@ -1,7 +1,8 @@
 /**
  * Ten sam raport PDF co eksport z Scopeo (GhgReportDocument + buildGhgReportDocumentData
- * jak GET /api/emissions/report), na przykladowych danych bez bazy — plik na Pulpit.
- * Uzycie: DISABLE_REMOTE_PDF_FONTS=1 node --import tsx scripts/render-ghg-report-preview.tsx
+ * jak GET /api/emissions/report), na przykladowych danych bez bazy — plik na Pulpit:
+ * ~/Desktop/Raport-ESG-Scopeo-podglad.pdf (oraz kopia z timestampem w ./reports).
+ * Uzycie: npm run report:desktop
  */
 import { renderToBuffer } from '@react-pdf/renderer';
 import fs from 'node:fs/promises';
@@ -157,7 +158,7 @@ async function main() {
   const repoPath = path.join(reportsDir, `raport-esg-preview-${stamp}.pdf`);
   await fs.writeFile(repoPath, pdf);
 
-  const desktopPath = path.join(os.homedir(), 'Desktop', 'Raport-Scopeo-GHG.pdf');
+  const desktopPath = path.join(os.homedir(), 'Desktop', 'Raport-ESG-Scopeo-podglad.pdf');
   await fs.writeFile(desktopPath, pdf);
 
   console.log(`REPORT_REPO=${repoPath}`);

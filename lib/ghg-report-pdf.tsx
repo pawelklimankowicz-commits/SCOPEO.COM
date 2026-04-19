@@ -1,5 +1,20 @@
 import React from 'react';
-import { Document, Page, Text, View, StyleSheet, Font, Svg, G, Path, Circle } from '@react-pdf/renderer';
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Font,
+  Svg,
+  G,
+  Path,
+  Circle,
+  Rect,
+  Defs,
+  LinearGradient,
+  Stop,
+} from '@react-pdf/renderer';
 import { formatBoundaryApproachLabel } from '@/lib/ghg-report-boundary-label';
 
 const PDF_FONT_FAMILY = process.env.DISABLE_REMOTE_PDF_FONTS === '1' ? 'Helvetica' : 'Noto Sans';
@@ -258,48 +273,41 @@ function ScopeoPdfBrandRow({ rightLabel }: { rightLabel: string }) {
     <View style={styles.brandRow}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <Svg width={128} height={31} viewBox="0 0 232 56">
-          <G transform="translate(1,2) scale(0.8125)">
-            <Path
-              d="M32 4 L56 16v20c0 12-10 22-24 24C18 58 8 48 8 36V16L32 4Z"
-              fill="#0f172a"
-              stroke="#34d399"
-              strokeWidth={1.2}
-            />
-            <Path
-              d="M22 15 C14 22 14 42 22 49"
-              stroke="#22d3ee"
-              strokeWidth={1.35}
-              fill="none"
-              strokeLinecap="round"
-              strokeDasharray="3 2"
-            />
-            <Path
-              d="M42 15 C50 22 50 42 42 49"
-              stroke="#22d3ee"
-              strokeWidth={1.35}
-              fill="none"
-              strokeLinecap="round"
-              strokeDasharray="3 2"
-            />
-            <Path d="M29.5 19 h5 v26 h-5 Z" fill="#10b981" stroke="#022c22" strokeWidth={0.35} />
-            <Path
-              d="M14 40 Q32 36 50 40"
-              stroke="#059669"
-              strokeWidth={0.75}
-              fill="none"
-              strokeLinecap="round"
-            />
-            <Path
-              d="M16 46 Q32 42 48 46"
-              stroke="#10b981"
-              strokeWidth={0.85}
-              fill="none"
-              strokeLinecap="round"
-            />
-            <Path d="M13 12 L18 17 L10 17 Z" stroke="#67e8f9" strokeWidth={0.95} fill="none" strokeLinejoin="miter" />
-            <Circle cx={48} cy={19} r={5.2} fill="#22d3ee" stroke="#0f172a" strokeWidth={0.85} />
-            <Path d="M45.7 19h4.6M48 16.7v4.6" stroke="#0f172a" strokeWidth={1.2} strokeLinecap="round" />
-          </G>
+          <Defs>
+            <LinearGradient id="pdf-scopeo-mark-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <Stop offset="0%" stopColor="#022c22" />
+              <Stop offset="55%" stopColor="#064e3b" />
+              <Stop offset="100%" stopColor="#0f3932" />
+            </LinearGradient>
+            <LinearGradient id="pdf-scopeo-mark-ring" x1="0%" y1="0%" x2="100%" y2="0%">
+              <Stop offset="0%" stopColor="#ccfbf1" />
+              <Stop offset="50%" stopColor="#5eead4" />
+              <Stop offset="100%" stopColor="#34d399" />
+            </LinearGradient>
+          </Defs>
+          {/* Bez <G transform> — @react-pdf/render oczekuje tablicy transformacji w stylu RN, nie stringu SVG. */}
+          <Rect x={3.44} y={4.44} width={47.13} height={47.13} rx={14.63} fill="url(#pdf-scopeo-mark-bg)" />
+          <Circle cx={27} cy={28} r={18.69} fill="none" stroke="#134e4a" strokeWidth={1.02} strokeOpacity={0.9} />
+          <Circle
+            cx={27}
+            cy={28}
+            r={13.41}
+            fill="none"
+            stroke="url(#pdf-scopeo-mark-ring)"
+            strokeWidth={1.95}
+            strokeLinecap="round"
+          />
+          <Circle
+            cx={27}
+            cy={28}
+            r={8.13}
+            fill="none"
+            stroke="url(#pdf-scopeo-mark-ring)"
+            strokeWidth={1.63}
+            strokeLinecap="round"
+            strokeOpacity={0.85}
+          />
+          <Circle cx={27} cy={28} r={3.66} fill="#ecfdf5" />
           <Text
             x={58}
             y={38}
@@ -308,7 +316,7 @@ function ScopeoPdfBrandRow({ rightLabel }: { rightLabel: string }) {
               fontWeight: 700,
               fontSize: 26,
               letterSpacing: -1.2,
-              fill: '#ecfdf5',
+              fill: '#064e3b',
             }}
           >
             Scopeo

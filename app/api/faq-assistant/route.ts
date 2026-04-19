@@ -57,87 +57,98 @@ async function generateLlmAnswer(question: string, catalogHint: string | null) {
 
 export async function POST(req: NextRequest) {
   const startMs = Date.now();
-  const ip = getClientIp(req.headers);
-  const session = await auth();
-  const organizationId = (session?.user as { organizationId?: string } | undefined)?.organizationId ?? null;
-  const limit = await checkRateLimit(`faq-assistant:${organizationId ?? 'anon'}:${ip}`, {
-    windowMs: 60_000,
-    maxRequests: 24,
-  });
-  if (!limit.ok) {
-    return NextResponse.json(
-      { ok: false, error: 'Too many requests' },
-      { status: 429, headers: { 'Retry-After': String(limit.retryAfterSec) } }
-    );
-  }
-
-  const body = await req.json().catch(() => ({}));
-  const question = String(body?.question ?? '').trim();
-  const sessionIdRaw = String(body?.sessionId ?? '').trim();
-  const sessionId = sessionIdRaw ? sessionIdRaw.slice(0, 120) : null;
-
-  if (question.length < 3) {
-    return NextResponse.json({ ok: false, error: 'Question is too short' }, { status: 400 });
-  }
-
-  const normalizedQuestion = normalizeFaqText(question);
-  const catalogResolved = resolveFaqFromCatalog(question);
-  const catalogHint = catalogResolved?.answer ?? null;
-  /** Dopasowanie do logów — preferuj strict intent, inaczej relaxed. */
-  const matchedIntent = findFaqIntent(question)?.id ?? catalogResolved?.matchedIntent ?? null;
-
-  let answer: string;
-  let source: 'llm' | 'catalog' | 'catalog_relaxed' | 'generic' | 'fallback' = 'generic';
-
   try {
-    const llmAnswer = await generateLlmAnswer(question, catalogHint);
-    if (llmAnswer) {
-      answer = llmAnswer;
-      source = 'llm';
-    } else if (catalogResolved) {
-      answer = catalogResolved.answer;
-      source = catalogResolved.tier === 'relaxed' ? 'catalog_relaxed' : 'catalog';
-    } else {
-      answer = FAQ_ASSISTANT_GENERIC;
-      source = 'generic';
-    }
-  } catch {
-    if (catalogResolved) {
-      answer = catalogResolved.answer;
-      source = catalogResolved.tier === 'relaxed' ? 'catalog_relaxed' : 'catalog';
-    } else {
-      answer = FAQ_ASSISTANT_GENERIC;
-      source = 'fallback';
-    }
-  }
-
-  const responseMs = Date.now() - startMs;
-
-  try {
-    await prisma.faqAssistantQuery.create({
-      data: {
-        organizationId,
-        sessionId,
-        question,
-        normalizedQuestion,
-        answerPreview: answer.slice(0, 500),
-        source,
-        matchedIntent,
-        responseMs,
-        ipHash: hashIp(ip),
-      },
+    const ip = getClientIp(req.headers);
+    const session = await auth();
+    const organizationId = (session?.user as { organizationId?: string } | undefined)?.organizationId ?? null;
+    const limit = await checkRateLimit(`faq-assistant:${organizationId ?? 'anon'}:${ip}`, {
+      windowMs: 60_000,
+      maxRequests: 24,
     });
-  } catch {
-    // analytics must not block response
-  }
+    if (!limit.ok) {
+      return NextResponse.json(
+        { ok: false, error: 'Too many requests' },
+        { status: 429, headers: { 'Retry-After': String(limit.retryAfterSec) } }
+      );
+    }
 
-  return NextResponse.json({
-    ok: true,
-    answer,
-    source,
-    matchedIntent,
-    responseMs,
-  });
+    const body = await req.json().catch(() => ({}));
+    const question = String(body?.question ?? '').trim();
+    const sessionIdRaw = String(body?.sessionId ?? '').trim();
+    const sessionId = sessionIdRaw ? sessionIdRaw.slice(0, 120) : null;
+
+    if (question.length < 3) {
+      return NextResponse.json({ ok: false, error: 'Question is too short' }, { status: 400 });
+    }
+
+    const normalizedQuestion = normalizeFaqText(question);
+    const catalogResolved = resolveFaqFromCatalog(question);
+    const catalogHint = catalogResolved?.answer ?? null;
+    /** Dopasowanie do logów — preferuj strict intent, inaczej relaxed. */
+    const matchedIntent = findFaqIntent(question)?.id ?? catalogResolved?.matchedIntent ?? null;
+
+    let answer: string;
+    let source: 'llm' | 'catalog' | 'catalog_relaxed' | 'generic' | 'fallback' = 'generic';
+
+    try {
+      const llmAnswer = await generateLlmAnswer(question, catalogHint);
+      if (llmAnswer) {
+        answer = llmAnswer;
+        source = 'llm';
+      } else if (catalogResolved) {
+        answer = catalogResolved.answer;
+        source = catalogResolved.tier === 'relaxed' ? 'catalog_relaxed' : 'catalog';
+      } else {
+        answer = FAQ_ASSISTANT_GENERIC;
+        source = 'generic';
+      }
+    } catch {
+      if (catalogResolved) {
+        answer = catalogResolved.answer;
+        source = catalogResolved.tier === 'relaxed' ? 'catalog_relaxed' : 'catalog';
+      } else {
+        answer = FAQ_ASSISTANT_GENERIC;
+        source = 'fallback';
+      }
+    }
+
+    const responseMs = Date.now() - startMs;
+
+    try {
+      await prisma.faqAssistantQuery.create({
+        data: {
+          organizationId,
+          sessionId,
+          question,
+          normalizedQuestion,
+          answerPreview: answer.slice(0, 500),
+          source,
+          matchedIntent,
+          responseMs,
+          ipHash: hashIp(ip),
+        },
+      });
+    } catch {
+      // analytics must not block response
+    }
+
+    return NextResponse.json({
+      ok: true,
+      answer,
+      source,
+      matchedIntent,
+      responseMs,
+    });
+  } catch (err) {
+    console.error('[faq-assistant] POST', err);
+    return NextResponse.json({
+      ok: true,
+      answer: FAQ_ASSISTANT_GENERIC,
+      source: 'fallback' as const,
+      matchedIntent: null,
+      responseMs: Date.now() - startMs,
+    });
+  }
 }
 
 export async function GET() {

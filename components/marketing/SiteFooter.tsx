@@ -39,6 +39,9 @@ export default function SiteFooter() {
               <Link href="/produkt">Funkcje</Link>
             </li>
             <li>
+              <Link href="/slad-weglowy">Ślad węglowy</Link>
+            </li>
+            <li>
               <Link href="/jak-dziala">Jak działa</Link>
             </li>
             <li>

@@ -1,6 +1,5 @@
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
-import { assertProductionRateLimitEnv } from '@/lib/production-env';
 
 type RateLimitConfig = {
   maxRequests: number;
@@ -13,10 +12,11 @@ const limiters: Record<string, Ratelimit> = {};
 
 function getRedis() {
   if (!redis) {
-    assertProductionRateLimitEnv();
-    const url = process.env.UPSTASH_REDIS_REST_URL;
-    const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-    if (!url || !token) return null;
+    const url = process.env.UPSTASH_REDIS_REST_URL?.trim();
+    const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
+    if (!url || !token) {
+      return null;
+    }
     redis = new Redis({ url, token });
   }
   return redis;

@@ -65,6 +65,15 @@ export default function MarketingHomePage() {
               <span><i /> Audit trail</span>
               <span><i /> Hosting w UE</span>
             </div>
+            <p style={{ marginTop: 18, marginBottom: 0, fontSize: '0.875rem' }}>
+              <Link
+                href="/slad-weglowy"
+                className="mkt-link"
+                title="Adres strony w przeglądarce: /slad-weglowy (litery bez polskich znaków diakrytycznych)"
+              >
+                Ślad węglowy firmy — strona produktowa →
+              </Link>
+            </p>
           </div>
           <div className="mkt-hero-visual">
             <Image

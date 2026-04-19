@@ -62,18 +62,28 @@ export default function FaqAssistantWidget() {
       } finally {
         clearTimeout(timeout);
       }
-      const payload = (await response.json()) as {
+      const raw = await response.text();
+      let payload: {
         ok?: boolean;
         answer?: string;
         source?: string;
         matchedIntent?: string | null;
+        error?: string;
       };
+      try {
+        payload = JSON.parse(raw) as typeof payload;
+      } catch {
+        payload = {};
+      }
       if (response.ok && payload?.ok && payload.answer) {
         setAnswer(payload.answer);
         setSource((payload.source as SourceLabel) || 'fallback');
       } else {
+        const rateLimited = response.status === 429 || payload?.error === 'Too many requests';
         setAnswer(
-          'Chwilowo nie mogę połączyć się z asystentem. Spróbuj ponownie za chwilę lub napisz na stronie /kontakt.'
+          rateLimited
+            ? 'Zbyt wiele pytań w krótkim czasie — odczekaj minutę i spróbuj ponownie.'
+            : 'Chwilowo nie mogę połączyć się z asystentem. Spróbuj ponownie za chwilę lub napisz na stronie /kontakt.'
         );
         setSource('generic');
       }
