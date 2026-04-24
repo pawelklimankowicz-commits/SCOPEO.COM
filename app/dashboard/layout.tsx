@@ -8,6 +8,7 @@ import AuthSessionProvider from '@/components/AuthSessionProvider';
 import NotificationBell from '@/components/notification-bell';
 import { getTenantRlsContext, runWithTenantRls } from '@/lib/tenant';
 import { prisma } from '@/lib/prisma';
+import { ProductAnalyticsBeacon } from '@/components/ProductAnalyticsBeacon';
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const ctx = await getTenantRlsContext();
@@ -31,10 +32,12 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     { href: '/dashboard/feedback', label: 'Uwagi do produktu' },
     ...(role === 'OWNER' || role === 'ADMIN' ? [{ href: '/dashboard/audit', label: 'Audit log' }] : []),
     ...(role === 'OWNER' || role === 'ADMIN' ? [{ href: '/dashboard/gdpr', label: 'GDPR' }] : []),
+    ...(role === 'OWNER' || role === 'ADMIN' ? [{ href: '/dashboard/settings/analytics', label: 'Analityka' }] : []),
   ];
 
   return (
     <AuthSessionProvider>
+      <ProductAnalyticsBeacon />
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <header
           style={{

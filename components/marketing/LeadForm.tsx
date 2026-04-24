@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { trackMarketingEvent } from '@/lib/analytics-client';
 
 type Props = {
   variant?: 'default' | 'compact';
@@ -36,6 +37,7 @@ export default function LeadForm({ variant = 'default', idPrefix = 'lead' }: Pro
         body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error();
+      void trackMarketingEvent('mkt.lead_submitted', { page: pathname || '/' });
       setStatus('success');
       e.currentTarget.reset();
     } catch {

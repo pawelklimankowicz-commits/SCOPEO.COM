@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import InvitesPanel from '@/components/InvitesPanel';
 import { prisma } from '@/lib/prisma';
-import { requireTenantMembership } from '@/lib/tenant';
+import { getTenantRlsContext, runWithTenantRls } from '@/lib/tenant';
 
 export default async function DashboardSettingsPage() {
-  const { session, organizationId } = await requireTenantMembership();
+  const t = await getTenantRlsContext();
+  return runWithTenantRls({ userId: t.userId, organizationId: t.organizationId }, async () => {
+  const { session, organizationId } = t;
   const role = (session.user as { role?: string | null }).role;
   const canManageInvites = role === 'OWNER' || role === 'ADMIN';
 
@@ -32,7 +34,7 @@ export default async function DashboardSettingsPage() {
         <p className="app-muted" style={{ marginTop: 0 }}>
           Dane źródłowe do raportowania GHG i importów KSeF.
         </p>
-        <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
           <Link className="btn btn-secondary" href="/onboarding">
             Przejdź do onboardingu
           </Link>
@@ -42,6 +44,11 @@ export default async function DashboardSettingsPage() {
           <Link className="btn btn-secondary" href="/dashboard/settings/api-keys">
             Klucze API
           </Link>
+          {canManageInvites ? (
+            <Link className="btn btn-secondary" href="/dashboard/settings/analytics">
+              Analityka lejka
+            </Link>
+          ) : null}
         </div>
         {profile ? (
           <table>
@@ -107,4 +114,5 @@ export default async function DashboardSettingsPage() {
       <InvitesPanel canManage={canManageInvites} />
     </div>
   );
+  });
 }

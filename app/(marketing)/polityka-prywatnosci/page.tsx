@@ -40,6 +40,12 @@ export default function PolitykaPage() {
             <li>import i przetwarzanie danych z KSeF w ramach uslug Scopeo,</li>
             <li>bezpieczenstwo, monitoring dzialania i zapobieganie naduzyciom,</li>
             <li>obsluga zadan RODO, reklamacji i wsparcia technicznego.</li>
+            <li>
+              analityka produktu w pierwszej osobie: zapis prostych zdarzeń w aplikacji (np. ukończenie kroku
+              onboardingu, otwarcie panelu) w naszej bazie, bez narzędzi reklamowych stron trzecich; do zliczania
+              kliknięć na stronach publicznych używamy wyłącznie po wyrażeniu zgody w banerze (tej samej, co
+              wykorzystanie plików analitycznych opisanych w Polityce cookies).
+            </li>
           </ul>
 
           <h2>3. Podmioty trzecie i transfery danych</h2>

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { BrandLogoLockup } from '@/components/BrandLogo';
+import { TrackedLink } from '@/components/TrackedLink';
 import LandingVideo from '@/components/marketing/LandingVideo';
 import LeadForm from '@/components/marketing/LeadForm';
 import {
@@ -52,12 +53,20 @@ export default function MarketingHomePage() {
               <li>Scope 3 z danych transakcyjnych, nie z szacunków z kolumny H Excel&apos;a.</li>
             </ul>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 24 }}>
-              <Link href="/register" className="mkt-btn mkt-btn--primary">
+              <TrackedLink
+                href="/register"
+                eventName="mkt.cta.hero_trial"
+                className="mkt-btn mkt-btn--primary"
+              >
                 Zacznij bezpłatny trial — 7 dni
-              </Link>
-              <Link href="/jak-dziala" className="mkt-btn mkt-btn--secondary">
+              </TrackedLink>
+              <TrackedLink
+                href="/jak-dziala"
+                eventName="mkt.cta.hero_how_it_works"
+                className="mkt-btn mkt-btn--secondary"
+              >
                 Zobacz jak działa
-              </Link>
+              </TrackedLink>
             </div>
             <div className="mkt-trust">
               <span><i /> Import z KSeF</span>

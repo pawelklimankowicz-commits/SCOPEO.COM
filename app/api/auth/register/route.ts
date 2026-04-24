@@ -8,6 +8,7 @@ import { BCRYPT_SALT_ROUNDS } from '@/lib/password-hash';
 import { Resend } from 'resend';
 import crypto from 'crypto';
 import { verificationEmail } from '@/lib/email-templates';
+import { runWithRlsBypass } from '@/lib/tenant-rls-context';
 
 export async function POST(req: NextRequest) {
   try {
@@ -74,6 +75,21 @@ export async function POST(req: NextRequest) {
         text: email.text,
       })
       .catch(console.error);
+    const orgId = user.memberships[0]?.organizationId;
+    if (orgId) {
+      await runWithRlsBypass(() =>
+        prisma.journeyEvent.create({
+          data: {
+            source: 'APP',
+            name: 'app.register_account_created',
+            userId: user.id,
+            organizationId: orgId,
+            path: '/register',
+            properties: { flow: 'password_register' as const },
+          },
+        })
+      );
+    }
     return NextResponse.json({ ok: true, userId: user.id });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {

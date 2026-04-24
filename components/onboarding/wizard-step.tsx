@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
+import { trackAppEvent } from '@/lib/analytics-client';
 
 type ProfileInitial = {
   companyName: string;
@@ -73,6 +74,10 @@ export default function OnboardingWizardStep({ step, organizationName, initial }
           body: JSON.stringify(body),
         })
       );
+      void trackAppEvent('onboarding_step_ok', {
+        step: String(step),
+        next: nextStep != null ? String(nextStep) : 'finish',
+      });
       if (nextStep) {
         router.push(`/onboarding/step/${nextStep}`);
         router.refresh();

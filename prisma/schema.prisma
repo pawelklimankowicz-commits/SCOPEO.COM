@@ -137,6 +137,12 @@ enum ProductFeedbackStatus {
   ARCHIVED
 }
 
+/** Skąd zapisano zdarzenie lejka (marketing vs aplikacja). */
+enum JourneyEventSource {
+  MARKETING
+  APP
+}
+
 enum InvitationStatus {
   PENDING
   ACCEPTED
@@ -163,6 +169,7 @@ model User {
   notifications         Notification[]
   cookieConsent         UserConsent?
   productUserFeedbacks  ProductUserFeedback[]
+  journeyEvents         JourneyEvent[]
   createdAt             DateTime              @default(now())
   updatedAt             DateTime              @updatedAt
 }
@@ -228,6 +235,7 @@ model Organization {
   apiKeys                 ApiKey[]
   ksefConnections         KsefConnection[]
   productUserFeedbacks    ProductUserFeedback[]
+  journeyEvents           JourneyEvent[]
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
 }
@@ -610,6 +618,24 @@ model ProductUserFeedback {
 
   @@index([organizationId, createdAt])
   @@index([status, createdAt])
+}
+
+/** Analityka produktu (first-party) — lejek, odpadanie; marketing bez org tylko przez bypass. */
+model JourneyEvent {
+  id              String            @id @default(cuid())
+  source          JourneyEventSource
+  name            String
+  path            String?
+  userId          String?
+  user            User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  organizationId  String?
+  organization    Organization?     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  properties      Json?
+  createdAt       DateTime          @default(now())
+
+  @@index([organizationId, name, createdAt])
+  @@index([source, createdAt])
+  @@index([name, createdAt])
 }
 
 model Lead {
