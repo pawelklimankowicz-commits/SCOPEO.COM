@@ -1,16 +1,25 @@
 ---
-description: Po każdej zmianie kodu — push na GitHub i deploy na Vercel do sukcesu
+description: Po każdej zmianie kodu — commit, push na GitHub i deployment na Vercel (zawsze)
 alwaysApply: true
 ---
 
-# Deploy po zmianach (obowiązkowe dla agenta)
+# Deploy po zmianach (obowiązkowe dla agenta — bez wyjątków, o ile użytkownik nie zabroni)
 
-Po **każdej** sesji, w której zmieniono pliki w tym repozytorium, agent **nie kończy zadania**, dopóki nie wykona poniższych kroków (chyba że użytkownik wyraźnie zabroni pusha lub brak jest dostępu sieciowego — wtedy napisz to wprost).
+Po **każdej** zmianie plików projektu w tej sesji agent **musi** domknąć pętlę **commit → push → (automatyczny) deploy**. **Nie zakończ odpowiedzi** tylko komunikatem „zrobione lokalnie” bez wypchnięcia na GitHub, chyba że użytkownik jawnie zabroni pusha albo brak sieci/UPRawnień — wtedy napisz to wyraźnie w podsumowaniu.
 
-1. Walidacja: `npm run typecheck` oraz `npm run lint` (oraz testy, jeśli dotyczą zmiany).
-2. `git add` tylko pliki projektu (patrz wyjątki poniżej), **commit** z czytelnym opisem po polsku lub angielsku.
-3. **Push:** `git push origin main` (lub aktualny branch śledzący `origin`).
-4. **Vercel:** push na `main` ma uruchomić deployment (GitHub ↔ Vercel lub workflow `.github/workflows/deploy.yml`, jeśli istnieje). Jeśli integracja Git nie deployuje, uruchom: `npx vercel deploy --prod --yes` z katalogu repo (wymaga zalogowanego CLI / tokenu).
-5. Przy błędach builda lub deploya: napraw i powtórz od kroku 1 aż wynik jest **zielony**; przy Actions sprawdź job „Deploy Production” / logi Vercel.
+## Obowiązkowa kolejność
+
+1. **Walidacja:** `npm run typecheck` i `npm run lint` (oraz `npm test` / testy integracyjne, jeśli dotyczą zmiany).
+2. **Commit:** `git add` tylko pliki projektu (patrz wyjątki poniżej), potem `git commit -m "…"` z sensownym opisem (PL lub EN).
+3. **Push (zawsze po commicie w tej samej sesji):** `git push origin main` albo `git push origin <bieżący-branch>` zgodny ze śledzeniem `origin`. Bez pusha uznaj zadanie za niedokończone.
+4. **Vercel (nie „commit na Vercel” — Vercel nie tworzy commitów):** **deployment produkcyjny** uruchamia się zwykle **automatycznie** po pushu na `main`:
+   - integracja **Git** w panelu Vercel (Build przy każdym pushu), i/lub
+   - workflow `.github/workflows/deploy.yml` (Deploy Production przez `npx vercel deploy --prod`, jeśli skonfigurowane sekrety `VERCEL_*`).
+   Jeśli po pushu wiadomo, że projekt **nie** jest podpięty pod Vercel, agent może zasugerować podpięcie repozytorium w Vercel lub `npx vercel deploy --prod --yes` (wymaga CLI/tokenu w środowisku) — tylko gdy to ma sens w kontekście.
+5. **Błędy:** przy czerwonym CI, failed deploy lub failed build: napraw, commit, push, powtórz aż pipeline jest zielony (w ramach tej samej sesji, o ile to możliwe).
+
+## Auto-push lokalny (dla programisty, opcjonalnie)
+
+W repozytorium jest hook `.githooks/post-commit` — **po własnoręcznym** `git commit` wykonuje `git push`, gdy `export SCOPEO_AUTO_PUSH=1` oraz `git config core.hooksPath .githooks` i plik ma bit wykonania. Domyślnie hook **nie** pushuje (bezpieczne dla innych współpracowników). Agent Cursor **nie polega** na tym hooku — agent zawsze robi `git push` sam.
 
 Nie commituj artefaktów lokalnych: zrzuty ekranu (`Zrzut ekranu*.png`), `video.mp4`, `reports/*.pdf`, `supabase/.temp/`, `tsconfig.tsbuildinfo`, chyba że użytkownik wyraźnie tego zażąda.

@@ -1,0 +1,27 @@
+#!/bin/sh
+# Po każdym commicie: push na origin (uruchamia CI + deploy Vercel na main).
+# Włączenie:  git config core.hooksPath .githooks
+#             chmod +x .githooks/post-commit
+# Wyłączenie: unset SCOPEO_AUTO_PUSH  albo  export SCOPEO_AUTO_PUSH=0
+# Domyślnie WYŁĄCZONE — ustaw export SCOPEO_AUTO_PUSH=1 aby włączyć lokalnie.
+
+if [ "${SCOPEO_AUTO_PUSH:-0}" != "1" ]; then
+  exit 0
+fi
+
+branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) || exit 0
+if [ "$branch" = "HEAD" ]; then
+  exit 0
+fi
+
+if ! git remote get-url origin >/dev/null 2>&1; then
+  echo "scopeo: brak remote origin — pomijam auto-push." >&2
+  exit 0
+fi
+
+if git push origin "$branch"; then
+  echo "scopeo: wysłano na origin/$branch (Vercel/Actions uruchomią się po integracji)." >&2
+else
+  echo "scopeo: auto-push nie powiódł się — wykonaj ręcznie: git push origin $branch" >&2
+fi
+exit 0
