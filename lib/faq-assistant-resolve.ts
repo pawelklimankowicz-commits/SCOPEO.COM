@@ -13,6 +13,11 @@ export type FaqResolveResult = {
 export const FAQ_ASSISTANT_GENERIC =
   'Nie mam jeszcze gotowej odpowiedzi na to brzmienie pytania. Mogę natomiast pomóc m.in. przy: rejestracji i onboardingu, profilu organizacji i NIP, połączeniu KSeF, emisjach Scope 1–3 i raporcie, cenniku, bezpieczeństwie danych i kontakcie z zespołem. Spróbuj doprecyzować lub napisz przez formularz /kontakt — tam odpowiadamy na indywidualne przypadki.';
 
+/** Gwarancja dopasowania wpisu katalogu (np. klik w „przykładowe pytania”) — bez heurystyki tekstowej. */
+export function toFaqResolveResult(entry: FaqCatalogEntry): FaqResolveResult {
+  return { answer: entry.answer, matchedIntent: entry.id, tier: 'intent' };
+}
+
 /**
  * Lżejsze dopasowanie niż `findFaqIntent` (próg score ≥ 1 + rozstrzyganie remisów).
  * Wołaj tylko gdy `findFaqIntent` zwrócił null.

@@ -4,7 +4,12 @@ import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { FAQ_ASSISTANT_CATALOG } from '@/lib/faq-assistant-catalog';
 import { normalizeFaqText } from '@/lib/faq-assistant';
-import { resolveFaqFromCatalog, type FaqResolveResult } from '@/lib/faq-assistant-resolve';
+import {
+  resolveFaqFromCatalog,
+  toFaqResolveResult,
+  type FaqResolveResult,
+} from '@/lib/faq-assistant-resolve';
+import type { FaqCatalogEntry } from '@/lib/faq-assistant-catalog';
 
 function SparkleIcon() {
   return (
@@ -45,7 +50,6 @@ export default function FaqAssistantWidget() {
   }
 
   async function fetchAiAnswer(question: string, preResolved: FaqResolveResult | null) {
-    setLoading(true);
     setLastQuestion(question);
     setBubbleOpen(true);
     if (preResolved) {
@@ -55,6 +59,7 @@ export default function FaqAssistantWidget() {
       setAnswer('');
       setSource('');
     }
+    setLoading(!preResolved);
     try {
       const controller = new AbortController();
       /** Musi być > serwerowy LLM (max ~14s na próbę × modele) + maxDuration API 60s. */
@@ -131,10 +136,9 @@ export default function FaqAssistantWidget() {
     void fetchAiAnswer(q, resolveFaqFromCatalog(q));
   }
 
-  function handleChipQuestion(text: string) {
-    setQuery(text);
-    const pre = resolveFaqFromCatalog(text);
-    void fetchAiAnswer(text, pre);
+  function handleChipQuestion(item: FaqCatalogEntry) {
+    setQuery(item.question);
+    void fetchAiAnswer(item.question, toFaqResolveResult(item));
   }
 
   const sourceHint =
@@ -164,7 +168,7 @@ export default function FaqAssistantWidget() {
             </button>
           </div>
           {lastQuestion ? <p className="mkt-faq-ai-bubble-q">{lastQuestion}</p> : null}
-          {loading ? (
+          {loading && !answer ? (
             <p className="mkt-faq-ai-bubble-loading">Generuję odpowiedź…</p>
           ) : (
             <p className="mkt-faq-ai-bubble-a">{answer}</p>
@@ -229,7 +233,7 @@ export default function FaqAssistantWidget() {
           <ul className="mkt-faq-ai-examples-list">
             {filteredItems.slice(0, 40).map((item) => (
               <li key={item.id}>
-                <button type="button" className="mkt-faq-ai-example-chip" onClick={() => handleChipQuestion(item.question)}>
+                <button type="button" className="mkt-faq-ai-example-chip" onClick={() => handleChipQuestion(item)}>
                   {item.question}
                 </button>
               </li>

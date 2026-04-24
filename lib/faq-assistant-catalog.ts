@@ -224,6 +224,26 @@ const PILLAR: Array<{ q: string; a: string; k: string[] }> = [
     a: 'Tak, przy serialnych raportach (np. rok do roku) widać zmiany w tCO₂e, o ile metodyka i granice org są spójne. Samo narzędzie planów redukcji strategii (np. inwestycje w OZE) łączysz z doradcą — my dostarczamy wiarygodną linię bazową i monitoring danych.',
     k: ['redukcja', 'trend', 'w czasie', 'rok do roku', 'zmniejszanie emisji'],
   },
+  {
+    q: 'Czym różni się trial od płatnej subskrypcji?',
+    a: 'Trial (np. 7 dni) daje pełny dostęp do testów na własnych danych; po jego zakończeniu bez aktywnej płatnej subskrypcji dostęp do usług może być ograniczony zgodnie z regulaminem. Płatna subskrypcja utrzymuje ciągły dostęp: limity i funkcje wynikają z wybranego planu; opłacasz głównie połączenia KSeF i użytkowników, nie wolumen faktur. Szczegóły: /cennik i /faq.',
+    k: ['roznica', 'trial a platny', 'platna subskrypcja', 'po trialu', 'co dalej', 'kiedy placi'],
+  },
+  {
+    q: 'Gdzie jest cennik Scopeo?',
+    a: 'Aktualną tabelę planów (Mikro, Starter, Growth, Scale, Enterprise) i warunki rozliczeń znajdziesz na stronie /cennik. Cena zależy od liczby połączeń KSeF i użytkowników w planie, z możliwością płatności miesięcznej lub rocznej (rabat).',
+    k: ['cennik', 'gdzie cennik', 'ceny plan', 'tabela cen', 'ile kosztuje plan', 'dojsc do cennik'],
+  },
+  {
+    q: 'Czy mogę zrezygnować z subskrypcji w każdym momencie?',
+    a: 'Tak — możesz rezygnować zgodnie z regulaminem i ustawieniami rozliczeń: zwykle anulowanie wyłącza automatyczne odnawianie, a korzystasz do końca opłaconego okresu. Szczegóły zwrotu i wypowiedzenia: regulamin, FAQ na /faq lub prośba do supportu przez /kontakt.',
+    k: ['rezygnacja', 'wypowiedzenie', 'anulowac', 'w kazdym momencie', 'koniec subskrypcji'],
+  },
+  {
+    q: 'Czy skoro płacę, Scopeo wystawi fakturę za abonament?',
+    a: 'Tak — za subskrypcję wystawiana jest faktura/faktury za usługę zgodnie z trybem płatności (miesięczna lub roczna) i danymi firmy w profilu rozliczeń. Szczegóły VAT NIP: panel płatności lub wsparcie.',
+    k: ['faktura za scopeo', 'faktura abonament', 'vat abonament', 'czy wystawiacie fakture', 'dokument za subskrypcj'],
+  },
 ];
 
 const OPS: Array<{ q: string; a: string; k: string[] }> = [
