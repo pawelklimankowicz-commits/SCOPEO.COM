@@ -114,6 +114,27 @@ const SCOPE3_TOPICS: Array<{ q: string; a: string; k: string[] }> = [
  */
 const PILLAR: Array<{ q: string; a: string; k: string[] }> = [
   {
+    q: 'Co zyskam wykupując subskrypcję Scopeo?',
+    a: 'Płatna subskrypcja utrwala pełny dostęp do produktu po trialu: import faktur z KSeF w ramach planu, liczenie i przegląd emisji Scope 1–3, raporty (np. PDF) i eksporty, workflow akceptacji, role zespołu, hosting danych w UE oraz bieżące aktualizacje. Opłata jest zgodnie z cennikiem: za liczbę połączeń KSeF i użytkowników, nie „za sztukę faktur”. Wyższe plany otwierają szersze limity i funkcje — szczegóły: /cennik.',
+    k: [
+      'zyskam',
+      'co zyskam',
+      'wykup',
+      'wykupu',
+      'wykupujac',
+      'subskrypcj',
+      'subskrypcja',
+      'abonament',
+      'opłacam',
+      'oplacam',
+      'placi',
+      'placic',
+      'za co placi',
+      'wartosc sub',
+      'czy warto wykupic',
+    ],
+  },
+  {
     q: 'Dla kogo jest Scopeo?',
     a: 'Dla finansów, księgowości, zespołów ESG i zarządów, które chcą liczyć emisje Scope 1–3 z faktur KSeF i mieć spójny raport zamiast rozproszonego Excela. Nadaje się do MŚP i większych organizacji z wieloma NIP-ami w grupie (wg planu).',
     k: ['dla kogo', 'dla kogo jest', 'dla czyj', 'target', 'kto uzywa'],
