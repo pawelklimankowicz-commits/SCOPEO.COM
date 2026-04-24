@@ -35,7 +35,7 @@ export default function LandingVideo() {
       <div className="mkt-inner">
         <p className="mkt-kicker">Spot</p>
         <h2 id="landing-video-heading" className="mkt-section-title">
-          Scopeo w 15 sekundach
+          Scopeo w telegraficznym skrócie
         </h2>
         <p className="mkt-section-lead">
           Animowany przegląd produktu — ślad węglowy z KSeF, ochrona klimatu przez lepsze dane, SaaS w UE.
@@ -123,7 +123,7 @@ export default function LandingVideo() {
                   <span className="mkt-spot-logo-text">Scopeo</span>
                 </div>
                 <p className="mkt-spot-t">Ślad węglowy firmy z KSeF</p>
-                <p className="mkt-spot-s">7 dni trialu — bez karty kredytowej</p>
+                <p className="mkt-spot-s">7 dni trialu</p>
               </div>
             </div>
           </div>
