@@ -1,0 +1,28 @@
+---
+description: Po zmianach UI — podgląd w Cursor (dev + URL); agent domyka tę pętlę
+alwaysApply: true
+---
+
+# Podgląd strony w Cursor po zmianach (obowiązkowe dla agenta)
+
+**Kiedy stosować:** tylko gdy w bieżącej odpowiedzi zmodyfikowano pliki wpływające na wygląd, layout lub trasy stron (`app/`, `components/`, `app/*.css`, style marketingowe itd.) — **nie** dodawaj sekcji podglądu wyłącznie po zmianach w API, DB, `lib/` bez wpływu na UI.
+
+Użytkownik chce **widzieć skutek w podglądzie w Cursor**. Panel **Simple Browser** nie ma publicznego API do wymuszenia odświeżenia — działa **Next.js (Turbopack) + HMR** na `http://127.0.0.1:3000` przy otwartym tym adresem.
+
+## Po **każdej** takiej partii edycji
+
+1. **Serwer dev**  
+   - Jeśli w folderze `terminals` widać, że `npm run dev` już działa i nasłuchuje — **nie** uruchamiaj drugiego.  
+   - W przeciwnym razie uruchom w tle: `npm run dev` (projekt: `next dev --turbopack -H 127.0.0.1`, port **3000**).
+
+2. **Zakończenie odpowiedzi (zawsze, gdy były edycje UI)**  
+   W **krótkiej sekcji na końcu** (nagłówek np. „Podgląd”) podaj:
+   - że strona lokalna to **`http://127.0.0.1:3000`**,
+   - jeśli zmiana dotyczyła konkretnej trasy (np. `/cennik`, `/faq`) — pełny URL,
+   - jedną linię instrukcji: w Cursor: **Command Palette** → *Simple Browser: Show* → wklej ten URL; po zapisie plików HMR zwykle **sam zaktualizuje** widok (w razie potrzeby odśwież panel podglądu ręcznie).
+
+3. **Nie** używaj `npm run browser` (otwiera domyślną przeglądarkę systemową) **chyba że** użytkownik wprost poprosi o otwarcie w zewnętrznej przeglądarce — domyślnie celem jest podgląd **w Cursor**.
+
+## Relacja do innych reguł
+
+Reguła `post-change-deploy` nadal wymusza typecheck, lint, commit i push; ta reguła uzupełnia ją tylko o pętlę **lokalny podgląd → URL → Simple Browser**.
