@@ -37,10 +37,6 @@ export default function LandingVideo() {
         <h2 id="landing-video-heading" className="mkt-section-title">
           Scopeo w telegraficznym skrócie
         </h2>
-        <p className="mkt-section-lead">
-          Animowany przegląd produktu — ślad węglowy z KSeF, ochrona klimatu przez lepsze dane, SaaS w UE.
-          Sekwencja powtarza się co 15 sekund.
-        </p>
 
         <div className="mkt-spot-static" aria-live="polite">
           <p className="mkt-spot-static-lead">
