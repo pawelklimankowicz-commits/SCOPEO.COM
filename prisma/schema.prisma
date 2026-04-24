@@ -121,6 +121,22 @@ enum GdprRequestStatus {
   REJECTED
 }
 
+/** Zgłoszenie uwag do zespołu produktu (z szkicem zadania technicznego z LLM). */
+enum ProductFeedbackCategory {
+  BUG
+  FEATURE
+  UX
+  DATA
+  INTEGRATION
+  OTHER
+}
+
+enum ProductFeedbackStatus {
+  NEW
+  SEEN
+  ARCHIVED
+}
+
 enum InvitationStatus {
   PENDING
   ACCEPTED
@@ -137,17 +153,18 @@ enum KsefImportJobStatus {
 }
 
 model User {
-  id            String       @id @default(cuid())
-  name          String?
-  email         String       @unique
-  emailVerified DateTime?
-  image         String?
-  passwordHash  String?
-  memberships   Membership[]
-  notifications Notification[]
-  cookieConsent UserConsent?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  id                    String                @id @default(cuid())
+  name                  String?
+  email                 String                @unique
+  emailVerified       DateTime?
+  image                 String?
+  passwordHash          String?
+  memberships           Membership[]
+  notifications         Notification[]
+  cookieConsent         UserConsent?
+  productUserFeedbacks  ProductUserFeedback[]
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
 }
 
 model EmailVerificationToken {
@@ -208,8 +225,9 @@ model Organization {
   ksefImportJobs       KsefImportJob[]
   subscription         Subscription?
   notifications        Notification[]
-  apiKeys              ApiKey[]
-  ksefConnections      KsefConnection[]
+  apiKeys                 ApiKey[]
+  ksefConnections         KsefConnection[]
+  productUserFeedbacks    ProductUserFeedback[]
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
 }
@@ -566,6 +584,32 @@ model FaqAssistantQuery {
   @@index([createdAt])
   @@index([organizationId, createdAt])
   @@index([normalizedQuestion])
+}
+
+model ProductUserFeedback {
+  id                    String                 @id @default(cuid())
+  organizationId      String
+  organization          Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId                String?
+  user                  User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  submitterName         String?
+  submitterEmail        String
+  category              ProductFeedbackCategory
+  userTitle             String
+  userDescription       String                 @db.Text
+  pageContext           String?
+  status                ProductFeedbackStatus  @default(NEW)
+  /** Szkic tytułu zadania dla backlogu (LLM / ręczna korekta w procesie). */
+  technicalTaskTitle    String?                @db.Text
+  /** Opis zadania: kontekst, kroki, kryteria akceptacji (markdown / lista). */
+  technicalTaskBody     String?                @db.Text
+  technicalLabels       String[]               @default([])
+  llmError              String?                @db.Text
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  @@index([organizationId, createdAt])
+  @@index([status, createdAt])
 }
 
 model Lead {

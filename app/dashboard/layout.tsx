@@ -6,26 +6,29 @@ import LogoutButton from '@/components/LogoutButton';
 import WorkspaceSwitcher from '@/components/workspace-switcher';
 import AuthSessionProvider from '@/components/AuthSessionProvider';
 import NotificationBell from '@/components/notification-bell';
-import { requireTenantMembership } from '@/lib/tenant';
+import { getTenantRlsContext, runWithTenantRls } from '@/lib/tenant';
 import { prisma } from '@/lib/prisma';
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  const { session, membership } = await requireTenantMembership();
-  const role = (session.user as any).role as string;
-  const organization = await prisma.organization.findUnique({
-    where: { id: membership.organizationId },
-    select: { onboardingCompletedAt: true },
-  });
-  if (role === 'OWNER' && !organization?.onboardingCompletedAt) {
-    redirect('/onboarding/step/1');
-  }
+  const ctx = await getTenantRlsContext();
+  return runWithTenantRls({ userId: ctx.userId, organizationId: ctx.organizationId }, async () => {
+    const { session, membership } = ctx;
+    const role = (session.user as any).role as string;
+    const organization = await prisma.organization.findUnique({
+      where: { id: membership.organizationId },
+      select: { onboardingCompletedAt: true },
+    });
+    if (role === 'OWNER' && !organization?.onboardingCompletedAt) {
+      redirect('/onboarding/step/1');
+    }
 
-  const navLinks = [
+    const navLinks = [
     { href: '/dashboard', label: 'Przeglad' },
     { href: '/dashboard/invoices', label: 'Faktury' },
     { href: '/dashboard/review', label: 'Review' },
     { href: '/dashboard/report', label: 'Raport emisji' },
     { href: '/dashboard/settings', label: 'Ustawienia' },
+    { href: '/dashboard/feedback', label: 'Uwagi do produktu' },
     ...(role === 'OWNER' || role === 'ADMIN' ? [{ href: '/dashboard/audit', label: 'Audit log' }] : []),
     ...(role === 'OWNER' || role === 'ADMIN' ? [{ href: '/dashboard/gdpr', label: 'GDPR' }] : []),
   ];
@@ -120,4 +123,5 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       </div>
     </AuthSessionProvider>
   );
+  });
 }
