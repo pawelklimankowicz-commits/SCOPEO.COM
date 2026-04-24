@@ -977,6 +977,33 @@
   font-size: 0.5625rem;
 }
 
+.mkt-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 16px 0 0;
+  border-radius: 8px;
+  border: 1px solid var(--mkt-border);
+}
+
+.mkt-subprocessor-table {
+  font-size: 0.75rem;
+}
+
+.mkt-subprocessor-table th,
+.mkt-subprocessor-table td {
+  min-width: 10rem;
+  vertical-align: top;
+}
+
+.mkt-subprocessor-table td:first-child {
+  font-weight: 600;
+  color: var(--mkt-text);
+}
+
+.mkt-section--dark .mkt-subprocessor-table td:first-child {
+  color: #e2e8f0;
+}
+
 .mkt-badge-status {
   display: inline-block;
   padding: 2px 6px;

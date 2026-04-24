@@ -28,7 +28,7 @@ const pages = [
   {
     href: '/dpa',
     title: 'DPA — umowa powierzenia przetwarzania danych',
-    desc: 'Zasady współpracy administrator–procesor (art. 28 RODO) dla klientów biznesowych.',
+    desc: 'Zasady współpracy administrator–procesor (art. 28 RODO), w tym wykaz subprocesorów, dla klientów biznesowych.',
   },
   {
     href: '/klauzule-formularzy',
