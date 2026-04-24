@@ -2236,28 +2236,16 @@
   pointer-events: none;
 }
 
-.mkt-cine-logo-row {
+.mkt-cine-brand-lockup {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
   margin-bottom: 10px;
 }
 
-.mkt-cine-logo-mark {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 32% 28%, #ecfdf5 0%, #6ee7b7 28%, #10b981 52%, #064e3b 100%);
-  box-shadow: 0 0 32px rgba(16, 185, 129, 0.55);
-}
-
-.mkt-cine-logo-text {
-  font-size: clamp(1.6rem, 5vw, 2.1rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: #fff;
+.mkt-cine-brand-lockup img {
+  flex-shrink: 0;
 }
 
 .mkt-spot-hint,

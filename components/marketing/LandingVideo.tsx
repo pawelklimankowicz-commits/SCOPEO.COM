@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { BrandLogoLockup } from '@/components/BrandLogo';
 
 /**
  * Domyślnie: 30-sekundowa pętla animacji (CSS) — film marketingowy w sekundzie, bez pliku MP4.
@@ -147,9 +148,14 @@ export default function LandingVideo() {
               <div className="mkt-cine-scene mkt-cine-scene--5">
                 <div className="mkt-cine-brand">
                   <span className="mkt-cine-logo-glow" aria-hidden />
-                  <div className="mkt-cine-logo-row">
-                    <span className="mkt-cine-logo-mark" aria-hidden />
-                    <span className="mkt-cine-logo-text">Scopeo</span>
+                  <div className="mkt-cine-brand-lockup">
+                    <BrandLogoLockup
+                      size={19}
+                      markScale={0.7}
+                      withWordmark
+                      wordmarkSurface="dark"
+                      taglineColor="#94a3b8"
+                    />
                   </div>
                 </div>
                 <p className="mkt-cine-hero mkt-cine-hero--finale">Zobacz emisje na własnych fakturach</p>
