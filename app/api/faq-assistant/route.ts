@@ -113,6 +113,18 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const trimmed = typeof answer === 'string' ? answer.trim() : '';
+    if (!trimmed) {
+      answer = catalogResolved?.answer ?? FAQ_ASSISTANT_GENERIC;
+      if (catalogResolved) {
+        source = catalogResolved.tier === 'relaxed' ? 'catalog_relaxed' : 'catalog';
+      } else {
+        source = 'fallback';
+      }
+    } else {
+      answer = trimmed;
+    }
+
     const responseMs = Date.now() - startMs;
 
     try {

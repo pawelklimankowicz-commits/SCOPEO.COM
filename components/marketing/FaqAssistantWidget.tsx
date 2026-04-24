@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { FAQ_ASSISTANT_CATALOG } from '@/lib/faq-assistant-catalog';
 import { normalizeFaqText } from '@/lib/faq-assistant';
+import { resolveFaqFromCatalog, type FaqResolveResult } from '@/lib/faq-assistant-resolve';
 
 function SparkleIcon() {
   return (
@@ -39,12 +40,21 @@ export default function FaqAssistantWidget() {
     });
   }, [query]);
 
-  async function fetchAiAnswer(question: string) {
+  function applySourceFromPre(pre: FaqResolveResult) {
+    setSource(pre.tier === 'relaxed' ? 'catalog_relaxed' : 'catalog');
+  }
+
+  async function fetchAiAnswer(question: string, preResolved: FaqResolveResult | null) {
     setLoading(true);
     setLastQuestion(question);
     setBubbleOpen(true);
-    setAnswer('');
-    setSource('');
+    if (preResolved) {
+      setAnswer(preResolved.answer);
+      applySourceFromPre(preResolved);
+    } else {
+      setAnswer('');
+      setSource('');
+    }
     try {
       const controller = new AbortController();
       /** Musi być > serwerowy LLM (max ~14s na próbę × modele) + maxDuration API 60s. */
@@ -83,20 +93,33 @@ export default function FaqAssistantWidget() {
       if (response.ok && payload?.ok && text) {
         setAnswer(text);
         setSource((payload.source as SourceLabel) || 'fallback');
+      } else if (response.ok && payload?.ok && !text && preResolved) {
+        setAnswer(preResolved.answer);
+        applySourceFromPre(preResolved);
       } else {
         const rateLimited = response.status === 429 || payload?.error === 'Too many requests';
+        if (preResolved && !rateLimited) {
+          setAnswer(preResolved.answer);
+          applySourceFromPre(preResolved);
+        } else {
+          setAnswer(
+            rateLimited
+              ? 'Zbyt wiele pytań w krótkim czasie — odczekaj minutę i spróbuj ponownie.'
+              : 'Chwilowo nie mogę połączyć się z asystentem. Spróbuj ponownie za chwilę lub napisz na stronie /kontakt.'
+          );
+          setSource('generic');
+        }
+      }
+    } catch {
+      if (preResolved) {
+        setAnswer(preResolved.answer);
+        applySourceFromPre(preResolved);
+      } else {
         setAnswer(
-          rateLimited
-            ? 'Zbyt wiele pytań w krótkim czasie — odczekaj minutę i spróbuj ponownie.'
-            : 'Chwilowo nie mogę połączyć się z asystentem. Spróbuj ponownie za chwilę lub napisz na stronie /kontakt.'
+          'Brak połączenia z serwerem. Sprawdź sieć i spróbuj ponownie — pełna baza pytań jest też na stronie /faq.'
         );
         setSource('generic');
       }
-    } catch {
-      setAnswer(
-        'Brak połączenia z serwerem. Sprawdź sieć i spróbuj ponownie — pełna baza pytań jest też na stronie /faq.'
-      );
-      setSource('generic');
     } finally {
       setLoading(false);
     }
@@ -105,12 +128,13 @@ export default function FaqAssistantWidget() {
   function handleSubmit() {
     const q = query.trim();
     if (q.length < 3) return;
-    void fetchAiAnswer(q);
+    void fetchAiAnswer(q, resolveFaqFromCatalog(q));
   }
 
   function handleChipQuestion(text: string) {
     setQuery(text);
-    void fetchAiAnswer(text);
+    const pre = resolveFaqFromCatalog(text);
+    void fetchAiAnswer(text, pre);
   }
 
   const sourceHint =
@@ -203,7 +227,7 @@ export default function FaqAssistantWidget() {
       {showExamples ? (
         <div className="mkt-faq-ai-examples" role="region" aria-label="Przykładowe pytania">
           <ul className="mkt-faq-ai-examples-list">
-            {filteredItems.slice(0, 12).map((item) => (
+            {filteredItems.slice(0, 40).map((item) => (
               <li key={item.id}>
                 <button type="button" className="mkt-faq-ai-example-chip" onClick={() => handleChipQuestion(item.question)}>
                   {item.question}

@@ -108,6 +108,103 @@ const SCOPE3_TOPICS: Array<{ q: string; a: string; k: string[] }> = [
   },
 ];
 
+/**
+ * Częste pytania „ludzkim” językiem (cennik, rejestracja, dla kogo) — przed długą listą
+ * techniczną MORE, aby pierwsze 99 pozycji w `BUILT` zawierało maks. pokrycia typowych zgłoszeń.
+ */
+const PILLAR: Array<{ q: string; a: string; k: string[] }> = [
+  {
+    q: 'Dla kogo jest Scopeo?',
+    a: 'Dla finansów, księgowości, zespołów ESG i zarządów, które chcą liczyć emisje Scope 1–3 z faktur KSeF i mieć spójny raport zamiast rozproszonego Excela. Nadaje się do MŚP i większych organizacji z wieloma NIP-ami w grupie (wg planu).',
+    k: ['dla kogo', 'dla kogo jest', 'dla czyj', 'target', 'kto uzywa'],
+  },
+  {
+    q: 'Jaka jest cena Scopeo?',
+    a: 'Cena zależy od planu (Mikro, Starter, Growth, Scale, Enterprise) i od liczby połączeń KSeF oraz użytkowników — pełną tabelę znajdziesz na stronie /cennik. Płatność jest miesięczna lub roczna z rabatem.',
+    k: ['cena', 'ile kosztuje', 'koszt', 'abonament', 'cennik'],
+  },
+  {
+    q: 'Jak długo trwa trial Scopeo?',
+    a: 'Domyślnie masz 7 dni bezpłatnego okresu próbnego, żeby sprawdzić import z KSeF i pierwsze agregacje. Szczegóły w FAQ na /faq i przy rejestracji.',
+    k: ['trial', 'okres probny', '7 dni', 'darmowy'],
+  },
+  {
+    q: 'Czy muszę znać GHG Protocol?',
+    a: 'Nie musisz być ekspertem — interfejs prowadzi przez import, mapowanie i review. Warto jednak, żeby w organizacji była osoba odpowiedzialna za metodykę (ESG/finanse), w razie wątpliwości możesz skonsultować szczegóły z doradcą klimatycznym.',
+    k: ['ghg', 'protokol', 'wiedza', 'ekspert', 'czy musze'],
+  },
+  {
+    q: 'Czy Scopeo działa tylko w Polsce?',
+    a: 'Produkt liczy emisje z danych, które wprowadzisz, w tym z polskiego KSeF. Granice i waluty możesz skonfigurować w profilu; wielo‑NIP w grupie wspieramy w wyższych planach — szczegóły u handlowca.',
+    k: ['polska', 'tylko w polsce', 'granica', 'nip'],
+  },
+  {
+    q: 'Czy moje faktury zostaną wycieknięte?',
+    a: 'Dane traktujemy jako dane służbowe organizacji, z izolacją per tenant, audytem dostępu i polityką retencji opisaną w DPA. Nie wykorzystujemy treści faktur do trenowania publicznych modeli AI w sposób, który naruszałby umowę — treści pytania do asystenta FAQ i tak nie powinny zawierać numerów tajnych faktur.',
+    k: ['wyciek', 'bezpieczenstwo', 'poufnosc', 'dane wrazliwe', 'czy bezpieczne'],
+  },
+  {
+    q: 'Czy Scopeo liczy tylko energię elektryczną?',
+    a: 'Nie. Oprócz energii (typowo Scope 2) obsługujemy paliwa i procesy w Scope 1 oraz szerokie Scope 3 z faktur i danych operacyjnych — dokładność zależy od poprawnych kategorii i czynników emisji.',
+    k: ['prad', 'energia', 'tylko energ', 'paliwo', 'elektryczn'],
+  },
+  {
+    q: 'Czy to jest tylko pod CSRD?',
+    a: 'Nie. Raporty i eksporty są też użyteczne w przetargach, wymaganiach klientów B2B, strategii dekarbonizacji i komunikacji klimatycznej. CSRD/ESRS to jeden z ważnych przypadków użycia.',
+    k: ['csrd', 'tylko', 'czy tylko', 'przetarg'],
+  },
+  {
+    q: 'Czy ktoś spoza ESG odpali Scopeo w firmie?',
+    a: 'Tak — często pierwsze kroki robi księgowość (KSeF, faktury), a ESG akceptuje wyniki. Role i uprawnienia pozwalają rozdzielić wprowadzanie danych i zatwierdzenia.',
+    k: ['ksiegowosc', 'finanse', 'kto w firmie', 'bez esg', 'kto odpala'],
+  },
+  {
+    q: 'Czy wymagany jest księgowy audyt, żeby zacząć?',
+    a: 'Nie — żeby rozpocząć wystarczy konfiguracja org i KSeF. Zewnętrzna weryfikacja (assurance) raportu to osobna decyzja i często osobna umowa z audytorem.',
+    k: ['audyt', 'czy musze miec', 'weryfikacja zewnetrzna', 'czy wymagany'],
+  },
+  {
+    q: 'Jak wygląda wsparcie techniczne?',
+    a: 'Kontakt przez formularz /kontakt, opcjonalnie plan Enterprise z szybszym SLA. Do ticketów dołącz NIP i opis kroku — szybciej odtworzymy problem.',
+    k: ['pomoc', 'support', 'wsparcie', 'ticket', 'kontakt techniczny'],
+  },
+  {
+    q: 'Czy dane w Scopeo spełniają wymagania RODO?',
+    a: 'Stosujemy zasadę minimalizacji, umowy powierzenia (DPA) i procedury użytkowników. Szczegóły: /polityka-prywatnosci i DPA. Możesz też złożyć wniosek w panelu uprawnień (wg roli).',
+    k: ['rodo', 'gdpr', 'dane osobowe', 'przetwarzanie'],
+  },
+  {
+    q: 'Czy muszę ręcznie wklejać faktury do Scopeo?',
+    a: 'Nie w normalnym przepływie — po sparowaniu z KSeF faktury są pobierane do systemu. Ręczny import (np. pliki) to ścieżka awaryjna lub uzupełnienie w zależności od modułów.',
+    k: ['wklejanie', 'recznie', 'upload', 'import reczny', 'czy recznie'],
+  },
+  {
+    q: 'Czy Scopeo integruje się z mojim ERP?',
+    a: 'Pierwotna ścieżka danych to KSeF (faktury) oraz import czynników. Integracja z konkretnym ERP bywa rozwiązywana eksportem CSV/XLSX/JSON albo w projekcie Enterprise — napisz, jaki system masz, przez /kontakt.',
+    k: ['erp', 'integracja', 'sap', 'comarch', 'symfonia'],
+  },
+  {
+    q: 'Ile faktur obsłuży Scopeo miesięcznie?',
+    a: 'Cennik nie opiera się o liczbę faktur, tylko o połączenia KSeF i użytkowników. Przy skrajnie dużych wolumenach (dziesiątki milionów wierszy) ustalimy plan infrastrukturalny w Enterprise.',
+    k: ['ile faktur', 'wolumen', 'limit faktur', 'skala'],
+  },
+  {
+    q: 'Czy raporty są po polsku?',
+    a: 'Interfejs i raporty PDF są przygotowane głównie po polsku; eksporty w formatach maszynowych mogą mieć etykiety zgodne z schematami (np. CSRD). Tłumaczenie do EN — zapytaj przy kontrakcie.',
+    k: ['jezyk', 'po polsku', 'tlumaczenie', 'english', 'pl'],
+  },
+  {
+    q: 'Czy dane w raporcie może sprawdzić urząd?',
+    a: 'Scopeo buduje spójny ślad z faktur i czynników — taki materiał łatwiej pokazać kontrolerowi, ale odpowiedzialność za formalny raport i obowiązki prawne spoczywa na organizacji i jej doradcach. Nie zastępujemy prawnika.',
+    k: ['urzad', 'kontrola', 'udi', 'inspekcja', 'kar'],
+  },
+  {
+    q: 'Czy w Scopeo zobaczę redukcję emisji w czasie?',
+    a: 'Tak, przy serialnych raportach (np. rok do roku) widać zmiany w tCO₂e, o ile metodyka i granice org są spójne. Samo narzędzie planów redukcji strategii (np. inwestycje w OZE) łączysz z doradcą — my dostarczamy wiarygodną linię bazową i monitoring danych.',
+    k: ['redukcja', 'trend', 'w czasie', 'rok do roku', 'zmniejszanie emisji'],
+  },
+];
+
 const OPS: Array<{ q: string; a: string; k: string[] }> = [
   {
     q: 'Jak podłączyć Scopeo do KSeF?',
@@ -344,6 +441,7 @@ function buildCatalog(): FaqCatalogEntry[] {
     out.push(e(`faq-${String(n).padStart(3, '0')}`, q, a, k));
   };
   for (const x of OPS) push(x.q, x.a, x.k);
+  for (const x of PILLAR) push(x.q, x.a, x.k);
   for (const x of SCOPE3_TOPICS) push(x.q, x.a, x.k);
   for (const x of MORE) push(x.q, x.a, x.k);
   return out;
