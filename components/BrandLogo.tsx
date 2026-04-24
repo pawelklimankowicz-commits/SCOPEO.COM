@@ -11,6 +11,8 @@ const SCOPEO_WORDMARK_GRADIENT_DARK =
 
 type LockupProps = {
   size?: number;
+  /** Tylko znak (SVG) — 1 = jak dotychczas; np. 0.7 = −30% samej ikony, napis „Scopeo” bez zmian. */
+  markScale?: number;
   withWordmark?: boolean;
   /** Płaski kolor słowa „Scopeo” — tylko gdy `wordmarkFlat`. */
   wordmarkColor?: string;
@@ -43,6 +45,7 @@ export function BrandLogoMark({ size = 28 }: { size?: number }) {
  */
 export function BrandLogoLockup({
   size = 26,
+  markScale = 1,
   withWordmark = true,
   wordmarkColor = '#0f172a',
   taglineColor = '#64748b',
@@ -52,9 +55,10 @@ export function BrandLogoLockup({
   wordmarkFlat = false,
 }: LockupProps) {
   if (!withWordmark) {
+    const onlyMark = Math.max(8, Math.round(size * markScale));
     return (
       <span style={{ display: 'inline-flex', alignItems: 'center', ...style }}>
-        <BrandLogoMark size={size} />
+        <BrandLogoMark size={onlyMark} />
       </span>
     );
   }
@@ -66,6 +70,7 @@ export function BrandLogoLockup({
   const textColumnHeight =
     titleSize * lineBox + (showTagline ? 3 + tagSize * lineBox : 0);
   const markSize = Math.max(20, Math.round(textColumnHeight));
+  const markDisplaySize = Math.max(12, Math.round(markSize * markScale));
 
   const gradient =
     wordmarkSurface === 'dark' ? SCOPEO_WORDMARK_GRADIENT_DARK : SCOPEO_WORDMARK_GRADIENT_LIGHT;
@@ -101,7 +106,7 @@ export function BrandLogoLockup({
         ...style,
       }}
     >
-      <BrandLogoMark size={markSize} />
+      <BrandLogoMark size={markDisplaySize} />
       <span
         style={{
           display: 'flex',
