@@ -1,6 +1,17 @@
 import { buildFaqSystemPrompt, normalizeFaqText } from '@/lib/faq-assistant';
 
+/** Lokalnie / self-host — OpenAI może chwilę liczyć. */
 export const DEFAULT_FAQ_LLM_TIMEOUT_MS = 14_000;
+
+/**
+ * Vercel (zwł. plan Hobby) obcina invokację do ~10s — domyślnie krócej, żeby zwrócić JSON, nie 502/504.
+ * Na Pro z dłuższym limitem: `FAQ_ASSISTANT_LLM_TIMEOUT_MS=14000` w env.
+ */
+const DEFAULT_FAQ_LLM_TIMEOUT_VERCEL_MS = 6_000;
+
+function defaultFaqLlmTimeoutForPlatform(): number {
+  return process.env.VERCEL ? DEFAULT_FAQ_LLM_TIMEOUT_VERCEL_MS : DEFAULT_FAQ_LLM_TIMEOUT_MS;
+}
 
 const JSON_INSTRUCTION =
   'Zwróć WYŁĄCZNIE jeden obiekt JSON (bez otoczenia markdown), pól: "answer" (string, odpowiedź po polsku, max 4 zdania) i "decline" (boolean). ' +
@@ -9,9 +20,10 @@ const JSON_INSTRUCTION =
 
 export function getFaqLlmTimeoutMs(): number {
   const raw = process.env.FAQ_ASSISTANT_LLM_TIMEOUT_MS?.trim();
-  if (!raw) return DEFAULT_FAQ_LLM_TIMEOUT_MS;
+  const fallback = defaultFaqLlmTimeoutForPlatform();
+  if (!raw) return fallback;
   const n = parseInt(raw, 10);
-  if (!Number.isFinite(n) || n < 3000 || n > 120_000) return DEFAULT_FAQ_LLM_TIMEOUT_MS;
+  if (!Number.isFinite(n) || n < 3000 || n > 120_000) return fallback;
   return n;
 }
 
@@ -133,14 +145,17 @@ export type FaqLlmResult =
 
 /**
  * OpenAI: kilka modeli (fallback przy błędzie HTTP/timeout) + JSON lub tekst.
- * Budżet murowy — żeby zwrócić JSON (katalog/LLM) przed `maxDuration` w route, a nie 504.
+ * Budżet murowy — na Vercel ciasno (Hobby 10s), lokalnie luźniej.
  */
-const FAQ_LLM_WALL_BUDGET_MS = 45_000;
+function getFaqLlmWallBudgetMs(): number {
+  return process.env.VERCEL ? 8_500 : 45_000;
+}
 
 export async function callFaqLlm(
   input: { question: string; catalogHint: string | null },
   apiKey: string
 ): Promise<FaqLlmResult> {
+  const isVercel = Boolean(process.env.VERCEL);
   const jsonMode = getFaqJsonObjectMode();
   const timeoutMs = getFaqLlmTimeoutMs();
   const userContent = buildFaqUserContent(input.question, input.catalogHint, jsonMode);
@@ -149,9 +164,10 @@ export async function callFaqLlm(
     ? `${systemBase}\n\n${JSON_INSTRUCTION}\nJęzyk: polski. Format odpowiedzi: JSON.`
     : `${systemBase}\n\nPriorytet: odpowiadaj jak asystent AI produktu. Gdy dostaniesz blok [Oficjalna odpowiedź z FAQ], musi on być zgodny z faktami — nie przeczyń treści FAQ.`;
 
-  const wallEnd = Date.now() + FAQ_LLM_WALL_BUDGET_MS;
+  const wallEnd = Date.now() + getFaqLlmWallBudgetMs();
+  const modelChain = isVercel ? getFaqModelChain().slice(0, 1) : getFaqModelChain();
 
-  for (const model of getFaqModelChain()) {
+  for (const model of modelChain) {
     if (Date.now() > wallEnd) {
       return { kind: 'unavailable' };
     }
@@ -168,12 +184,15 @@ export async function callFaqLlm(
       { useMaxCompletionTokens: true, includeTemperature: false, useJsonObjectFormat: false },
     ];
     const seen = new Set<string>();
-    const attempts = rawAttempts.filter((a) => {
+    let attempts = rawAttempts.filter((a) => {
       const k = `${a.useMaxCompletionTokens}/${a.includeTemperature}/${a.useJsonObjectFormat}`;
       if (seen.has(k)) return false;
       seen.add(k);
       return true;
     });
+    if (isVercel) {
+      attempts = attempts.slice(0, 1);
+    }
 
     for (const a of attempts) {
       if (Date.now() > wallEnd) {

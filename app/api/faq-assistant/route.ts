@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { runWithRlsBypass } from '@/lib/tenant-rls-context';
 import { checkRateLimit, getClientIp } from '@/lib/security';
@@ -156,6 +155,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
+  const { auth } = await import('@/lib/auth');
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
