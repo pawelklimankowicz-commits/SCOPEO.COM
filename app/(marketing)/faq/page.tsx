@@ -62,7 +62,7 @@ const items: { q: string; a: ReactNode }[] = [
   },
   {
     q: 'Czy dane z moich faktur są bezpieczne?',
-    a: 'Tak. Twoje dane są przechowywane na serwerach w Unii Europejskiej i są całkowicie odizolowane od danych innych firm korzystających z Scopeo. Dostęp do nich mają wyłącznie osoby, którym nadałeś uprawnienia w swoim koncie.',
+    a: 'Tak. Twoje dane są przechowywane na serwerach w Unii Europejskiej i są całkowicie odizolowane od danych innych firm korzystających z Scopeo. Dostęp do nich mają wyłącznie osoby, którym nadałeś uprawnienia w swoim koncie. W polityce prywatności opisujemy też: na czym opieramy się u dostawcy bazy danych, jak traktujemy rotację kluczy szyfrujących oraz jakie testy i praktyki utrzymania bezpieczeństwa stosujemy — zobacz sekcję 6 (punkty 6.1–6.3).',
   },
   {
     q: 'Czy mogę obsługiwać kilka firm lub spółek w jednym koncie?',
@@ -141,7 +141,11 @@ const items: { q: string; a: ReactNode }[] = [
         <Link href="/polityka-prywatnosci" className="mkt-link">
           Polityka prywatności
         </Link>
-        . W sprawach RODO piszesz na privacy@scopeo.pl.
+        , w tym w sekcji 6: polityki dostawcy bazy, rotację kluczy, testy i utrzymanie bezpieczeństwa (
+        <Link href="/polityka-prywatnosci#testy-bezpieczenstwa" className="mkt-link">
+          m.in. testy
+        </Link>
+        ). W sprawach RODO piszesz na privacy@scopeo.pl.
       </>
     ),
   },

@@ -20,7 +20,7 @@ export default function PolitykaPage() {
             dokumentach prawnych.
           </p>
           <p style={{ marginTop: 12, fontSize: '0.8125rem', color: '#64748b' }}>
-            Ostatnia aktualizacja: {new Date().getFullYear()}-04-13
+            Ostatnia aktualizacja: {new Date().getFullYear()}-04-24
           </p>
         </div>
       </div>
@@ -96,6 +96,39 @@ export default function PolitykaPage() {
             Dane przechowujemy przez okres niezbedny do realizacji celow przetwarzania i obowiazkow prawnych.
             Stosujemy srodki organizacyjne i techniczne adekwatne do ryzyka, w tym kontrole dostepu, logowanie
             zdarzen oraz mechanizmy szyfrowania dla danych wrazliwych operacyjnie (np. tokeny KSeF).
+          </p>
+
+          <h3 id="dostawca-bazy">6.1. Polityki dostawcy bazy danych</h3>
+          <p>
+            Baza danych aplikacji hostowana jest u operatora wybranego w konfiguracji produkcyjnej (typowo usluga
+            PostgreSQL w chmurze). W zakresie szyfrowania w spoczynku, kontroli dostepu, kopii zapasowych i
+            lokalizacji geograficznej obowiazuja{' '}
+            <strong>regulamin, dokumentacja i certyfikacje tego operatora</strong>
+            (udostepniane przez dostawce). Zalecane jest wskazanie regionu w{' '}
+            <strong>Europejskim Obszarze Gospodarczym</strong>, o ile wymaga tego polityka organizacji.
+            Scisle warunki SLA i audytow od strony hosta wynikaja z umowy miedzy nami a operatorem.
+          </p>
+
+          <h3 id="rotacja-kluczy">6.2. Rotacja kluczy szyfrujacych</h3>
+          <p>
+            Klucze kryptograficzne uzywane w aplikacji (m.in. do szyfrowania wrazliwych danych operacyjnych) sa
+            przechowywane wylacznie w <strong>zmiennych srodowiskowych</strong> u dostawcy hostingu, poza
+            repozytorium kodu. <strong>Rotacja</strong> (wymiana klucza zgodnie z polityka bezpieczenstwa lub
+            skutkiem incydentu) polega na wprowadzeniu nowej wartosci w srodowisku i, w razie potrzeby, na
+            oprogramowaniu wykonanym w oknie serwisowym: odszyfrowaniu danych starym kluczem i ponownym
+            zaszyfrowaniu nowym, tak aby dane w bazie pozostawaly spojne. Terminy i zakres rotacji wewnetrznie
+            definiujemy w procedurach operacyjnych; na zadanie klienta z umowa Enterprise moga byc one
+            uzgodnione indywidualnie.
+          </p>
+
+          <h3 id="testy-bezpieczenstwa">6.3. Testy i utrzymanie bezpieczenstwa</h3>
+          <p>
+            W cyklu rozwoju utrzymujemy m.in. <strong>recenzje kodu</strong>, <strong>statyczna analize</strong>{' '}
+            (lint) oraz <strong>automatyczne testy</strong> (w tym integracyjne) obejmujace krytyczne sciezki
+            produktu. W produkcji stosujemy m.in. monitoring bledow i polityke naglowkow bezpieczenstwa (m.in. CSP)
+            w warstwie uruchomieniowej. <strong>Testy penetracyjne lub zewnetrzny audyt bezpieczenstwa</strong> nie
+            sa gwarantowane w ramach kazdej oferty abonamentowej; moga byc ujete w indywidualnych ustaleniach
+            (np. Enterprise) albo wykonane na zlecenie — prosimy o kontakt po stronie prawnej.
           </p>
 
           <p style={{ marginTop: 32 }}>
