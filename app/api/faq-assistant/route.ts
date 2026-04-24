@@ -1,25 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-
-/** LLM + kilka modeli/ponowień — domyślny limit Vercel (10–15s) tnie odpowiedź w połowie. */
-export const maxDuration = 60;
+import { runWithRlsBypass } from '@/lib/tenant-rls-context';
 import { checkRateLimit, getClientIp } from '@/lib/security';
 import { findFaqIntent, normalizeFaqText } from '@/lib/faq-assistant';
 import { callFaqLlm, isAnswerConsistentWithCatalog } from '@/lib/faq-assistant-llm';
 import { FAQ_ASSISTANT_GENERIC, resolveFaqFromCatalog } from '@/lib/faq-assistant-resolve';
 import { createHash } from 'node:crypto';
 
+/** LLM + kilka modeli/ponowień — domyślny limit Vercel (10–15s) tnie odpowiedź w połowie. */
+export const maxDuration = 60;
+export const dynamic = 'force-dynamic';
+
 function hashIp(ip: string) {
   return createHash('sha256').update(ip).digest('hex');
+}
+
+/**
+ * Tylko dekodowanie JWT (bez getServerSession / callbacka JWT z Prisma) — szybsze i odporne na awarie DB
+ * gdy użytkownik ma ciasteczko sesji.
+ */
+async function organizationIdFromJwt(req: NextRequest): Promise<string | null> {
+  try {
+    const secret = (process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET)?.trim();
+    if (!secret) return null;
+    const token = await getToken({ req, secret });
+    if (!token) return null;
+    const a = token.activeOrganizationId as string | undefined;
+    const o = token.organizationId as string | undefined;
+    return (typeof a === 'string' && a) || (typeof o === 'string' && o) || null;
+  } catch {
+    return null;
+  }
 }
 
 export async function POST(req: NextRequest) {
   const startMs = Date.now();
   try {
     const ip = getClientIp(req.headers);
-    const session = await auth();
-    const organizationId = (session?.user as { organizationId?: string } | undefined)?.organizationId ?? null;
+    const organizationId = await organizationIdFromJwt(req);
     const limit = await checkRateLimit(`faq-assistant:${organizationId ?? 'anon'}:${ip}`, {
       windowMs: 60_000,
       maxRequests: 24,
@@ -97,19 +117,21 @@ export async function POST(req: NextRequest) {
     const responseMs = Date.now() - startMs;
 
     try {
-      await prisma.faqAssistantQuery.create({
-        data: {
-          organizationId,
-          sessionId,
-          question,
-          normalizedQuestion,
-          answerPreview: answer.slice(0, 500),
-          source,
-          matchedIntent,
-          responseMs,
-          ipHash: hashIp(ip),
-        },
-      });
+      await runWithRlsBypass(() =>
+        prisma.faqAssistantQuery.create({
+          data: {
+            organizationId,
+            sessionId,
+            question,
+            normalizedQuestion,
+            answerPreview: answer.slice(0, 500),
+            source,
+            matchedIntent,
+            responseMs,
+            ipHash: hashIp(ip),
+          },
+        })
+      );
     } catch {
       // analytics must not block response
     }
@@ -144,13 +166,15 @@ export async function GET() {
   }
   const organizationId = (session.user as { organizationId?: string }).organizationId as string;
 
-  const topQuestions = await prisma.faqAssistantQuery.groupBy({
-    by: ['normalizedQuestion'],
-    where: { organizationId },
-    _count: { normalizedQuestion: true },
-    orderBy: { _count: { normalizedQuestion: 'desc' } },
-    take: 15,
-  });
+  const topQuestions = await runWithRlsBypass(() =>
+    prisma.faqAssistantQuery.groupBy({
+      by: ['normalizedQuestion'],
+      where: { organizationId },
+      _count: { normalizedQuestion: true },
+      orderBy: { _count: { normalizedQuestion: 'desc' } },
+      take: 15,
+    })
+  );
 
   return NextResponse.json({
     ok: true,

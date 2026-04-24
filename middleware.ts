@@ -53,10 +53,15 @@ export async function middleware(request: NextRequest) {
 
   const publicMarketingApi = new Set([
     '/api/faq-assistant',
+    '/api/faq-assistant/',
     '/api/contact',
+    '/api/contact/',
     '/api/analytics/event',
+    '/api/analytics/event/',
     '/api/feedback',
+    '/api/feedback/',
     '/api/user/cookie-consent',
+    '/api/user/cookie-consent/',
   ]);
 
   const token = await getToken({

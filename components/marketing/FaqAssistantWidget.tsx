@@ -51,9 +51,11 @@ export default function FaqAssistantWidget() {
       const timeout = setTimeout(() => controller.abort(), 55_000);
       let response: Response;
       try {
-        response = await fetch('/api/faq-assistant', {
+        const base = typeof window !== 'undefined' ? window.location.origin : '';
+        response = await fetch(`${base}/api/faq-assistant`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
             question,
             sessionId: 'marketing-faq-widget-v2',
