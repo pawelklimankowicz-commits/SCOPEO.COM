@@ -2275,3 +2275,368 @@
   width: 100%;
   height: auto;
 }
+
+/* --- Strona tytułowa (lp) — czytelna hierarchia, układ inspirowany stronami produktu SaaS ESG --- */
+.mkt-lp-hero {
+  padding: 40px 0 56px;
+}
+
+.mkt-lp-eyebrow {
+  display: block;
+  margin: 0 0 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #047857;
+}
+
+.mkt-lp-hero-title {
+  font-size: clamp(1.75rem, 4.2vw, 2.5rem);
+  line-height: 1.12;
+  margin: 0 0 16px;
+}
+
+.mkt-lp-hero-lead {
+  max-width: 36rem;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  margin: 0 0 20px;
+}
+
+.mkt-lp-hero-lead strong {
+  color: var(--mkt-text);
+  font-weight: 600;
+}
+
+.mkt-lp-ticks {
+  list-style: none;
+  margin: 0 0 24px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+}
+
+.mkt-lp-ticks li {
+  position: relative;
+  padding-left: 1.1rem;
+  font-size: 0.9375rem;
+  color: var(--mkt-muted);
+  line-height: 1.4;
+}
+
+.mkt-lp-ticks li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: #059669;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.mkt-lp-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.mkt-lp-hero-link {
+  margin: 20px 0 0;
+  font-size: 0.875rem;
+}
+
+.mkt-lp-hero-visual img {
+  border-radius: var(--mkt-radius-lg);
+  box-shadow: var(--mkt-shadow-hero);
+}
+
+.mkt-lp-pillars {
+  padding-top: 24px;
+  padding-bottom: 48px;
+  background: linear-gradient(180deg, #ecfdf5 0%, var(--mkt-bg) 100%);
+}
+
+.mkt-lp-section-title {
+  text-align: center;
+  max-width: 40rem;
+  margin: 0 auto 12px;
+  font-size: clamp(1.25rem, 2.4vw, 1.5rem);
+  color: var(--mkt-headline);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.mkt-lp-section-lead {
+  text-align: center;
+  max-width: 36rem;
+  margin: 0 auto 32px;
+  font-size: 0.9375rem;
+  color: var(--mkt-subtle);
+  line-height: 1.6;
+}
+
+.mkt-lp-tight {
+  max-width: 40rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.mkt-lp-pillar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 1000px) {
+  .mkt-lp-pillar-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .mkt-lp-pillar-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mkt-lp-pillar {
+  background: var(--mkt-surface);
+  border: 1px solid var(--mkt-border);
+  border-radius: var(--mkt-radius-lg);
+  padding: 22px 20px 24px;
+  box-shadow: var(--mkt-shadow);
+  height: 100%;
+}
+
+.mkt-lp-pillar h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--mkt-headline);
+}
+
+.mkt-lp-pillar p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--mkt-muted);
+  line-height: 1.55;
+}
+
+.mkt-lp-pillar-icon {
+  color: #047857;
+  margin-bottom: 14px;
+}
+
+.mkt-lp-icon {
+  display: block;
+}
+
+.mkt-lp-surface {
+  background: var(--mkt-elevated);
+  border-block: 1px solid var(--mkt-border);
+}
+
+.mkt-lp-journey {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  counter-reset: journey;
+}
+
+@media (max-width: 1100px) {
+  .mkt-lp-journey {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .mkt-lp-journey {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mkt-lp-journey-step {
+  position: relative;
+  margin: 0;
+  padding: 18px 16px 20px;
+  background: var(--mkt-surface);
+  border: 1px solid var(--mkt-border);
+  border-radius: var(--mkt-radius);
+  min-height: 100%;
+}
+
+.mkt-lp-journey-step h3 {
+  margin: 0 0 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--mkt-headline);
+}
+
+.mkt-lp-journey-step p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--mkt-muted);
+  line-height: 1.5;
+}
+
+.mkt-lp-journey-num {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--mkt-lime);
+  color: #0b1215;
+  font-size: 0.75rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.mkt-lp-why-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .mkt-lp-why-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .mkt-lp-why-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mkt-lp-why-card {
+  background: var(--mkt-surface);
+  border: 1px solid var(--mkt-border);
+  border-radius: var(--mkt-radius);
+  padding: 20px 18px;
+  box-shadow: var(--mkt-shadow);
+}
+
+.mkt-lp-why-ic {
+  color: #047857;
+  margin-bottom: 8px;
+}
+
+.mkt-lp-why-card h3 {
+  margin: 0 0 8px;
+  font-size: 0.9375rem;
+  color: var(--mkt-headline);
+}
+
+.mkt-lp-why-card p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--mkt-muted);
+  line-height: 1.5;
+}
+
+.mkt-lp-standards {
+  padding: 28px 0;
+  background: #fff;
+  border-block: 1px solid var(--mkt-border);
+}
+
+.mkt-lp-standards-inner {
+  text-align: center;
+}
+
+.mkt-lp-standards-label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mkt-subtle);
+  margin-bottom: 14px;
+}
+
+.mkt-lp-standards-chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 14px;
+}
+
+.mkt-lp-standards-chips li {
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--mkt-text);
+  padding: 6px 12px;
+  background: var(--mkt-bg2);
+  border: 1px solid var(--mkt-border);
+  border-radius: 9999px;
+}
+
+.mkt-lp-gap {
+  gap: 20px 24px;
+}
+
+.mkt-lp-card-p {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--mkt-muted);
+  line-height: 1.6;
+}
+
+.mkt-lp-footlink {
+  margin: 24px 0 0;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.mkt-lp-who p {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--mkt-text);
+  line-height: 1.5;
+}
+
+.mkt-lp-pricing {
+  margin-top: 8px;
+}
+
+.mkt-lp-pricing-note {
+  margin: 20px 0 0;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--mkt-subtle);
+}
+
+.mkt-lp-faq .mkt-faq-list {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.mkt-lp-cta-final h2 {
+  font-size: clamp(1.25rem, 2.2vw, 1.5rem);
+}
+
+.mkt-lp-cta-hint {
+  margin: 20px 0 8px;
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
+.mkt-lp-leadform {
+  max-width: 440px;
+  margin: 12px auto 0;
+  text-align: left;
+}
