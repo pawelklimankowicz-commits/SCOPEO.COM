@@ -51,6 +51,14 @@ export async function middleware(request: NextRequest) {
   const nonce = generateNonce();
   const isDev = process.env.NODE_ENV === 'development';
 
+  const publicMarketingApi = new Set([
+    '/api/faq-assistant',
+    '/api/contact',
+    '/api/analytics/event',
+    '/api/feedback',
+    '/api/user/cookie-consent',
+  ]);
+
   const token = await getToken({
     req: request,
     secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
@@ -67,7 +75,13 @@ export async function middleware(request: NextRequest) {
   const organizations = Array.isArray(token?.organizations)
     ? (token?.organizations as Array<{ id?: string }>).map((item) => item?.id).filter(Boolean)
     : [];
-  if (guardedPath && activeOrganizationId && organizations.length > 0 && !organizations.includes(activeOrganizationId)) {
+  if (
+    guardedPath &&
+    activeOrganizationId &&
+    organizations.length > 0 &&
+    !organizations.includes(activeOrganizationId) &&
+    !publicMarketingApi.has(pathname)
+  ) {
     if (pathname.startsWith('/api/')) {
       return NextResponse.json({ ok: false, error: 'Invalid organization context' }, { status: 403 });
     }
@@ -92,7 +106,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/api/') &&
     !pathname.startsWith('/api/auth/') &&
     !pathname.startsWith('/api/onboarding/') &&
-    pathname !== '/api/ksef/test'
+    pathname !== '/api/ksef/test' &&
+    !publicMarketingApi.has(pathname)
   ) {
     return NextResponse.json(
       {
