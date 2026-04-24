@@ -16,8 +16,21 @@ const isNextBuildOrExport = (): boolean => {
   );
 };
 
+/**
+ * Brak `DATABASE_URL` musi być dopuszczalny także poza `NEXT_PHASE=phase-*-build` — inaczej
+ * każde API importujące `prisma` daje 500 (HTML) m.in. w `next dev` bez .env i na
+ * Vercel Preview bez sekretu (faza build ma NEXT_PHASE, runtime już nie).
+ */
+function allowMissingDatabaseUrlAtImport(): boolean {
+  if (isNextBuildOrExport()) return true;
+  if (process.env.NODE_ENV === 'development') return true;
+  if (process.env.NODE_ENV === 'test') return true;
+  if (process.env.VERCEL_ENV === 'preview') return true;
+  return false;
+}
+
 if (!hasDatabaseUrl()) {
-  if (!isNextBuildOrExport()) {
+  if (!allowMissingDatabaseUrlAtImport()) {
     throw new Error('DATABASE_URL is required');
   }
 }
