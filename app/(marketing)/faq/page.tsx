@@ -62,7 +62,24 @@ const items: { q: string; a: ReactNode }[] = [
   },
   {
     q: 'Czy dane z moich faktur są bezpieczne?',
-    a: 'Tak. Twoje dane są przechowywane na serwerach w Unii Europejskiej i są całkowicie odizolowane od danych innych firm korzystających z Scopeo. Dostęp do nich mają wyłącznie osoby, którym nadałeś uprawnienia w swoim koncie. W polityce prywatności opisujemy też: na czym opieramy się u dostawcy bazy danych, jak traktujemy rotację kluczy szyfrujących oraz jakie testy i praktyki utrzymania bezpieczeństwa stosujemy — zobacz sekcję 6 (punkty 6.1–6.3).',
+    a: 'Tak. Twoje dane są przechowywane na serwerach w Unii Europejskiej i są całkowicie odizolowane od danych innych firm korzystających z Scopeo. Dostęp do nich mają wyłącznie osoby, którym nadałeś uprawnienia w swoim koncie. W polityce prywatności opisujemy też: na czym opieramy się u dostawcy bazy danych, jak traktujemy rotację kluczy szyfrujących, jakie testy stosujemy oraz jak minimalizujemy dane — zobacz sekcję 6 (punkty 6.1–6.4).',
+  },
+  {
+    q: 'Czy usuwacie zbędne dane, by zminimalizować skutki ewentualnego wycieku?',
+    a: (
+      <>
+        Stosujemy zasadę minimalizacji: przechowujemy tylko to, co jest potrzebne do usługi i obowiązków
+        prawnych. Dane usuwane lub anonimizowane są, gdy cel przestaje obowiązywać albo w ramach realizacji
+        praw (np. usunięcia) przez workflow RODO w panelu. Technicznie ograniczamy też nadmiar: m.in. wygaszenie
+        tokenów, unieważnianie kluczy API, czyszczenie danych operacyjnych tam, gdy produkt to umożliwia.{' '}
+        <strong>Im mniej zbędnych danych, tym mniejsza skala skutków wycieku</strong>, ale minimalizacja nie
+        zastępuje szyfrowania i kontroli dostępu i nie daje 100% gwarancji przed incydentem. Szczegóły:{' '}
+        <Link href="/polityka-prywatnosci#minimalizacja-danych" className="mkt-link">
+          polityka prywatności, sekcja 6.4
+        </Link>
+        .
+      </>
+    ),
   },
   {
     q: 'Czy mogę obsługiwać kilka firm lub spółek w jednym koncie?',
@@ -141,7 +158,11 @@ const items: { q: string; a: ReactNode }[] = [
         <Link href="/polityka-prywatnosci" className="mkt-link">
           Polityka prywatności
         </Link>
-        , w tym w sekcji 6: polityki dostawcy bazy, rotację kluczy, testy i utrzymanie bezpieczeństwa (
+        , w tym w sekcji 6: polityki dostawcy bazy, rotację kluczy, testy,{' '}
+        <Link href="/polityka-prywatnosci#minimalizacja-danych" className="mkt-link">
+          minimalizację danych
+        </Link>{' '}
+        (
         <Link href="/polityka-prywatnosci#testy-bezpieczenstwa" className="mkt-link">
           m.in. testy
         </Link>

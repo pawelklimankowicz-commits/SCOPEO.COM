@@ -20,7 +20,7 @@ export default function PolitykaPage() {
             dokumentach prawnych.
           </p>
           <p style={{ marginTop: 12, fontSize: '0.8125rem', color: '#64748b' }}>
-            Ostatnia aktualizacja: {new Date().getFullYear()}-04-24
+            Ostatnia aktualizacja: {new Date().getFullYear()}-04-25
           </p>
         </div>
       </div>
@@ -129,6 +129,32 @@ export default function PolitykaPage() {
             w warstwie uruchomieniowej. <strong>Testy penetracyjne lub zewnetrzny audyt bezpieczenstwa</strong> nie
             sa gwarantowane w ramach kazdej oferty abonamentowej; moga byc ujete w indywidualnych ustaleniach
             (np. Enterprise) albo wykonane na zlecenie — prosimy o kontakt po stronie prawnej.
+          </p>
+
+          <h3 id="minimalizacja-danych">6.4. Minimalizacja danych a skutki ewentualnego wycieku</h3>
+          <p>
+            Stosujemy <strong>zasade minimalizacji</strong>: zbieramy i przechowujemy wylacznie dane{' '}
+            <strong>niezbedne</strong> do swiadczenia uslugi, rozliczen, obowiazkow prawnych lub innych
+            celow wskazanych w polityce i — dla klientow biznesowych — w umowie, w zakresie adekwatnym do
+            funkcji, z ktorej korzystasz.
+          </p>
+          <p>
+            Gdy <strong>cel przetwarzania ustaje</strong> albo uplywa okres retencji ustalany wewnetrznie, dane
+            sa <strong>usuwane albo anonimizowane</strong>, o ile bezwzglednie obowiazujace przepisy nie wymagaja
+            dalszego przechowywania. Zadania osob, ktorych dane dotycza, w tym <strong>prawo do usuniecia</strong>,
+            realizujemy m.in. przez workflow w panelu (m.in.{' '}
+            <Link href="/settings/gdpr" className="mkt-link">
+              /settings/gdpr
+            </Link>
+            ), wraz z potwierdzeniem wykonania zadania, o ile wynikaja z RODO i umowy.
+          </p>
+          <p>
+            W warstwie technicznej ograniczamy nadmiar, m.in. przez <strong>wygaszanie</strong> tokenow
+            jednorazowych, <strong>uniewaznianie</strong> kluczy API na zadanie oraz usuwanie zbednych danych
+            operacyjnych tam, gdzie logika produktu na to pozwala. Taka minimalizacja{' '}
+            <strong>zmniejsza ilosc danych narazonych na incydent</strong> i przez to ogranicza skutki
+            ewentualnego wycieku, ale <strong>nie zastepuje</strong> srodkow takich jak kontrola dostepu czy
+            szyfrowanie i <strong>nie gwarantuje</strong> calkowitej eliminacji ryzyka.
           </p>
 
           <p style={{ marginTop: 32 }}>
