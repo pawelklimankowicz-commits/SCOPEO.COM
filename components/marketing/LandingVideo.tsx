@@ -1,9 +1,8 @@
 import Link from 'next/link';
 
 /**
- * Sekcja „film” na landing page.
- * Domyślnie: 15-sekundowa pętla animacji (CSS) — KSeF, ślad węglowy, klimat, SaaS UE, marka Scopeo.
- * Opcjonalnie: ustaw NEXT_PUBLIC_LANDING_VIDEO_URL na URL MP4 (np. Vercel Blob), aby pokazać klasyczne wideo.
+ * Domyślnie: 30-sekundowa pętla animacji (CSS) — film marketingowy w sekundzie, bez pliku MP4.
+ * Dla klasycznego wideo: NEXT_PUBLIC_LANDING_VIDEO_URL = URL MP4 (np. Vercel Blob).
  */
 export default function LandingVideo() {
   const mp4Url = process.env.NEXT_PUBLIC_LANDING_VIDEO_URL?.trim();
@@ -33,7 +32,7 @@ export default function LandingVideo() {
   return (
     <section className="mkt-section mkt-section--surface" aria-labelledby="landing-video-heading">
       <div className="mkt-inner">
-        <p className="mkt-kicker">Spot</p>
+        <p className="mkt-kicker">Spot — 30 sekund</p>
         <h2 id="landing-video-heading" className="mkt-section-title">
           Scopeo w telegraficznym skrócie
         </h2>
@@ -44,7 +43,7 @@ export default function LandingVideo() {
             chaosu Excela. Hosting w UE.
           </p>
           <div className="mkt-spot-static-cta">
-            <Link href="/register" className="mkt-btn mkt-btn--primary mkt-btn--sm">
+            <Link href="/kontakt#demo" className="mkt-btn mkt-btn--primary mkt-btn--sm">
               Zacznij trial
             </Link>
             <Link href="/jak-dziala" className="mkt-btn mkt-btn--secondary mkt-btn--sm">
@@ -54,76 +53,111 @@ export default function LandingVideo() {
         </div>
 
         <div
-          className="mkt-spot-motion"
+          className="mkt-cine mkt-spot-motion"
           role="img"
-          aria-label="Animacja: KSeF i automatyczny import, ślad węglowy Scope 1 do 3, mniejszy ślad środowiskowy dzięki lepszym danym, oprogramowanie SaaS w Unii Europejskiej, marka Scopeo i zaproszenie do trialu. Powtarza się co piętnaście sekund."
+          aria-label="Trzydziestosekundowa animacja: obietnica danych, problem rozproszenia, KSeF, macierz emisji Scope 1-3, ślad audytowy w UE, marka Scopeo. Powtarza się w pętli co trzydzieści sekund."
         >
-          <div className="mkt-spot-frame">
-            <div className="mkt-spot-progress" aria-hidden />
-            <div className="mkt-spot-inner">
-              <div className="mkt-spot-scene mkt-spot-scene--0">
-                <svg className="mkt-spot-icon" viewBox="0 0 48 48" fill="none" aria-hidden>
-                  <rect x="7" y="5" width="34" height="38" rx="4" stroke="currentColor" strokeWidth="2" />
-                  <path d="M13 15h22M13 21h16M13 27h22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-                <p className="mkt-spot-k">KSeF</p>
-                <p className="mkt-spot-t">Faktury w jednym strumieniu danych</p>
-                <p className="mkt-spot-s">Automatyczny import — bez przepisywania do Excela</p>
+          <div className="mkt-cine-frame">
+            <div className="mkt-cine-shutter" aria-hidden />
+            <div className="mkt-cine-mesh" aria-hidden />
+            <div className="mkt-cine-vignette" aria-hidden />
+            <div className="mkt-cine-progress" aria-hidden />
+
+            <div className="mkt-cine-inner">
+              <div className="mkt-cine-scene mkt-cine-scene--0">
+                <p className="mkt-cine-eyebrow">Ślad węglowy z faktur</p>
+                <p className="mkt-cine-hero">Dane, które możesz obronić</p>
+                <p className="mkt-cine-sub">Jeden produkt. Pełna macierz. Gotowość do rozmów z rynkiem i audytu.</p>
               </div>
-              <div className="mkt-spot-scene mkt-spot-scene--1">
-                <div className="mkt-spot-bars" aria-hidden>
-                  <span className="mkt-spot-bar" />
-                  <span className="mkt-spot-bar" />
-                  <span className="mkt-spot-bar" />
+
+              <div className="mkt-cine-scene mkt-cine-scene--1">
+                <div className="mkt-cine-chaos" aria-hidden>
+                  <span className="mkt-cine-sheet" />
+                  <span className="mkt-cine-sheet" />
+                  <span className="mkt-cine-sheet" />
                 </div>
-                <p className="mkt-spot-k">Ślad węglowy</p>
-                <p className="mkt-spot-t">Scope 1 · 2 · 3 z transakcji</p>
-                <p className="mkt-spot-s">Mapowanie i współczynniki — pod kontrolą zespołu</p>
+                <p className="mkt-cine-eyebrow mkt-cine-eyebrow--warn">Czy Twój Excel jest dziś strategią jutra?</p>
+                <p className="mkt-cine-t">Rozjechane wersje, ręczne błędy, brak jednej osi do audytu</p>
+                <p className="mkt-cine-s">Faktury w piętnastu miejscach nie zbudują zaufania inwestora</p>
               </div>
-              <div className="mkt-spot-scene mkt-spot-scene--2">
-                <svg className="mkt-spot-icon" viewBox="0 0 48 48" fill="none" aria-hidden>
-                  <path
-                    d="M24 42c8-6 14-14 14-22a14 14 0 1 0-28 0c0 8 6 16 14 22z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M24 38c-4-5-8-11-8-18a8 8 0 0 1 16 0c0 7-4 13-8 18z"
-                    fill="currentColor"
-                    opacity="0.25"
-                  />
-                </svg>
-                <p className="mkt-spot-k">Ochrona środowiska</p>
-                <p className="mkt-spot-t">Mniej szacunków — więcej faktów</p>
-                <p className="mkt-spot-s">Lepsze dane pomagają realnie ograniczać emisje</p>
-              </div>
-              <div className="mkt-spot-scene mkt-spot-scene--3">
-                <svg className="mkt-spot-icon" viewBox="0 0 48 48" fill="none" aria-hidden>
-                  <path
-                    d="M12 32c0-8 6-14 14-18 8 4 14 10 14 18"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <rect x="10" y="14" width="28" height="18" rx="3" stroke="currentColor" strokeWidth="2" />
-                  <path d="M24 22v4M21 26h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-                <p className="mkt-spot-k">SaaS</p>
-                <p className="mkt-spot-t">W chmurze, infrastruktura w UE</p>
-                <p className="mkt-spot-s">Subskrypcja, role, bezpieczeństwo — jak w poważnym B2B</p>
-              </div>
-              <div className="mkt-spot-scene mkt-spot-scene--4">
-                <div className="mkt-spot-brand">
-                  <span className="mkt-spot-logo-mark" aria-hidden />
-                  <span className="mkt-spot-logo-text">Scopeo</span>
+
+              <div className="mkt-cine-scene mkt-cine-scene--2">
+                <div className="mkt-cine-pipe" aria-hidden>
+                  <div className="mkt-cine-pipe-glow" />
+                  <div className="mkt-cine-floating-docs">
+                    <span className="mkt-cine-pill">FV</span>
+                    <span className="mkt-cine-pill">KSeF</span>
+                    <span className="mkt-cine-pill mkt-cine-pill--sync">import</span>
+                  </div>
                 </div>
-                <p className="mkt-spot-t">Ślad węglowy firmy z KSeF</p>
-                <p className="mkt-spot-s">7 dni trialu</p>
+                <p className="mkt-cine-eyebrow">Połącz. Zapomnij o kopiowaniu.</p>
+                <p className="mkt-cine-t">Jeden strumień faktur z KSeF</p>
+                <p className="mkt-cine-s">Dane wpadają do modelu, nie do kolejnej zakładki</p>
+              </div>
+
+              <div className="mkt-cine-scene mkt-cine-scene--3">
+                <div className="mkt-cine-orbit" aria-hidden>
+                  <svg className="mkt-cine-orbit-svg" viewBox="0 0 200 200" fill="none" aria-hidden>
+                    <defs>
+                      <radialGradient id="mktCineOrbitCore" cx="35%" cy="35%" r="65%">
+                        <stop offset="0%" stopColor="#6ee7b7" />
+                        <stop offset="100%" stopColor="#047857" />
+                      </radialGradient>
+                    </defs>
+                    <circle cx="100" cy="100" r="78" className="mkt-cine-orbit-ring" />
+                    <circle cx="100" cy="100" r="50" className="mkt-cine-orbit-ring mkt-cine-orbit-ring--inner" />
+                    <circle cx="100" cy="100" r="24" fill="url(#mktCineOrbitCore)" className="mkt-cine-orbit-core" />
+                    <text x="100" y="32" className="mkt-cine-orbit-lbl" textAnchor="middle">
+                      S1
+                    </text>
+                    <text x="168" y="120" className="mkt-cine-orbit-lbl" textAnchor="middle">
+                      S2
+                    </text>
+                    <text x="38" y="150" className="mkt-cine-orbit-lbl" textAnchor="middle">
+                      S3
+                    </text>
+                  </svg>
+                </div>
+                <p className="mkt-cine-eyebrow">Scope 1 · 2 · 3 w jednej perspektywie</p>
+                <p className="mkt-cine-t">Z transakcji, nie z „tablicy marzeń”</p>
+                <p className="mkt-cine-s">Ślad, który składa się do raportu — PDF, eksporty, Twoje granice</p>
+              </div>
+
+              <div className="mkt-cine-scene mkt-cine-scene--4">
+                <div className="mkt-cine-trust" aria-hidden>
+                  <svg className="mkt-cine-trust-icon" viewBox="0 0 48 48" fill="none" aria-hidden>
+                    <path
+                      d="M12 20l7 5 16-10v18a4 4 0 0 1-2 3.5L24 40l-9-3.5A4 4 0 0 1 12 32V8l10 4 10-4v5"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <div className="mkt-cine-trust-badges">
+                    <span>evidence</span>
+                    <span>UE</span>
+                    <span>review</span>
+                  </div>
+                </div>
+                <p className="mkt-cine-eyebrow">Audit-ready, nie powerpoint-ready</p>
+                <p className="mkt-cine-t">Dowody przy każdej liczbie</p>
+                <p className="mkt-cine-s">Faktura → linia → czynnik. Hosting i logika w modelu, który respektujesz w due diligence</p>
+              </div>
+
+              <div className="mkt-cine-scene mkt-cine-scene--5">
+                <div className="mkt-cine-brand">
+                  <span className="mkt-cine-logo-glow" aria-hidden />
+                  <div className="mkt-cine-logo-row">
+                    <span className="mkt-cine-logo-mark" aria-hidden />
+                    <span className="mkt-cine-logo-text">Scopeo</span>
+                  </div>
+                </div>
+                <p className="mkt-cine-hero mkt-cine-hero--finale">Zobacz emisje na własnych fakturach</p>
+                <p className="mkt-cine-cta">7 dni bezpłatnie · onboarding w minuty</p>
               </div>
             </div>
           </div>
-          <p className="mkt-spot-hint">
+          <p className="mkt-spot-hint mkt-cine-hint">
             <Link href="/kontakt#demo" className="mkt-link">
               Zacznij bezpłatny trial
             </Link>
