@@ -19,7 +19,7 @@ function SparkleIcon() {
   );
 }
 
-type SourceLabel = 'llm' | 'catalog' | 'catalog_relaxed' | 'generic' | 'fallback' | string;
+type SourceLabel = 'llm' | 'llm_guard' | 'catalog' | 'catalog_relaxed' | 'generic' | 'fallback' | string;
 
 export default function FaqAssistantWidget() {
   const [query, setQuery] = useState('');
@@ -111,11 +111,13 @@ export default function FaqAssistantWidget() {
   const sourceHint =
     source === 'llm'
       ? 'Odpowiedź z modelu AI (OpenAI), zgodnie z polityką produktu Scopeo.'
-      : source === 'catalog' || source === 'catalog_relaxed'
-        ? 'Użyto dopasowania do oficjalnego FAQ — treść jak w katalogu lub uzupełniona przez AI.'
-        : source === 'generic' || source === 'fallback'
-          ? 'Odpowiedź pomocnicza — doprecyzuj pytanie lub skontaktuj się z nami.'
-          : '';
+      : source === 'llm_guard'
+        ? 'Treść zweryfikowana względem oficjalnego FAQ (model mógł nie zachować pełnej zgodności).'
+        : source === 'catalog' || source === 'catalog_relaxed'
+          ? 'Użyto dopasowania do oficjalnego FAQ — treść jak w katalogu lub uzupełniona przez AI.'
+          : source === 'generic' || source === 'fallback'
+            ? 'Odpowiedź pomocnicza — doprecyzuj pytanie lub skontaktuj się z nami.'
+            : '';
 
   return (
     <div className="mkt-faq-ai" aria-live="polite">

@@ -349,5 +349,11 @@ function buildCatalog(): FaqCatalogEntry[] {
   return out;
 }
 
-/** Dokładnie 100 pozycji: najpierw wprowadzenie produktu, potem OPS → Scope 3 → MORE (ucięte do limitu). */
-export const FAQ_ASSISTANT_CATALOG: FaqCatalogEntry[] = [FAQ_INTRO_PRODUCT, ...buildCatalog()].slice(0, 100);
+const BUILT = buildCatalog();
+
+/**
+ * Maks. 100 pozycji: wprowadzenie produktu + wpisy z generatora; bez gubienia 99. z 100. wygenerowanych
+ * (błąd dawnego `[intro, ...built].slice(0, 100)` przy długości `built` = 100).
+ */
+export const FAQ_ASSISTANT_CATALOG: FaqCatalogEntry[] =
+  BUILT.length >= 100 ? [FAQ_INTRO_PRODUCT, ...BUILT.slice(0, 99)] : [FAQ_INTRO_PRODUCT, ...BUILT];
