@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { BrandLogoLockup } from '@/components/BrandLogo';
 
@@ -16,6 +17,8 @@ const links = [
 
 export default function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const isHome = pathname === '/';
 
   return (
     <header className="mkt-header">
@@ -67,9 +70,11 @@ export default function SiteHeader() {
           <Link href="/register" className="mkt-btn mkt-btn--primary mkt-btn--sm">
             Trial
           </Link>
-          <Link href="/kontakt#demo" className="mkt-btn mkt-btn--secondary mkt-btn--sm">
-            Demo
-          </Link>
+          {!isHome ? (
+            <Link href="/kontakt#demo" className="mkt-btn mkt-btn--secondary mkt-btn--sm">
+              Demo
+            </Link>
+          ) : null}
         </div>
       </div>
     </header>
