@@ -38,6 +38,10 @@ Import „faktorów zewnętrznych” dokłada krajowy zestaw z pliku **`data/kob
 
 Model danych pozwala jednemu użytkownikowi mieć wiele członkostw (`Membership`). Sesja (JWT) i aplikacja operują na jednej „aktywnej” organizacji naraz, a jej wybór można zmienić z poziomu UI (`WorkspaceSwitcher`). Jeśli aktywna organizacja nie jest ustawiona, logowanie domyślnie wybiera pierwsze członkostwo w kolejności `id`.
 
+## Środowisko testowe (staging)
+
+Aby mieć **osobną** instancję (inna baza, inne URL-e, klucze testowe Stripe), użyj drugiego projektu Vercel i listy env z [docs/staging-environment.md](docs/staging-environment.md). Szablon zmiennych: [`.env.staging.example`](.env.staging.example) (lokalna kopia **`.env.staging`** jest w `.gitignore`).
+
 ## Produkcja
 
 Ustaw `DATABASE_URL` i `AUTH_SECRET` w środowisku (Vercel, Railway itd.). Port **5433** w przykładzie jest tylko dla lokalnego Dockera — na produkcji użyj connection stringa od dostawcy.

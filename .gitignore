@@ -4,6 +4,7 @@ scopeo.com/
 node_modules
 .next
 .env
+.env.staging
 .env*.local
 *.log
 .DS_Store
