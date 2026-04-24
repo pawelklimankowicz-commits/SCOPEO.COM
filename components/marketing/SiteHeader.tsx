@@ -22,7 +22,7 @@ export default function SiteHeader() {
       <div className="mkt-inner mkt-header-inner">
         <Link href="/" className="mkt-logo" onClick={() => setOpen(false)} aria-label="Scopeo — strona główna">
           <BrandLogoLockup
-            size={19}
+            size={13}
             withWordmark
             wordmarkColor="var(--mkt-headline)"
             taglineColor="#475569"

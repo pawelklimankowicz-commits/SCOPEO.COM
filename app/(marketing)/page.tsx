@@ -74,7 +74,7 @@ export default function MarketingHomePage() {
           <div>
             <div className="mkt-hero-brand">
               <BrandLogoLockup
-                size={17}
+                size={24}
                 withWordmark
                 wordmarkColor="var(--mkt-headline)"
                 taglineColor="#475569"
