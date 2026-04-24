@@ -22,14 +22,9 @@ export default function SiteFooter() {
               taglineColor="#64748b"
             />
           </div>
-          <p className="mkt-footer-note">
+          <p className="mkt-footer-note" style={{ marginBottom: 0 }}>
             Ślad węglowy z danych KSeF — import, Scope 1–3, workflow akceptacji i pełny audit trail
             w jednym miejscu.
-          </p>
-          <p style={{ marginTop: 10, marginBottom: 0 }}>
-            <Link href="/marka-preview" className="mkt-footer-note" style={{ fontSize: 13 }}>
-              Podgląd marki (design)
-            </Link>
           </p>
         </div>
         <div>
