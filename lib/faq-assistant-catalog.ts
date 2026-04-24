@@ -17,7 +17,7 @@ function e(id: string, question: string, answer: string, keywords: string[]): Fa
 export const FAQ_INTRO_PRODUCT: FaqCatalogEntry = e(
   'faq-intro-product',
   'Czym jest Scopeo?',
-  'Scopeo to platforma SaaS do śladu węglowego organizacji: łączy dane z KSeF i operacji, liczy emisje Scope 1–3 w ujęciu zgodnym z GHG Protocol, prowadzi evidence trail (powiązanie wyników z fakturą i czynnikiem) i generuje raporty m.in. w PDF oraz eksporty przydatne pod CSRD/ESRS. Nie zastępuje audytora zewnętrznego — wspiera zespół i doradcę w przygotowaniu danych.',
+  'Scopeo to platforma SaaS do automatycznego wyliczenia śladu węglowego: łączy dane z KSeF i operacji, liczy emisje Scope 1–3 w ujęciu zgodnym z GHG Protocol, prowadzi evidence trail (powiązanie wyników z fakturą i czynnikiem) i generuje raporty m.in. w PDF oraz eksporty przydatne pod CSRD/ESRS.',
   [
     'co to jest scopeo',
     'czym jest scopeo',
