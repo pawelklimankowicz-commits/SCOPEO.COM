@@ -19,6 +19,9 @@
     },
     "app/api/emissions/export/route.ts": {
       "maxDuration": 30
+    },
+    "app/api/faq-assistant/route.ts": {
+      "maxDuration": 60
     }
   }
 }

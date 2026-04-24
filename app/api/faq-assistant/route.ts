@@ -1,58 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+
+/** LLM + kilka modeli/ponowień — domyślny limit Vercel (10–15s) tnie odpowiedź w połowie. */
+export const maxDuration = 60;
 import { checkRateLimit, getClientIp } from '@/lib/security';
-import { buildFaqSystemPrompt, findFaqIntent, normalizeFaqText } from '@/lib/faq-assistant';
+import { findFaqIntent, normalizeFaqText } from '@/lib/faq-assistant';
+import { callFaqLlm, isAnswerConsistentWithCatalog } from '@/lib/faq-assistant-llm';
 import { FAQ_ASSISTANT_GENERIC, resolveFaqFromCatalog } from '@/lib/faq-assistant-resolve';
 import { createHash } from 'node:crypto';
 
 function hashIp(ip: string) {
   return createHash('sha256').update(ip).digest('hex');
-}
-
-async function generateLlmAnswer(question: string, catalogHint: string | null) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return null;
-
-  const userContent =
-    catalogHint && catalogHint.length > 0
-      ? `${question}\n\n[Oficjalna odpowiedź z FAQ produktu — zachowaj zgodność faktów; możesz skrócić lub przeformułować po polsku, max 4 zdania:]\n${catalogHint}`
-      : question;
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 14_000);
-  let response: Response;
-  try {
-    response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: process.env.FAQ_ASSISTANT_MODEL || 'gpt-4o-mini',
-        temperature: 0.25,
-        max_tokens: 400,
-        messages: [
-          {
-            role: 'system',
-            content: `${buildFaqSystemPrompt()}\n\nPriorytet: odpowiadaj jak asystent AI produktu. Gdy dostaniesz blok [Oficjalna odpowiedź z FAQ], musi on być zgodny z faktami — nie przeczyń treści FAQ.`,
-          },
-          { role: 'user', content: userContent },
-        ],
-      }),
-      signal: controller.signal,
-    });
-  } finally {
-    clearTimeout(timeout);
-  }
-
-  if (!response.ok) return null;
-  const payload = (await response.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-  const content = payload.choices?.[0]?.message?.content?.trim();
-  return content || null;
 }
 
 export async function POST(req: NextRequest) {
@@ -88,13 +47,36 @@ export async function POST(req: NextRequest) {
     const matchedIntent = findFaqIntent(question)?.id ?? catalogResolved?.matchedIntent ?? null;
 
     let answer: string;
-    let source: 'llm' | 'catalog' | 'catalog_relaxed' | 'generic' | 'fallback' = 'generic';
+    let source: 'llm' | 'catalog' | 'catalog_relaxed' | 'generic' | 'fallback' | 'llm_guard' = 'generic';
 
     try {
-      const llmAnswer = await generateLlmAnswer(question, catalogHint);
-      if (llmAnswer) {
-        answer = llmAnswer;
-        source = 'llm';
+      const apiKey = process.env.OPENAI_API_KEY?.trim();
+      if (apiKey) {
+        const llm = await callFaqLlm({ question, catalogHint }, apiKey);
+        if (llm.kind === 'decline') {
+          if (catalogResolved) {
+            answer = catalogResolved.answer;
+            source = catalogResolved.tier === 'relaxed' ? 'catalog_relaxed' : 'catalog';
+          } else {
+            answer = FAQ_ASSISTANT_GENERIC;
+            source = 'generic';
+          }
+        } else if (llm.kind === 'answer') {
+          const needGuard = Boolean(catalogHint && catalogHint.length > 0);
+          if (needGuard && !isAnswerConsistentWithCatalog(llm.text, catalogHint!) && catalogResolved) {
+            answer = catalogResolved.answer;
+            source = 'llm_guard';
+          } else {
+            answer = llm.text;
+            source = 'llm';
+          }
+        } else if (catalogResolved) {
+          answer = catalogResolved.answer;
+          source = catalogResolved.tier === 'relaxed' ? 'catalog_relaxed' : 'catalog';
+        } else {
+          answer = FAQ_ASSISTANT_GENERIC;
+          source = 'generic';
+        }
       } else if (catalogResolved) {
         answer = catalogResolved.answer;
         source = catalogResolved.tier === 'relaxed' ? 'catalog_relaxed' : 'catalog';

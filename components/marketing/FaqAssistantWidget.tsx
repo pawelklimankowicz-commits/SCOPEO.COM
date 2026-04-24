@@ -47,7 +47,8 @@ export default function FaqAssistantWidget() {
     setSource('');
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 25_000);
+      /** Musi być > serwerowy LLM (max ~14s na próbę × modele) + maxDuration API 60s. */
+      const timeout = setTimeout(() => controller.abort(), 55_000);
       let response: Response;
       try {
         response = await fetch('/api/faq-assistant', {
@@ -75,8 +76,10 @@ export default function FaqAssistantWidget() {
       } catch {
         payload = {};
       }
-      if (response.ok && payload?.ok && payload.answer) {
-        setAnswer(payload.answer);
+      const text =
+        typeof payload.answer === 'string' && payload.answer.trim() ? payload.answer.trim() : '';
+      if (response.ok && payload?.ok && text) {
+        setAnswer(text);
         setSource((payload.source as SourceLabel) || 'fallback');
       } else {
         const rateLimited = response.status === 429 || payload?.error === 'Too many requests';

@@ -133,7 +133,10 @@ export type FaqLlmResult =
 
 /**
  * OpenAI: kilka modeli (fallback przy błędzie HTTP/timeout) + JSON lub tekst.
+ * Budżet murowy — żeby zwrócić JSON (katalog/LLM) przed `maxDuration` w route, a nie 504.
  */
+const FAQ_LLM_WALL_BUDGET_MS = 45_000;
+
 export async function callFaqLlm(
   input: { question: string; catalogHint: string | null },
   apiKey: string
@@ -146,7 +149,12 @@ export async function callFaqLlm(
     ? `${systemBase}\n\n${JSON_INSTRUCTION}\nJęzyk: polski. Format odpowiedzi: JSON.`
     : `${systemBase}\n\nPriorytet: odpowiadaj jak asystent AI produktu. Gdy dostaniesz blok [Oficjalna odpowiedź z FAQ], musi on być zgodny z faktami — nie przeczyń treści FAQ.`;
 
+  const wallEnd = Date.now() + FAQ_LLM_WALL_BUDGET_MS;
+
   for (const model of getFaqModelChain()) {
+    if (Date.now() > wallEnd) {
+      return { kind: 'unavailable' };
+    }
     const preferMct = modelPrefersMaxCompletionTokens(model);
     const allowTemp = !modelOmitTemperature(model);
     const rawAttempts: Array<{
@@ -168,9 +176,14 @@ export async function callFaqLlm(
     });
 
     for (const a of attempts) {
+      if (Date.now() > wallEnd) {
+        return { kind: 'unavailable' };
+      }
+      const remaining = Math.max(1_000, wallEnd - Date.now());
+      const perAttemptTimeout = Math.min(timeoutMs, remaining);
 
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), timeoutMs);
+      const timeout = setTimeout(() => controller.abort(), perAttemptTimeout);
       let response: Response;
       const requestBody: Record<string, unknown> = {
         model,
