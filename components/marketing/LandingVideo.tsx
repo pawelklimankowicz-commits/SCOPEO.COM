@@ -124,8 +124,8 @@ export default function LandingVideo() {
             </div>
           </div>
           <p className="mkt-spot-hint">
-            <Link href="/register" className="mkt-link">
-              Zacznij bezpłatny trial →
+            <Link href="/kontakt#demo" className="mkt-link">
+              Zacznij bezpłatny trial
             </Link>
           </p>
         </div>
