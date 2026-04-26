@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import AuditLogTable from '@/components/audit-log-table';
 import { canAccessAudit } from '@/lib/audit-log';
-import { auth } from '@/lib/auth';
+import { getTenantRlsContext, runWithTenantRls } from '@/lib/tenant';
 import { prisma } from '@/lib/prisma';
 
 export default async function DashboardAuditPage({
@@ -9,11 +9,12 @@ export default async function DashboardAuditPage({
 }: {
   searchParams?: Promise<{ from?: string; to?: string; eventType?: string; search?: string; cursor?: string }>;
 }) {
-  const session = await auth();
-  if (!session?.user) redirect('/login');
-  const role = (session.user as any).role as string | undefined;
+  const t = await getTenantRlsContext();
+  return runWithTenantRls({ userId: t.userId, organizationId: t.organizationId }, async () => {
+  const { session } = t;
+  const role = (session.user as { role?: string })?.role as string | undefined;
   if (!canAccessAudit(role)) redirect('/dashboard');
-  const organizationId = (session.user as any).organizationId as string;
+  const organizationId = t.organizationId;
   const params = searchParams ? await searchParams : {};
   const where: any = { organizationId };
   if (params?.from || params?.to) {
@@ -85,4 +86,5 @@ export default async function DashboardAuditPage({
       />
     </div>
   );
+  });
 }

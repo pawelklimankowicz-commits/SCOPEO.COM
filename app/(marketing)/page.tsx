@@ -68,13 +68,14 @@ const WHY = [
 export default function MarketingHomePage() {
   return (
     <>
-      {/* HERO — jeden główny przekaz, krótko */}
       <section className="mkt-hero mkt-lp-hero">
         <div className="mkt-inner mkt-hero-grid">
           <div>
             <div className="mkt-hero-brand">
               <BrandLogoLockup
-                size={24}
+                size={19}
+                markSizeBasis="title"
+                markScale={0.7}
                 withWordmark
                 wordmarkColor="var(--mkt-headline)"
                 taglineColor="#475569"
@@ -130,14 +131,7 @@ export default function MarketingHomePage() {
             </p>
           </div>
           <div className="mkt-hero-visual mkt-lp-hero-visual">
-            <Image
-              src="/marketing/hero-scopeo-mint.png"
-              alt="Panel Scopeo: emisje, import KSeF, kolejka akceptacji"
-              width={1200}
-              height={720}
-              priority
-              sizes="(max-width: 960px) 100vw, 50vw"
-            />
+            <DashboardEmissionsMock />
           </div>
         </div>
       </section>
@@ -364,7 +358,7 @@ export default function MarketingHomePage() {
         <div className="mkt-inner">
           <h2 className="mkt-lp-section-title">Cennik — płatność za KSeF i użytkowników, nie za faktury</h2>
           <p className="mkt-lp-section-lead">
-            Trial 7 dni, bez karty. Rabat 10% przy płatności za 12 miesięcy z góry. Pełna tabela:{' '}
+            Trial 7 dni. Rabat 10% przy płatności za 12 miesięcy z góry. Pełna tabela:{' '}
             <Link href="/cennik" className="mkt-link">
               cennik
             </Link>
@@ -443,10 +437,10 @@ export default function MarketingHomePage() {
       <section className="mkt-section" id="demo">
         <div className="mkt-inner">
           <div className="mkt-cta-band mkt-lp-cta-final">
-            <h2>7 dni trialu — za darmo, bez karty</h2>
+            <h2>7 dni trialu — za darmo</h2>
             <p>
               Zarejestruj konto, podłącz KSeF i zobacz pierwsze agregacje emisji na własnych
-              fakturach. Bez karty, bez długiej umowy.
+              fakturach. Bez długiej umowy.
             </p>
             <div className="mkt-lp-cta-row" style={{ justifyContent: 'center' }}>
               <Link href="/register" className="mkt-btn mkt-btn--primary">

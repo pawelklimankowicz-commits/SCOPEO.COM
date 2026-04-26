@@ -1,6 +1,6 @@
 /** Stylized product UI frames — CSS-only, no external images */
 
-export function MockChrome({ title }: { title: string }) {
+function MockChrome({ title }: { title: string }) {
   return (
     <div className="mkt-mock-chrome">
       <span className="mkt-mock-dot" style={{ background: '#f87171' }} />

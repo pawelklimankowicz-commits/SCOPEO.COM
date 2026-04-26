@@ -52,7 +52,7 @@ Aplikacja ma solidne jądro funkcjonalne: parsowanie XML KSeF, NLP mapping, work
 ## 2. 🔴 KRYTYCZNY BRAK FUNKCJONALNY — INTEGRACJA Z KSEF
 
 ### 2.1 Token KSeF zbierany, ale w ogóle nieużywany
-**Pliki:** `components/OnboardingV6Form.tsx`, `lib/ksef-xml.ts`  
+**Pliki:** `components/onboarding/wizard-step.tsx` (pole tokenu), `app/api/onboarding/route.ts` (zapis), `lib/ksef-xml.ts`  
 **Problem:** Główna obietnica produktu ("import z KSeF") jest w rzeczywistości **ręcznym wklejaniem XML w textarea**. Token KSeF jest zbierany podczas onboardingu i przechowywany, ale nigdzie w kodzie nie ma żadnego wywołania API KSeF. Użytkownik musi ręcznie pobrać XML z systemu KSeF i wkleić go do pola tekstowego w dashboardzie. To nie jest "automatyczny import z KSeF" opisany w marketingu.  
 **Wymagane:** Implementacja klienta REST API KSeF (środowisko test: `https://ksef-test.mf.gov.pl/api`, produkcja: `https://ksef.mf.gov.pl/api`). Kluczowe endpointy: sesja interaktywna, pobieranie listy faktur, pobieranie pojedynczego XML.
 

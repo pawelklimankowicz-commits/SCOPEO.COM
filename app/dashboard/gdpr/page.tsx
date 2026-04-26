@@ -1,8 +1,10 @@
 import GdprRequestsPanel from '@/components/GdprRequestsPanel';
-import { requireTenantMembership } from '@/lib/tenant';
+import { getTenantRlsContext, runWithTenantRls } from '@/lib/tenant';
 
 export default async function DashboardGdprPage() {
-  const { session } = await requireTenantMembership();
+  const t = await getTenantRlsContext();
+  return runWithTenantRls({ userId: t.userId, organizationId: t.organizationId }, async () => {
+  const { session } = t;
   const role = (session.user as { role?: string | null }).role;
   const canManage = role === 'OWNER' || role === 'ADMIN';
 
@@ -15,4 +17,5 @@ export default async function DashboardGdprPage() {
       <GdprRequestsPanel canManage={canManage} />
     </div>
   );
+  });
 }

@@ -196,7 +196,7 @@ export default function ProduktPage() {
       <section className="mkt-section mkt-section--surface">
         <div className="mkt-inner mkt-cta-band">
           <h2>Wypróbuj wszystkie funkcje przez 7 dni bezpłatnie</h2>
-          <p>Bez karty kredytowej. Połącz KSeF i miej pierwsze dane emisyjne jeszcze dziś.</p>
+          <p>Połącz KSeF i miej pierwsze dane emisyjne jeszcze dziś.</p>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
             <Link href="/register" className="mkt-btn mkt-btn--primary">
               Zacznij bezpłatny trial

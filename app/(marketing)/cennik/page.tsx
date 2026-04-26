@@ -19,7 +19,7 @@ export default function CennikPage() {
           <p>
             Płacisz za liczbę połączeń KSeF i użytkowników w organizacji, a nie za wolumen faktur.
             Przy jednorazowej opłacie za 12 miesięcy otrzymujesz rabat 10%. Każdy plan obejmuje
-            7-dniowy bezpłatny trial (bez karty kredytowej).
+            7-dniowy bezpłatny trial.
           </p>
         </div>
       </div>
@@ -50,7 +50,7 @@ export default function CennikPage() {
               },
               {
                 q: 'Jak działa trial?',
-                a: 'Po rejestracji masz 7 dni bezpłatnego dostępu do funkcji wybranego planu. Nie potrzebujesz karty kredytowej, aby rozpocząć.',
+                a: 'Po rejestracji masz 7 dni bezpłatnego dostępu do funkcji wybranego planu.',
               },
               {
                 q: 'Czy cena obejmuje wdrożenie?',

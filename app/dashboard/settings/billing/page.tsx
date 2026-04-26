@@ -1,9 +1,11 @@
 import BillingPlansClient from '@/components/BillingPlansClient';
 import { checkKsefLimit, checkUserLimit, getOrCreateStripeCustomer, getSubscription } from '@/lib/billing';
-import { requireTenantMembership } from '@/lib/tenant';
+import { getTenantRlsContext, runWithTenantRls } from '@/lib/tenant';
 
 export default async function BillingSettingsPage() {
-  const { organizationId } = await requireTenantMembership();
+  const t = await getTenantRlsContext();
+  return runWithTenantRls({ userId: t.userId, organizationId: t.organizationId }, async () => {
+  const { organizationId } = t;
   await getOrCreateStripeCustomer(organizationId);
   const [subscription, userUsage, ksefUsage] = await Promise.all([
     getSubscription(organizationId),
@@ -31,4 +33,5 @@ export default async function BillingSettingsPage() {
       />
     </div>
   );
+  });
 }

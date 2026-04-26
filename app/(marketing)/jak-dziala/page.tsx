@@ -119,10 +119,7 @@ export default function JakDzialaPage() {
       <section className="mkt-section">
         <div className="mkt-inner mkt-cta-band">
           <h2>Przekonaj się sam — 7 dni bezpłatnie</h2>
-          <p>
-            Zarejestruj się, połącz KSeF i przejdź przez cały proces na swoich danych.
-            Bez karty kredytowej.
-          </p>
+          <p>Zarejestruj się, połącz KSeF i przejdź przez cały proces na swoich danych.</p>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
             <Link href="/register" className="mkt-btn mkt-btn--primary">
               Zacznij bezpłatny trial

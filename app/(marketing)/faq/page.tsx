@@ -118,7 +118,7 @@ const items: { q: string; a: ReactNode }[] = [
   // BILLING I TRIAL
   {
     q: 'Jak wygląda trial?',
-    a: 'Po rejestracji masz 7 dni na przetestowanie produktu na swoich danych — bez karty kredytowej. Po zakończeniu okresu próbnego wybierasz plan albo rezygnujesz bez opłat.',
+    a: 'Po rejestracji masz 7 dni na przetestowanie produktu na swoich danych. Po zakończeniu okresu próbnego wybierasz plan albo rezygnujesz bez opłat.',
   },
   {
     q: 'Od czego zależy cena?',

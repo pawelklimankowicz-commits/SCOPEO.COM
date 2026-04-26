@@ -155,7 +155,7 @@ export default function SladWeglowyPage() {
                 Umów demo
               </Link>
             </div>
-            <p className="mkt-cf-hero-note">Bez karty kredytowej · hosting w UE · dane szyfrowane w spoczynku</p>
+            <p className="mkt-cf-hero-note">Hosting w UE · dane szyfrowane w spoczynku</p>
           </div>
           <div className="mkt-cf-hero-card" aria-hidden>
             <div className="mkt-cf-hero-card-inner">

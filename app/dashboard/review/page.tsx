@@ -1,13 +1,15 @@
 import ReviewPanel from '@/components/ReviewPanel';
 import { prisma } from '@/lib/prisma';
-import { requireTenantMembership } from '@/lib/tenant';
+import { getTenantRlsContext, runWithTenantRls } from '@/lib/tenant';
 
 export default async function DashboardReviewPage({
   searchParams,
 }: {
   searchParams?: Promise<{ year?: string }>;
 }) {
-  const { organizationId } = await requireTenantMembership();
+  const t = await getTenantRlsContext();
+  return runWithTenantRls({ userId: t.userId, organizationId: t.organizationId }, async () => {
+  const { organizationId } = t;
   const params = searchParams ? await searchParams : undefined;
   const yearParam = Number(params?.year ?? '');
   const selectedYear = Number.isFinite(yearParam) && yearParam >= 2000 && yearParam <= 2100 ? yearParam : undefined;
@@ -66,4 +68,5 @@ export default async function DashboardReviewPage({
       <ReviewPanel lines={lines} factors={factors} history={history} />
     </div>
   );
+  });
 }

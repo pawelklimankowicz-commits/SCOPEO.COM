@@ -2,6 +2,7 @@ import ExcelJS from 'exceljs';
 import { Prisma } from '@prisma/client';
 import type { EmissionFactor, EmissionSource } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
+import { prismaTxWithRlsBypass } from '@/lib/prisma-rls-tx';
 import { buildKobizeParsedFactors } from '@/lib/kobize-pl-factors';
 import { writeProcessingRecord } from '@/lib/privacy-register';
 import { createNotification } from '@/lib/notifications';
@@ -254,7 +255,8 @@ async function persistFactors(organizationId: string, emissionSourceId: string, 
       )`;
     });
 
-    await prisma.$executeRaw(Prisma.sql`
+    await prismaTxWithRlsBypass((tx) =>
+      tx.$executeRaw(Prisma.sql`
       INSERT INTO "EmissionFactor" (
         "organizationId",
         "emissionSourceId",
@@ -285,7 +287,8 @@ async function persistFactors(organizationId: string, emissionSourceId: string, 
         "activityKind" = EXCLUDED."activityKind",
         "tags" = EXCLUDED."tags",
         "metadataJson" = EXCLUDED."metadataJson"
-    `);
+    `)
+    );
   }
   return factors.length;
 }

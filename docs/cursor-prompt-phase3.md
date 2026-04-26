@@ -23,7 +23,7 @@ Zaimplementuj integrację Stripe Billing w projekcie Scopeo SaaS.
 
 Plan **Growth** jest oznaczony jako "Polecany". Enterprise ma SSO/SAML, dedykowane SLA i środowisko.
 Rozliczenie roczne daje rabat −20% na wszystkich planach poza Enterprise.
-Każdy nowy klient dostaje **7-dniowy bezpłatny trial** (pełny dostęp do planu Growth) bez karty kredytowej.
+Każdy nowy klient dostaje **7-dniowy bezpłatny trial** (pełny dostęp do planu Growth).
 Organizacja ma jedno konto Stripe Customer przypisane do swojego rekordu.
 
 **Czym różnią się plany (funkcje):**
@@ -107,7 +107,7 @@ STRIPE_PRICE_ID_MIKRO_ANNUAL="price_..."       # 119 zł/mc × 12 = 1428 zł/rok
 STRIPE_PRICE_ID_STARTER_ANNUAL="price_..."     # 223 zł/mc × 12 = 2676 zł/rok
 STRIPE_PRICE_ID_GROWTH_ANNUAL="price_..."      # 399 zł/mc × 12 = 4788 zł/rok
 STRIPE_PRICE_ID_SCALE_ANNUAL="price_..."       # 679 zł/mc × 12 = 8148 zł/rok
-# Trial: 7 dni bezpłatnie, bez karty kredytowej (obsługiwane przez Stripe trial_period_days)
+# Trial: 7 dni bezpłatnie (obsługiwane przez Stripe trial_period_days)
 STRIPE_TRIAL_DAYS="7"
 ```
 
@@ -152,7 +152,7 @@ export const TRIAL_DAYS = Number(process.env.STRIPE_TRIAL_DAYS ?? '7');
 - Tworzy Stripe Checkout Session:
   - `mode: 'subscription'`
   - `trial_period_days: TRIAL_DAYS` (tylko jeśli klient jeszcze nie miał trialu — sprawdź po `stripeCustomerId` czy istnieje poprzednia subskrypcja)
-  - `payment_method_collection: 'if_required'` — Stripe nie wymaga karty podczas trialu
+  - `payment_method_collection: 'if_required'` — Stripe nie wymaga metody płatności na początku trialu, jeśli nie jest potrzebna
   - `success_url`, `cancel_url`
   - `metadata: { plan, interval, organizationId }`
 - Jeśli klient już ma aktywną płatną subskrypcję → użyj Billing Portal (upgrade/downgrade)

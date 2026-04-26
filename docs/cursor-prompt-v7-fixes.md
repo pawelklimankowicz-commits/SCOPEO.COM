@@ -488,7 +488,7 @@ const checkout = await stripe.checkout.sessions.create({
     ...(canUseTrial ? { trial_period_days: TRIAL_DAYS } : {}),
   },
   payment_method_collection: canUseTrial ? 'if_required' : 'always',
-  // Gdy nie ma trialu → wymagaj karty od razu
+  // Gdy nie ma trialu → wymagaj metody płatności od razu
 });
 ```
 

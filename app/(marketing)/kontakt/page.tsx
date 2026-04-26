@@ -6,7 +6,7 @@ import { LEGAL_EMAIL } from '@/lib/legal';
 export const metadata: Metadata = {
   title: 'Kontakt — Scopeo',
   description:
-    'Kontakt z zespołem Scopeo: demo, pytania o produkt, Enterprise. Trial 7 dni bez karty. Adresy e-mail: ogólny, wsparcie, RODO.',
+    'Kontakt z zespołem Scopeo: demo, pytania o produkt, Enterprise. Trial 7 dni. Adresy e-mail: ogólny, wsparcie, RODO.',
 };
 
 export default function KontaktPage() {
@@ -21,7 +21,7 @@ export default function KontaktPage() {
             Zostaw dane w formularzu — odezwiemy się w ciągu 1 dnia roboczego. Możesz też od razu
             uruchomić{' '}
             <Link href="/register" className="mkt-link">
-              7-dniowy trial bez karty
+              7-dniowy trial
             </Link>
             .
           </p>
@@ -48,7 +48,7 @@ export default function KontaktPage() {
                   Wolisz samodzielnie sprawdzić produkt?
                 </p>
                 <p style={{ margin: '0 0 12px', fontSize: '0.875rem', color: '#64748b', lineHeight: 1.6 }}>
-                  Trial trwa 7 dni, bez karty kredytowej. Rejestracja i pierwsze połączenie KSeF to
+                  Trial trwa 7 dni. Rejestracja i pierwsze połączenie KSeF to
                   zwykle około 15 minut.
                 </p>
                 <Link href="/register" className="mkt-btn mkt-btn--primary mkt-btn--sm">

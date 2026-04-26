@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import { createHash } from 'node:crypto';
 import { checkRateLimit, getClientIp } from '@/lib/security';
 import { assertProductionAuthEnv } from '@/lib/production-env';
+import { runWithRlsBypass } from '@/lib/tenant-rls-context';
 
 function resolveAuthSecret(): string {
   assertProductionAuthEnv();
@@ -77,27 +78,29 @@ export const authOptions: NextAuthOptions = {
       if (!emailLimit.ok) {
         return null;
       }
-      const user = await prisma.user.findUnique({
-        where: { email },
-        include: {
-          memberships: {
-            orderBy: { id: 'asc' },
-            include: { organization: true },
+      return runWithRlsBypass(async () => {
+        const user = await prisma.user.findUnique({
+          where: { email },
+          include: {
+            memberships: {
+              orderBy: { id: 'asc' },
+              include: { organization: true },
+            },
           },
-        },
+        });
+        if (!user?.passwordHash) return null;
+        const ok = await bcrypt.compare(password, user.passwordHash);
+        if (!ok) return null;
+        const m = user.memberships[0];
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          organizationId: m?.organizationId ?? null,
+          organizationSlug: m?.organization.slug ?? null,
+          role: m?.role ?? null,
+        } as any;
       });
-      if (!user?.passwordHash) return null;
-      const ok = await bcrypt.compare(password, user.passwordHash);
-      if (!ok) return null;
-      const m = user.memberships[0];
-      return {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        organizationId: m?.organizationId ?? null,
-        organizationSlug: m?.organization.slug ?? null,
-        role: m?.role ?? null,
-      } as any;
     }
   })],
   callbacks: {
@@ -120,75 +123,77 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async jwt({ token, user, trigger, session }) {
-      if (user) {
-        token.organizationId = (user as any).organizationId;
-        token.organizationSlug = (user as any).organizationSlug;
-        token.role = (user as any).role;
-        const dbUser = await prisma.user.findUnique({
-          where: { id: user.id },
-          select: { emailVerified: true },
-        });
-        token.emailVerified = dbUser?.emailVerified ?? null;
-      }
+      return runWithRlsBypass(async () => {
+        if (user) {
+          token.organizationId = (user as any).organizationId;
+          token.organizationSlug = (user as any).organizationSlug;
+          token.role = (user as any).role;
+          const dbUser = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: { emailVerified: true },
+          });
+          token.emailVerified = dbUser?.emailVerified ?? null;
+        }
 
-      const shouldRefreshOrganizations =
-        Boolean(user) ||
-        trigger === 'update' ||
-        !Array.isArray(token.organizations) ||
-        (token.organizations as any[]).length === 0;
-      if (token.sub && shouldRefreshOrganizations) {
-        const organizations = await loadUserOrganizations(String(token.sub));
-        token.organizations = organizations;
-        const requestedOrgId =
-          trigger === 'update' ? ((session as any)?.activeOrganizationId as string | undefined) : undefined;
-        const activeOrganizationId = pickActiveOrganization(
-          organizations,
-          requestedOrgId ?? null,
-          (token.activeOrganizationId as string | undefined) ?? (token.organizationId as string | undefined)
-        );
-        token.activeOrganizationId = activeOrganizationId;
-        token.organizationId = activeOrganizationId;
-        const active = organizations.find((item) => item.id === activeOrganizationId);
-        token.organizationSlug = active?.slug ?? null;
-        token.role = active?.role ?? null;
-      }
+        const shouldRefreshOrganizations =
+          Boolean(user) ||
+          trigger === 'update' ||
+          !Array.isArray(token.organizations) ||
+          (token.organizations as any[]).length === 0;
+        if (token.sub && shouldRefreshOrganizations) {
+          const organizations = await loadUserOrganizations(String(token.sub));
+          token.organizations = organizations;
+          const requestedOrgId =
+            trigger === 'update' ? ((session as any)?.activeOrganizationId as string | undefined) : undefined;
+          const activeOrganizationId = pickActiveOrganization(
+            organizations,
+            requestedOrgId ?? null,
+            (token.activeOrganizationId as string | undefined) ?? (token.organizationId as string | undefined)
+          );
+          token.activeOrganizationId = activeOrganizationId;
+          token.organizationId = activeOrganizationId;
+          const active = organizations.find((item) => item.id === activeOrganizationId);
+          token.organizationSlug = active?.slug ?? null;
+          token.role = active?.role ?? null;
+        }
 
-      if (Boolean(user) || trigger === 'update') {
-        const organizationId =
-          (token.activeOrganizationId as string | undefined) ?? (token.organizationId as string | undefined);
-        if (organizationId) {
-          const [org, sub] = await Promise.all([
-            prisma.organization.findUnique({
-              where: { id: organizationId },
-              select: { onboardingCompletedAt: true, onboardingStep: true },
-            }),
-            prisma.subscription.findUnique({
+        if (Boolean(user) || trigger === 'update') {
+          const organizationId =
+            (token.activeOrganizationId as string | undefined) ?? (token.organizationId as string | undefined);
+          if (organizationId) {
+            const [org, sub] = await Promise.all([
+              prisma.organization.findUnique({
+                where: { id: organizationId },
+                select: { onboardingCompletedAt: true, onboardingStep: true },
+              }),
+              prisma.subscription.findUnique({
+                where: { organizationId },
+                select: { status: true, trialEndsAt: true },
+              }),
+            ]);
+            token.onboardingCompletedAt = org?.onboardingCompletedAt?.toISOString() ?? null;
+            token.onboardingStep = org?.onboardingStep ?? 0;
+            token.subscriptionStatus = sub?.status ?? 'CANCELED';
+            token.trialEndsAt = sub?.trialEndsAt?.toISOString() ?? null;
+          } else {
+            token.subscriptionStatus = 'CANCELED';
+          }
+        } else if (!token.subscriptionStatus) {
+          const organizationId =
+            (token.activeOrganizationId as string | undefined) ?? (token.organizationId as string | undefined);
+          if (!organizationId) {
+            token.subscriptionStatus = 'CANCELED';
+          } else {
+            const sub = await prisma.subscription.findUnique({
               where: { organizationId },
               select: { status: true, trialEndsAt: true },
-            }),
-          ]);
-          token.onboardingCompletedAt = org?.onboardingCompletedAt?.toISOString() ?? null;
-          token.onboardingStep = org?.onboardingStep ?? 0;
-          token.subscriptionStatus = sub?.status ?? 'CANCELED';
-          token.trialEndsAt = sub?.trialEndsAt?.toISOString() ?? null;
-        } else {
-          token.subscriptionStatus = 'CANCELED';
+            });
+            token.subscriptionStatus = sub?.status ?? 'CANCELED';
+            token.trialEndsAt = sub?.trialEndsAt?.toISOString() ?? null;
+          }
         }
-      } else if (!token.subscriptionStatus) {
-        const organizationId =
-          (token.activeOrganizationId as string | undefined) ?? (token.organizationId as string | undefined);
-        if (!organizationId) {
-          token.subscriptionStatus = 'CANCELED';
-        } else {
-          const sub = await prisma.subscription.findUnique({
-            where: { organizationId },
-            select: { status: true, trialEndsAt: true },
-          });
-          token.subscriptionStatus = sub?.status ?? 'CANCELED';
-          token.trialEndsAt = sub?.trialEndsAt?.toISOString() ?? null;
-        }
-      }
-      return token;
+        return token;
+      });
     },
   },
 };

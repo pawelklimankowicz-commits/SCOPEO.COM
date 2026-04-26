@@ -1,14 +1,16 @@
 import Link from 'next/link';
 import DashboardActionsV9 from '@/components/DashboardActionsV9';
 import { prisma } from '@/lib/prisma';
-import { requireTenantMembership } from '@/lib/tenant';
+import { getTenantRlsContext, runWithTenantRls } from '@/lib/tenant';
 
 export default async function DashboardPage({
   searchParams,
 }: {
   searchParams?: Promise<{ page?: string; year?: string }>;
 }) {
-  const { session, organizationId, membership } = await requireTenantMembership();
+  const t = await getTenantRlsContext();
+  return runWithTenantRls({ userId: t.userId, organizationId: t.organizationId }, async () => {
+  const { session, organizationId, membership } = t;
   const params = searchParams ? await searchParams : undefined;
   const yearParam = Number(params?.year ?? '');
   const selectedYear = Number.isFinite(yearParam) && yearParam >= 2000 && yearParam <= 2100 ? yearParam : undefined;
@@ -123,4 +125,5 @@ export default async function DashboardPage({
       </div>
     </div>
   );
+  });
 }

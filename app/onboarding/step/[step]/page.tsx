@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import OnboardingWizardStep from '@/components/onboarding/wizard-step';
 import { prisma } from '@/lib/prisma';
-import { requireTenantMembership } from '@/lib/tenant';
+import { getTenantRlsContext, runWithTenantRls } from '@/lib/tenant';
 
 export default async function OnboardingStepPage({
   params,
@@ -14,7 +14,9 @@ export default async function OnboardingStepPage({
     notFound();
   }
 
-  const { session, organizationId, membership } = await requireTenantMembership();
+  const t = await getTenantRlsContext();
+  return runWithTenantRls({ userId: t.userId, organizationId: t.organizationId }, async () => {
+  const { session, organizationId, membership } = t;
   const role = (session.user as any).role as string | undefined;
   if (role !== 'OWNER' && role !== 'ADMIN') {
     redirect('/dashboard');
@@ -48,4 +50,5 @@ export default async function OnboardingStepPage({
       />
     </div>
   );
+  });
 }

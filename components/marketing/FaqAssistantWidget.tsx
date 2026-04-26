@@ -136,9 +136,48 @@ export default function FaqAssistantWidget() {
     void fetchAiAnswer(q, resolveFaqFromCatalog(q));
   }
 
+  /**
+   * Klik w przykładowe pytania: odpowiedź **zawsze** z katalogu w tym samym kroku (treść widać od razu).
+   * POST do /api tylko w tle do logów/LLM — nigdy nie nadpisujemy pustym ani nie czekamy na sieć, żeby uniknąć „pustej” bąbelka.
+   */
   function handleChipQuestion(item: FaqCatalogEntry) {
-    setQuery(item.question);
-    void fetchAiAnswer(item.question, toFaqResolveResult(item));
+    const q = item.question;
+    setQuery(q);
+    setLastQuestion(q);
+    setBubbleOpen(true);
+    setAnswer(item.answer);
+    setSource('catalog');
+    setLoading(false);
+    void (async () => {
+      const pre = toFaqResolveResult(item);
+      try {
+        const base = typeof window !== 'undefined' ? window.location.origin : '';
+        const response = await fetch(`${base}/api/faq-assistant`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ question: q, sessionId: 'marketing-faq-widget-v2' }),
+        });
+        const raw = await response.text();
+        let payload: { ok?: boolean; answer?: string; source?: string; error?: string };
+        try {
+          payload = raw ? (JSON.parse(raw) as typeof payload) : {};
+        } catch {
+          return;
+        }
+        const text = typeof payload.answer === 'string' ? payload.answer.trim() : '';
+        if (response.ok && payload?.ok && text) {
+          setAnswer(text);
+          setSource((payload.source as SourceLabel) || 'catalog');
+        } else if (response.ok && !text && pre) {
+          setAnswer(pre.answer);
+          applySourceFromPre(pre);
+        }
+      } catch {
+        setAnswer(item.answer);
+        setSource('catalog');
+      }
+    })();
   }
 
   const sourceHint =

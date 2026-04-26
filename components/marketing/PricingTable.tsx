@@ -145,7 +145,7 @@ export default function PricingTable() {
               <Link href="/register" className="mkt-btn mkt-btn--primary" style={{ width: '100%' }}>
                 Zacznij bezpłatny trial
               </Link>
-              <p style={{ margin: '8px 0 0', fontSize: '0.75rem', color: '#64748b' }}>7 dni bez karty kredytowej</p>
+              <p style={{ margin: '8px 0 0', fontSize: '0.75rem', color: '#64748b' }}>7 dni na start</p>
             </div>
           </div>
         ))}

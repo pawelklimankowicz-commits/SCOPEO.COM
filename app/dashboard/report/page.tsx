@@ -2,14 +2,16 @@ import Link from 'next/link';
 import { EmissionsCharts } from '@/components/EmissionsCharts';
 import { ReportPdfTotalsPreference } from '@/components/ReportPdfTotalsPreference';
 import { prisma } from '@/lib/prisma';
-import { requireTenantMembership } from '@/lib/tenant';
+import { getTenantRlsContext, runWithTenantRls } from '@/lib/tenant';
 
 export default async function DashboardReportPage({
   searchParams,
 }: {
   searchParams?: Promise<{ year?: string }>;
 }) {
-  const { organizationId, session } = await requireTenantMembership();
+  const t = await getTenantRlsContext();
+  return runWithTenantRls({ userId: t.userId, organizationId: t.organizationId }, async () => {
+  const { organizationId, session } = t;
   const role = (session.user as { role?: string }).role;
   const canEdit = role === 'OWNER' || role === 'ADMIN';
   const params = searchParams ? await searchParams : undefined;
@@ -148,4 +150,5 @@ export default async function DashboardReportPage({
       </div>
     </div>
   );
+  });
 }

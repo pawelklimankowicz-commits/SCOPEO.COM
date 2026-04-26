@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { checkRateLimit, getClientIp } from '@/lib/security';
 import { logger } from '@/lib/logger';
 import { writeProcessingRecord } from '@/lib/privacy-register';
+import { runWithRlsBypass } from '@/lib/tenant-rls-context';
 
 const schema = z.object({
   name: z.string().min(2),
@@ -35,6 +36,7 @@ export async function POST(req: Request) {
     const ipAddress = ip === 'unknown' ? null : ip;
     const userAgent = req.headers.get('user-agent');
 
+    return await runWithRlsBypass(async () => {
     const createdLead = await prisma.$transaction(async (tx) => {
       const savedLead = await tx.lead.create({
         data: {
@@ -148,6 +150,7 @@ export async function POST(req: Request) {
       });
 
     return NextResponse.json({ ok: true });
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });

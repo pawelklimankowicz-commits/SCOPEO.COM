@@ -1,15 +1,16 @@
 import ApiKeysClient from '@/components/ApiKeysClient';
-import { auth } from '@/lib/auth';
 import { canAccessApi } from '@/lib/billing-features';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
+import { getTenantRlsContext, runWithTenantRls } from '@/lib/tenant';
 
 export default async function ApiKeysPage() {
-  const session = await auth();
-  if (!session?.user) redirect('/login');
-  const role = (session.user as any).role as string | undefined;
+  const t = await getTenantRlsContext();
+  return runWithTenantRls({ userId: t.userId, organizationId: t.organizationId }, async () => {
+  const { session } = t;
+  const role = (session.user as { role?: string })?.role as string | undefined;
   if (!['OWNER', 'ADMIN'].includes(String(role || ''))) redirect('/dashboard');
-  const organizationId = (session.user as any).organizationId as string;
+  const organizationId = t.organizationId;
   const subscription = await prisma.subscription.findUnique({
     where: { organizationId },
     select: { plan: true },
@@ -39,4 +40,5 @@ export default async function ApiKeysPage() {
       <ApiKeysClient initialKeys={keys} />
     </div>
   );
+  });
 }

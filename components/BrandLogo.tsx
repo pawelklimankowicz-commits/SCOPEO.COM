@@ -13,6 +13,11 @@ type LockupProps = {
   size?: number;
   /** Tylko znak (SVG) — 1 = jak dotychczas; np. 0.7 = −30% samej ikony, napis „Scopeo” bez zmian. */
   markScale?: number;
+  /**
+   * Sposób liczenia wysokości znaku: `column` = cały blok (Scopeo + ESG) — pełna współliniowość;
+   * `title` = tylko wiersz „Scopeo” — mniejsza ikona, lepsze dopasowanie wizualne w pasku nawigacji.
+   */
+  markSizeBasis?: 'column' | 'title';
   withWordmark?: boolean;
   /** Płaski kolor słowa „Scopeo” — tylko gdy `wordmarkFlat`. */
   wordmarkColor?: string;
@@ -46,6 +51,7 @@ export function BrandLogoMark({ size = 28 }: { size?: number }) {
 export function BrandLogoLockup({
   size = 26,
   markScale = 1,
+  markSizeBasis = 'column',
   withWordmark = true,
   wordmarkColor = '#0f172a',
   taglineColor = '#64748b',
@@ -67,9 +73,12 @@ export function BrandLogoLockup({
   const tagSize = Math.max(7, Math.round(size * 0.4));
   /** Współliniowość z kolumną tekstu: line-height ≈ wysokość linii + margin między wierszami. */
   const lineBox = 1.08;
+  const titleBlockHeight = titleSize * lineBox;
   const textColumnHeight =
-    titleSize * lineBox + (showTagline ? 3 + tagSize * lineBox : 0);
-  const markSize = Math.max(20, Math.round(textColumnHeight));
+    titleBlockHeight + (showTagline ? 3 + tagSize * lineBox : 0);
+  const markBasis =
+    markSizeBasis === 'title' ? titleBlockHeight : textColumnHeight;
+  const markSize = Math.max(20, Math.round(markBasis));
   const markDisplaySize = Math.max(12, Math.round(markSize * markScale));
 
   const gradient =

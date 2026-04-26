@@ -8,6 +8,7 @@ export default defineConfig({
     include: ['__tests__/**/*.test.ts'],
     env: {
       DATABASE_URL: 'postgresql://scopeo:scopeo@localhost:5432/scopeo_test',
+      DATABASE_RLS_RELAXED: '1',
     },
     coverage: {
       provider: 'v8',

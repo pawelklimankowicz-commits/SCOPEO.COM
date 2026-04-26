@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
-import { requireTenantMembership } from '@/lib/tenant';
+import { getTenantRlsContext, runWithTenantRls } from '@/lib/tenant';
 
 function parsePagination(searchParams?: { page?: string; year?: string; supplier?: string }) {
   const invoicePageSize = 50;
@@ -24,7 +24,9 @@ export default async function DashboardInvoicesPage({
 }: {
   searchParams?: Promise<{ page?: string; year?: string; supplier?: string }>;
 }) {
-  const { organizationId } = await requireTenantMembership();
+  const t = await getTenantRlsContext();
+  return runWithTenantRls({ userId: t.userId, organizationId: t.organizationId }, async () => {
+  const { organizationId } = t;
   const params = searchParams ? await searchParams : undefined;
   const { page, selectedYear, skip, invoicePageSize, supplierId } = parsePagination(params);
 
@@ -149,4 +151,5 @@ export default async function DashboardInvoicesPage({
       </div>
     </div>
   );
+  });
 }

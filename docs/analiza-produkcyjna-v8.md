@@ -104,7 +104,7 @@ Każda karta planu ma przycisk „Umów demo" który prowadzi do formularza kont
   Zacznij bezpłatny trial — 7 dni
 </Link>
 ```
-Tekst pod przyciskiem „Bez karty kredytowej przy rejestracji" — dodaje zaufanie.
+Opcjonalny krótszy tekst pod przyciskiem (np. o okresie próbnym) — może wspierać zaufanie.
 
 ---
 
