@@ -2,6 +2,8 @@ import { checkRateLimit } from '@/lib/security';
 import { validateApiKey } from '@/lib/api-keys';
 import { canAccessApi } from '@/lib/billing-features';
 import { getSubscription } from '@/lib/billing';
+import { isSubscriptionProductAccessAllowed } from '@/lib/billing-access';
+import { runWithTenantRls } from '@/lib/tenant-rls-context';
 
 export async function withApiKey(
   req: Request,
@@ -28,6 +30,16 @@ export async function withApiKey(
       { status: 403 }
     );
   }
+  if (!isSubscriptionProductAccessAllowed(sub)) {
+    return Response.json(
+      {
+        error:
+          'Public API unavailable: subscription inactive or trial expired. Renew at /dashboard/settings/billing',
+        code: 'BILLING_REQUIRED',
+      },
+      { status: 403 }
+    );
+  }
 
   const limit = await checkRateLimit(`apikey-org:${organizationId}`, {
     windowMs: 3_600_000,
@@ -36,5 +48,8 @@ export async function withApiKey(
   if (!limit.ok) {
     return Response.json({ error: 'Rate limit exceeded' }, { status: 429 });
   }
-  return handler(organizationId);
+  return runWithTenantRls(
+    { userId: '__scopeo_api_key__', organizationId },
+    () => handler(organizationId)
+  );
 }

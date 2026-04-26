@@ -30,5 +30,6 @@ declare module 'next-auth/jwt' {
     organizations?: { id: string; name: string; slug: string; role: string }[];
     emailVerified?: string | null | Date;
     subscriptionStatus?: 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'TRIALING';
+    trialEndsAt?: string | null;
   }
 }

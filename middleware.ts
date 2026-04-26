@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { isApiSessionBillingExempt, isJwtSubscriptionBlocking } from '@/lib/billing-access';
 
 const CARBON_PAGE_CANONICAL = '/slad-weglowy';
 
@@ -131,20 +132,31 @@ export async function middleware(request: NextRequest) {
 
   const subscriptionStatus = typeof token?.subscriptionStatus === 'string' ? token.subscriptionStatus : null;
   const trialEndsAt = typeof token?.trialEndsAt === 'string' ? token.trialEndsAt : null;
-  const isTrialExpired =
-    subscriptionStatus === 'TRIALING' && trialEndsAt !== null && new Date(trialEndsAt) < new Date();
+  const billingBlocksProduct = isJwtSubscriptionBlocking(subscriptionStatus, trialEndsAt);
   const isDashboardPath = pathname.startsWith('/dashboard');
   const isBillingAllowedPath =
     pathname === '/dashboard/billing-required' || pathname === '/dashboard/settings/billing';
-  if (
-    isDashboardPath &&
-    !isBillingAllowedPath &&
-    (subscriptionStatus === 'CANCELED' || subscriptionStatus === 'PAST_DUE' || isTrialExpired)
-  ) {
+  if (isDashboardPath && !isBillingAllowedPath && billingBlocksProduct) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/dashboard/billing-required';
     redirectUrl.search = '';
     return NextResponse.redirect(redirectUrl);
+  }
+
+  if (
+    token &&
+    pathname.startsWith('/api/') &&
+    !isApiSessionBillingExempt(pathname) &&
+    billingBlocksProduct
+  ) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'Subskrypcja nieaktywna lub trial wygasł. Odnów dostęp w ustawieniach rozliczeń.',
+        code: 'BILLING_REQUIRED',
+      },
+      { status: 403 },
+    );
   }
 
   const cspHeader = [

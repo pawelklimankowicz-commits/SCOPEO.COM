@@ -50,7 +50,7 @@ export async function getSubscription(organizationId: string): Promise<Subscript
   return prisma.subscription.findUnique({ where: { organizationId } });
 }
 
-export function isTrialActive(sub: Subscription): boolean {
+export function isTrialActive(sub: Pick<Subscription, 'status' | 'trialEndsAt'>): boolean {
   return sub.status === 'TRIALING' && !!sub.trialEndsAt && sub.trialEndsAt.getTime() > Date.now();
 }
 
