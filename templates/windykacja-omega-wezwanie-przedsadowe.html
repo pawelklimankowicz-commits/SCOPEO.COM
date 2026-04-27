@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ostateczne przedsądowe wezwanie do zapłaty — szablon</title>
+  <style>
+    :root {
+      --navy: #0f2744;
+      --navy-light: #1e3d5c;
+      --red: #c41e3a;
+      --red-soft: #fde8eb;
+      --bg: #f4f6f9;
+      --paper: #ffffff;
+      --text: #1a1a1a;
+      --muted: #5c6570;
+      --border: #d8dee6;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 1.5rem;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.55;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    .sheet {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 4px 24px rgba(15, 39, 68, 0.08);
+      overflow: hidden;
+    }
+
+    header.top {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      color: #fff;
+      padding: 1.25rem 1.75rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .brand {
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: 0.02em;
+    }
+
+    .brand span {
+      color: var(--red);
+      font-weight: 800;
+    }
+
+    .meta-line {
+      font-size: 0.85rem;
+      opacity: 0.92;
+    }
+
+    .banner {
+      background: var(--red-soft);
+      border-left: 4px solid var(--red);
+      margin: 0;
+      padding: 0.85rem 1.75rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--navy);
+    }
+
+    .content {
+      padding: 1.5rem 1.75rem 2rem;
+    }
+
+    h1 {
+      margin: 0 0 1rem;
+      font-size: 1.15rem;
+      color: var(--navy);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .place {
+      border-bottom: 1px dashed var(--border);
+      min-height: 1.35em;
+      display: inline-block;
+      min-width: 12ch;
+    }
+
+    .block {
+      margin-bottom: 1.1rem;
+    }
+
+    .label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 0.2rem;
+    }
+
+    address {
+      font-style: normal;
+    }
+
+    table.summary {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.95rem;
+    }
+
+    table.summary th,
+    table.summary td {
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.65rem;
+      text-align: left;
+    }
+
+    table.summary th {
+      background: #eef2f7;
+      color: var(--navy);
+      width: 38%;
+    }
+
+    .highlight {
+      background: var(--red-soft);
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      border: 1px solid rgba(196, 30, 58, 0.25);
+      margin: 1rem 0;
+    }
+
+    .highlight strong {
+      color: var(--red);
+    }
+
+    ol.steps {
+      margin: 0.5rem 0 0 1.1rem;
+      padding: 0;
+    }
+
+    ol.steps li {
+      margin-bottom: 0.4rem;
+    }
+
+    footer.foot {
+      border-top: 1px solid var(--border);
+      padding: 1rem 1.75rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      background: #fafbfc;
+    }
+
+    .sign {
+      margin-top: 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media print {
+      body {
+        padding: 0;
+        background: #fff;
+      }
+      .sheet {
+        border: none;
+        box-shadow: none;
+        border-radius: 0;
+      }
+      a[href^="http"]::after {
+        content: "";
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sheet">
+    <header class="top">
+      <div>
+        <div class="brand">WINDYKACJA <span>OMEGA</span></div>
+        <div class="meta-line" contenteditable="true">[Pełna nazwa i forma prawna wierzyciela / windykatora]</div>
+      </div>
+      <div class="meta-line">
+        Data: <span class="place" contenteditable="true">[dd.mm.rrrr]</span>
+      </div>
+    </header>
+
+    <p class="banner">
+      Ostateczne przedsądowe wezwanie do zapłaty
+    </p>
+
+    <div class="content">
+      <h1>Wezwanie skierowane do</h1>
+
+      <div class="block">
+        <div class="label">Dłużnik</div>
+        <address contenteditable="true">
+          [Imię i nazwisko / nazwa]<br />
+          [Ulica, nr, kod, miejscowość]<br />
+          [PESEL / NIP / KRS — jeśli dotyczy]
+        </address>
+      </div>
+
+      <div class="block">
+        <div class="label">Sygnatura sprawy (opcjonalnie)</div>
+        <div class="place" contenteditable="true" style="display:block; min-height:1.4em">[…]</div>
+      </div>
+
+      <p>
+        Niniejszym informujemy, że w naszej sprawie wierzytelności wynikającej z
+        <span class="place" contenteditable="true">[opis tytułu: umowa, faktury, inne — krótko]</span>
+        na dzień sporządzenia niniejszego pisma przypada po stronie
+        <strong>Państwa</strong> zadłużenie w łącznej kwocie wskazanej poniżej, wraz z naliczonymi
+        składnikami wyszczególnionymi w zestawieniu.
+      </p>
+
+      <table class="summary">
+        <tbody>
+          <tr>
+            <th>Kwota główna (kapitał)</th>
+            <td contenteditable="true">[0,00 PLN]</td>
+          </tr>
+          <tr>
+            <th>Odsetki umowne / ustawowe (wg stanu na dzień wezwania)</th>
+            <td contenteditable="true">[0,00 PLN]</td>
+          </tr>
+          <tr>
+            <th>Koszty upomnień / obsługi (jeśli przysługują i są umowione)</th>
+            <td contenteditable="true">[0,00 PLN]</td>
+          </tr>
+          <tr>
+            <th><strong>RAZEM do zapłaty</strong></th>
+            <td contenteditable="true"><strong>[0,00 PLN]</strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="highlight">
+        <strong>Termin ostateczny:</strong>
+        wnosząc płatność w kwocie <span class="place" contenteditable="true">[RAZEM]</span> należności należy uiścić
+        nie później niż do dnia
+        <span class="place" contenteditable="true">[dd.mm.rrrr]</span>
+        na rachunek wskazany poniżej, z podaniem tytułu przelewu umożliwiającego identyfikację wpłaty.
+      </div>
+
+      <div class="block">
+        <div class="label">Dane do wpłaty</div>
+        <p contenteditable="true">
+          Odbiorca: […]<br />
+          Numer rachunku: […]<br />
+          Tytuł: […]
+        </p>
+      </div>
+
+      <p>
+        <strong>Skutki dalszego opóźnienia.</strong> Brak zapłaty w wyznaczonym terminie
+        zostanie potraktowany jako ostateczne uchylenie się od uregulowania zobowiązania.
+        Wierzyciel, działając w granicach prawa, podejmie działania windykacyjne i prawne,
+        w tym wystąpi z powództwem o zapłatę, co wiązać się będzie z dodatkowymi kosztami
+        (m.in. opłata sądowa, koszty zastępstwa procesowego w uzasadnionym zakresie) oraz
+        dalszym narastaniem zadłużenia.
+      </p>
+
+      <p>
+        W przypadku sporu co do zasadności roszczenia uprasza się o kontakt
+        w terminie
+        <span class="place" contenteditable="true">[… dni roboczych od doręczenia]</span>
+        korespondencyjny pod wskazanym adresem / na adres
+        <span class="place" contenteditable="true">[e-mail, telefon]</span>,
+        przedstawiając w miarę możliwości dokumenty uzasadniające stanowisko.
+      </p>
+
+      <p>
+        <strong>Informacja o przetwarzaniu danych:</strong> dane dłużnika przetwarzane są
+        w celu dochodzenia należności — na podstawie przepisów prawa oraz, w zakresie
+        wymaganym, umowy lub uzasadnionego interesu wierzyciela. Przysługują Państwu
+        prawa wynikające z RODO, w tym w zakresie udostepnionych w polityce prywatności.
+      </p>
+
+      <div class="sign">
+        <div>
+          <div class="label">Z poważaniem</div>
+          <p contenteditable="true">[…]</p>
+        </div>
+        <div>
+          <div class="label">Podpis / pieczęć</div>
+          <p style="min-height:3rem; border:1px dashed var(--border); border-radius:4px; margin:0.25rem 0 0 0; padding:0.5rem" contenteditable="true">&nbsp;</p>
+        </div>
+      </div>
+    </div>
+
+    <footer class="foot">
+      Szablon pisma ma charakter uniwersalny i wymaga dostosowania do konkretnej sprawy
+      oraz weryfikacji prawnej. Nie stanowi porady prawnej.
+    </footer>
+  </div>
+</body>
+</html>
