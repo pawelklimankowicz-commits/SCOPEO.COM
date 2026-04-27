@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""PDF wezwania WZ/2026/APS001 — wygląd dopasowany do wzoru wezwanie_WZ-2026-ANOW001_Nowak.pdf:
-bordowe nagłówki tabel (biały tekst), tabelaryczne Zestawienie i Dane do przelewu na str. 2,
-obramowanie bloku RYGOR."""
+"""WZ/2026/APS001 — typografia i układ zsynchronizowane z pomiarem PDF
+`wezwanie_WZ-2026-ANOW001_Nowak.pdf` (get_text: rozmiary, czcionki, kolory)."""
 
 from __future__ import annotations
 
@@ -26,21 +25,20 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-# Kolory odczytane z pliku wzorcowego (Nowak) — stół nagłówków ~RGB(148,30,30)
-BURGUNDY = HexColor("#941e1e")
-ROW_ZEB_A = colors.white
-ROW_ZEB_B = HexColor("#f3f3f3")
-ZEST_H_BG = HexColor("#cfcfcf")
-DLUZ_BG = HexColor("#e1e1e1")
-RYG_TLO = HexColor("#fff5f5")
-RYG_OBR = HexColor("#c41e3a")
-FOOT_GRAY = HexColor("#666666")
+# Wypełnienie nagłówków tabel w oryginale: DeviceRGB (0.549, 0, 0) → #8c0000
+HEADER_RED = HexColor("#8c0000")
+# Szare linie / obramowania komórek: ~#c6c6c6
+LINE_GRAY = HexColor("#c6c6c6")
+# Stopka, kolor 6710886 = #666666
+FOOT_COLOR = HexColor("#666666")
+# Przemienne tło wierszy (blisko oryg. Word)
+ROW_ALT = HexColor("#ececec")
 
-ARIAL = "/System/Library/Fonts/Supplemental/Arial.ttf"
-ARIAL_BOLD = "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
-ARIAL_UNICODE = "/System/Library/Fonts/Supplemental/Arial Unicode.ttf"
+F_ARIAL = "/System/Library/Fonts/Supplemental/Arial.ttf"
+F_ARIAL_B = "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
+F_TNR = "/System/Library/Fonts/Supplemental/Times New Roman.ttf"
+F_TNR_B = "/System/Library/Fonts/Supplemental/Times New Roman Bold.ttf"
 
-# --- dane merytoryczne Pielaszewski ---
 DOC_TOP = "27 kwietnia 2026"
 FOOTER_DATE = "27 kwietnia 2026"
 SYGN = "WZ/2026/APS001"
@@ -78,146 +76,123 @@ ROWS_LATE: list[tuple[str, str, str, str, str, str, str]] = [
 ]
 
 
-def _register_fonts() -> tuple[str, str]:
-    """Body PL (Unicode) + bold nagłówki tabel (Arial Bold — znaki podstawowe PL w nagłówkach)."""
-    if not os.path.isfile(ARIAL_UNICODE):
-        raise SystemExit("Wymagany Arial Unicode (PL).")
-    pdfmetrics.registerFont(TTFont("U", ARIAL_UNICODE))
-    b = "UB"
-    if os.path.isfile(ARIAL_BOLD):
-        pdfmetrics.registerFont(TTFont("UB", ARIAL_BOLD))
-    else:
-        b = "U"
-    return "U", b
+def _reg() -> tuple[str, str, str, str]:
+    for p, name in [
+        (F_ARIAL, "ArialDoc"),
+        (F_ARIAL_B, "ArialBold"),
+        (F_TNR, "TNR"),
+        (F_TNR_B, "TNRB"),
+    ]:
+        if not os.path.isfile(p):
+            raise SystemExit(f"Brak czcionki: {p}")
+        pdfmetrics.registerFont(TTFont(name, p))
+    return "ArialDoc", "ArialBold", "TNR", "TNRB"
 
 
-def _styles(body_font: str, bold_font: str):
-    base = getSampleStyleSheet()
-    h = 10.0
+def _st(base: str, b: str, tnr: str, tnrb: str) -> dict[str, ParagraphStyle]:
+    s = getSampleStyleSheet()
     return {
-        "normal": ParagraphStyle(
-            "n",
-            parent=base["Normal"],
-            fontName=body_font,
-            fontSize=h,
-            leading=h + 2,
-            alignment=TA_JUSTIFY,
-        ),
-        "center": ParagraphStyle(
-            "c",
-            parent=base["Normal"],
-            fontName=body_font,
-            fontSize=h,
-            leading=h + 2,
-            alignment=TA_CENTER,
-        ),
-        "footer": ParagraphStyle(
-            "f",
-            parent=base["Normal"],
-            fontName=body_font,
-            fontSize=8.5,
-            textColor=FOOT_GRAY,
-            leading=10,
-            alignment=TA_CENTER,
-        ),
-        "title": ParagraphStyle(
-            "t",
-            parent=base["Normal"],
-            fontName=body_font,
-            fontSize=11.5,
-            leading=14,
-            alignment=TA_CENTER,
-            spaceAfter=2 * mm,
-        ),
-        "headerSmall": ParagraphStyle(
-            "hs",
-            parent=base["Normal"],
-            fontName=body_font,
-            fontSize=h,
-            leading=h + 2,
-            alignment=TA_LEFT,
-        ),
-        "right": ParagraphStyle(
-            "hr",
-            parent=base["Normal"],
-            fontName=body_font,
-            fontSize=h,
-            leading=h + 2,
-            alignment=TA_RIGHT,
-        ),
+        "lipsko": ParagraphStyle("l", parent=s["Normal"], fontName=base, fontSize=9.1, leading=11, alignment=TA_LEFT),
+        "omega": ParagraphStyle("o", parent=s["Normal"], fontName=b, fontSize=10.1, leading=12, alignment=TA_RIGHT),
+        "foot": ParagraphStyle("ft", parent=s["Normal"], fontName=base, fontSize=7, leading=8.4, textColor=FOOT_COLOR, alignment=TA_CENTER),
+        "addr": ParagraphStyle("a", parent=s["Normal"], fontName=base, fontSize=9.1, leading=11, alignment=TA_LEFT),
+        "sygn": ParagraphStyle("sy", parent=s["Normal"], fontName=base, fontSize=7.9, leading=9.5, alignment=TA_LEFT),
+        "h15": ParagraphStyle("h1", parent=s["Normal"], fontName=b, fontSize=13.9, leading=16, alignment=TA_CENTER, spaceAfter=2 * mm),
+        "h08": ParagraphStyle("h0", parent=s["Normal"], fontName=base, fontSize=7.9, leading=9.2, alignment=TA_CENTER, spaceAfter=2 * mm),
+        "body9": ParagraphStyle("b9", parent=s["Normal"], fontName=base, fontSize=9.1, leading=11, alignment=TA_JUSTIFY),
+        "sec": ParagraphStyle("sc", parent=s["Normal"], fontName=b, fontSize=10.1, leading=12, alignment=TA_LEFT, spaceAfter=1 * mm),
+        "dlabel": ParagraphStyle("dl", parent=s["Normal"], fontName=b, fontSize=7.9, leading=9.5, alignment=TA_LEFT),
+        "dname": ParagraphStyle("dn", parent=s["Normal"], fontName=b, fontSize=9.1, leading=11, alignment=TA_LEFT),
+        "drest": ParagraphStyle("dr", parent=s["Normal"], fontName=base, fontSize=7.9, leading=9.5, alignment=TA_LEFT),
+        "zest_t": ParagraphStyle("zt", parent=s["Normal"], fontName=b, fontSize=10.1, leading=12, alignment=TA_LEFT, spaceAfter=1 * mm),
+        "zest_l": ParagraphStyle("zl", parent=s["Normal"], fontName=tnr, fontSize=9.1, leading=11, alignment=TA_LEFT),
+        "zest_r": ParagraphStyle("zr", parent=s["Normal"], fontName=tnr, fontSize=9.1, leading=11, alignment=TA_RIGHT),
+        "zest_tot": ParagraphStyle("zz", parent=s["Normal"], fontName=tnrb, fontSize=9.1, leading=11, alignment=TA_LEFT),
+        "wyzn": ParagraphStyle("wz", parent=s["Normal"], fontName=base, fontSize=9.1, leading=11, alignment=TA_LEFT),
+        "dane_t": ParagraphStyle("dt", parent=s["Normal"], fontName=b, fontSize=10.1, leading=12, alignment=TA_LEFT, spaceAfter=1 * mm),
+        "pr9b": ParagraphStyle("p9", parent=s["Normal"], fontName=b, fontSize=9.1, leading=11, alignment=TA_LEFT),
+        "zpw": ParagraphStyle("zp", parent=s["Normal"], fontName=base, fontSize=9.1, leading=11, alignment=TA_LEFT),
+        "ryg_t": ParagraphStyle("ry", parent=s["Normal"], fontName=b, fontSize=7.9, leading=9.5, alignment=TA_LEFT, spaceAfter=1 * mm),
+        "ryg_b": ParagraphStyle("rb", parent=s["Normal"], fontName=base, fontSize=7.9, leading=9.5, alignment=TA_JUSTIFY),
     }
 
 
-def _tstyle_bordowy_tabeli(
-    nrows: int,
-    font: str,
-    bfont: str,
-) -> list:
-    st = [
-        ("FONT", (0, 0), (-1, 0), bfont, 7.5),
-        ("FONT", (0, 1), (-1, -1), font, 7.5),
-        ("FONTSIZE", (0, 0), (-1, -1), 7.5),
+def _table_tstyle(nrows: int) -> list:
+    st: list = [
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 3),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 3),
-        ("TOPPADDING", (0, 0), (-1, -1), 4),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-        ("BACKGROUND", (0, 0), (-1, 0), BURGUNDY),
+        ("LEFTPADDING", (0, 0), (-1, -1), 2.5),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 2.5),
+        ("TOPPADDING", (0, 0), (-1, -1), 3),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ("BACKGROUND", (0, 0), (-1, 0), HEADER_RED),
         ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("INNER_GRID", (0, 0), (-1, -1), 0.25, HexColor("#cccccc")),
-        ("BOX", (0, 0), (-1, -1), 0.5, colors.black),
+        ("FONTNAME", (0, 0), (-1, 0), "ArialBold"),
+        ("FONTSIZE", (0, 0), (-1, 0), 7.0),
+        ("INNER_GRID", (0, 0), (-1, -1), 0.25, LINE_GRAY),
+        ("BOX", (0, 0), (-1, -1), 0.35, colors.black),
     ]
     for r in range(1, nrows):
-        bg = ROW_ZEB_A if r % 2 else ROW_ZEB_B
-        st.append(("BACKGROUND", (0, r), (-1, r), bg))
+        st.append(
+            (
+                "BACKGROUND",
+                (0, r),
+                (-1, r),
+                colors.white if r % 2 else ROW_ALT,
+            )
+        )
+    st.extend(
+        [
+            ("TEXTCOLOR", (0, 1), (-1, -1), colors.black),
+            ("FONTNAME", (0, 1), (5, -1), "ArialDoc"),
+            ("FONTSIZE", (0, 1), (5, -1), 7.4),
+            ("FONTNAME", (6, 1), (6, -1), "ArialDoc"),
+            ("FONTSIZE", (6, 1), (6, -1), 6.5),
+        ]
+    )
     return st
 
 
 def build_pdf(out: Path) -> None:
-    f_pl, f_b = _register_fonts()
-    st = _styles(f_pl, f_b)
-    margin = 18 * mm
+    a, ab, tnr, tnrb = _reg()
+    S = _st(a, ab, tnr, tnrb)
     doc = SimpleDocTemplate(
         str(out),
         pagesize=A4,
-        leftMargin=margin,
-        rightMargin=margin,
-        topMargin=14 * mm,
-        bottomMargin=16 * mm,
+        leftMargin=50,
+        rightMargin=50,
+        topMargin=48,
+        bottomMargin=48,
     )
     story: list = []
 
-    hrow = Table(
-        [
-            [Paragraph(f"Lipsko, {DOC_TOP}", st["headerSmall"]), Paragraph("OMEGA SP. Z O.O.", st["right"])]
-        ],
-        colWidths=[100 * mm, 75 * mm],
+    story.append(
+        Table(
+            [
+                [Paragraph(f"Lipsko, {DOC_TOP}", S["lipsko"]), Paragraph("OMEGA SP. Z O.O.", S["omega"])]
+            ],
+            colWidths=[(A4[0] - 100) / 2, (A4[0] - 100) / 2],
+        )
     )
-    hrow.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP")]))
-    story.append(hrow)
     story.append(
         Paragraph(
             f"Dokument wygenerowany elektronicznie w dniu {FOOTER_DATE}. "
             f"Ważny bez podpisu — art. 78 § 2 k.c. | Strona 1/2",
-            st["footer"],
+            S["foot"],
         )
     )
+    story.append(Spacer(1, 2.5 * mm))
+    for line in ["ul. Kilińskiego 11, 27-300 Lipsko", "NIP: 7812011724", f"Sygn.: {SYGN}"]:
+        stx = S["addr"] if "Sygn" not in line else S["sygn"]
+        story.append(Paragraph(line, stx))
     story.append(Spacer(1, 3 * mm))
-    for line in [
-        "ul. Kilińskiego 11, 27-300 Lipsko",
-        "NIP: 7812011724",
-        f"Sygn.: {SYGN}",
-    ]:
-        story.append(Paragraph(line, st["headerSmall"]))
-    story.append(Spacer(1, 3 * mm))
-    story.append(Paragraph("OSTATECZNE PRZEDSĄDOWE WEZWANIE DO ZAPŁATY", st["title"]))
+    story.append(Paragraph("OSTATECZNE PRZEDSĄDOWE WEZWANIE DO ZAPŁATY", S["h15"]))
     story.append(
         Paragraph(
             "NA PODSTAWIE ART. 455 K.C. W ZW. Z USTAWĄ O PRZECIWDZIAŁANIU NADMIERNYM OPÓŹNIENIOM",
-            st["title"],
+            S["h08"],
         )
     )
-    story.append(Spacer(1, 3 * mm))
+    story.append(Spacer(1, 2.5 * mm))
     story.append(
         Paragraph(
             "Działając w imieniu OMEGA SP. Z O.O. (NIP: 7812011724), niniejszym wzywam do zapłaty należności wynikających z "
@@ -225,31 +200,15 @@ def build_pdf(out: Path) -> None:
             "handlowych, wierzycielowi przysługują odsetki ustawowe za opóźnienie (16,00%/16,75%/15,75% p.a.) oraz "
             "rekompensata za koszty odzyskiwania należności (art. 10 — 40 EUR per faktura wg kursu NBP z ostatniego dnia rob. "
             "miesiąca poprzedzającego wymagalność).",
-            st["normal"],
+            S["body9"],
         )
     )
-    story.append(Spacer(1, 2 * mm))
-    story.append(
-        Paragraph(
-            "Podstawa prawna: art. 7 ust. 1 oraz art. 10 ust. 1 ustawy z 8 marca 2013 r. (Dz.U. 2023 poz. 711).",
-            st["normal"],
-        )
-    )
+    story.append(Paragraph("Podstawa prawna: art. 7 ust. 1 oraz art. 10 ust. 1 ustawy z 8 marca 2013 r. (Dz.U. 2023 poz. 711).", S["body9"]))
     story.append(Spacer(1, 3 * mm))
 
-    # I. Tabela
-    story.append(Paragraph("I. FAKTURY NIEZAPŁACONE", st["headerSmall"]))
-    story.append(Spacer(1, 2 * mm))
-    t1_data = [
-        [
-            "Nr faktury",
-            "Kwota brutto",
-            "Termin płatności",
-            "Dni opóźnienia",
-            "Odsetki PLN",
-            "Rekompensata PLN",
-            "Uwagi",
-        ],
+    story.append(Paragraph("I. FAKTURY NIEZAPŁACONE", S["sec"]))
+    t1 = [
+        ["Nr faktury", "Kwota brutto", "Termin płatności", "Dni opóźnienia", "Odsetki PLN", "Rekompensata PLN", "Uwagi"],
         [
             "16/07/2025",
             f"{MAIN_350} PLN",
@@ -260,19 +219,13 @@ def build_pdf(out: Path) -> None:
             "Nieopłacona w całości",
         ],
     ]
-    t1 = Table(
-        t1_data,
-        colWidths=[22 * mm, 28 * mm, 28 * mm, 25 * mm, 28 * mm, 32 * mm, 28 * mm],
-        repeatRows=1,
-    )
-    t1.setStyle(TableStyle(_tstyle_bordowy_tabeli(len(t1_data), f_pl, f_b)))
-    story.append(t1)
+    t1b = Table(t1, colWidths=[22 * mm, 28 * mm, 28 * mm, 25 * mm, 28 * mm, 32 * mm, 28 * mm], repeatRows=1)
+    t1b.setStyle(TableStyle(_table_tstyle(len(t1))))
+    story.append(t1b)
     story.append(Spacer(1, 3 * mm))
 
-    # II. Tabela
-    story.append(Paragraph("II. FAKTURY ZAPŁACONE Z OPÓŹNIENIEM", st["headerSmall"]))
-    story.append(Spacer(1, 2 * mm))
-    t2_data = [
+    story.append(Paragraph("II. FAKTURY ZAPŁACONE Z OPÓŹNIENIEM", S["sec"]))
+    t2 = [
         [
             "Nr faktury",
             "Kwota brutto",
@@ -283,184 +236,109 @@ def build_pdf(out: Path) -> None:
             "Rekompensata PLN",
         ],
     ]
-    for a, k, te, p, dn, o, r in ROWS_LATE:
-        t2_data.append(
-            [a, f"{k} PLN", te, p, dn, f"{o} PLN", f"{r} PLN"],
-        )
-    t2 = Table(
-        t2_data,
+    for x in ROWS_LATE:
+        t2.append([x[0], f"{x[1]} PLN", x[2], x[3], x[4], f"{x[5]} PLN", f"{x[6]} PLN"])
+    t2b = Table(
+        t2,
         colWidths=[25 * mm, 28 * mm, 32 * mm, 32 * mm, 18 * mm, 30 * mm, 32 * mm],
         repeatRows=1,
     )
-    t2.setStyle(TableStyle(_tstyle_bordowy_tabeli(len(t2_data), f_pl, f_b)))
-    story.append(t2)
+    t2b.setStyle(TableStyle(_table_tstyle(len(t2))))
+    story.append(t2b)
     story.append(Spacer(1, 3 * mm))
 
-    # DŁUŻNIK — szare tło (jak wzorzec: wyeksponowany blok)
-    d_box = [
-        [
-            Paragraph(
-                "DŁUŻNIK:<br/>Adam Pielaszewski<br/>ul. Nowe Łubki 67, 09-454 Nowe Łubki<br/>NIP: 7742802187",
-                st["headerSmall"],
-            )
-        ]
-    ]
-    t_d = Table(d_box, colWidths=[170 * mm])
-    t_d.setStyle(
-        TableStyle(
-            [
-                ("BACKGROUND", (0, 0), (-1, -1), DLUZ_BG),
-                ("LEFTPADDING", (0, 0), (-1, -1), 10),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-                ("TOPPADDING", (0, 0), (-1, -1), 8),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-                ("BOX", (0, 0), (-1, -1), 0.5, HexColor("#bbbbbb")),
-            ]
-        )
-    )
-    story.append(t_d)
+    story.append(Paragraph("DŁUŻNIK:", S["dlabel"]))
+    story.append(Paragraph("Adam Pielaszewski", S["dname"]))
+    story.append(Paragraph("ul. Nowe Łubki 67, 09-454 Nowe Łubki", S["drest"]))
+    story.append(Paragraph("NIP: 7742802187", S["drest"]))
 
     story.append(PageBreak())
 
-    # —— Strona 2 ——
-    story.append(Paragraph("ZESTAWIENIE NALEŻNOŚCI", st["headerSmall"]))
+    story.append(Paragraph("ZESTAWIENIE NALEŻNOŚCI", S["zest_t"]))
     story.append(
         Paragraph(
             f"Dokument wygenerowany elektronicznie w dniu {FOOTER_DATE}. "
             f"Ważny bez podpisu — art. 78 § 2 k.c. | Strona 2/2",
-            st["footer"],
+            S["foot"],
         )
     )
     story.append(Spacer(1, 3 * mm))
 
-    zest_data = [
-        [Paragraph("Należność główna (1 faktura niezapłacona)", st["headerSmall"]), Paragraph(f"{MAIN_350} PLN", st["right"])],
+    zest = [
+        [Paragraph("Należność główna (1 faktura niezapłacona)", S["zest_l"]), Paragraph(f"{MAIN_350} PLN", S["zest_r"])],
         [
-            Paragraph("Odsetki ustawowe za opóźnienie (15,75% p.a., 1 faktura niezapłacona)", st["headerSmall"]),
-            Paragraph(f"{ODS_UNPAID} PLN", st["right"]),
+            Paragraph("Odsetki ustawowe za opóźnienie (15,75% p.a., 1 faktura niezapłacona)", S["zest_l"]),
+            Paragraph(f"{ODS_UNPAID} PLN", S["zest_r"]),
         ],
         [
-            Paragraph("Rekompensata za koszty odzyskiwania (art. 10, 1 faktura niezapł., kurs NBP)", st["headerSmall"]),
-            Paragraph(f"{REK_1} PLN", st["right"]),
+            Paragraph("Rekompensata za koszty odzyskiwania (art. 10, 1 faktura niezapł., kurs NBP)", S["zest_l"]),
+            Paragraph(f"{REK_1} PLN", S["zest_r"]),
         ],
         [
-            Paragraph("Odsetki ustawowe za opóźnienie (16,00%/16,75%/15,75% p.a., 19 faktur spóźn.)", st["headerSmall"]),
-            Paragraph(f"{ODS_LATE} PLN", st["right"]),
+            Paragraph("Odsetki ustawowe za opóźnienie (16,00%/16,75%/15,75% p.a., 19 faktur spóźn.)", S["zest_l"]),
+            Paragraph(f"{ODS_LATE} PLN", S["zest_r"]),
         ],
         [
-            Paragraph("Rekompensata za koszty odzyskiwania (art. 10, 19 faktur spóźn., kurs NBP)", st["headerSmall"]),
-            Paragraph(f"{REK_19} PLN", st["right"]),
+            Paragraph("Rekompensata za koszty odzyskiwania (art. 10, 19 faktur spóźn., kurs NBP)", S["zest_l"]),
+            Paragraph(f"{REK_19} PLN", S["zest_r"]),
         ],
     ]
-    tz = Table(zest_data, colWidths=[130 * mm, 45 * mm])
-    ts: list = [
-        ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("FONTSIZE", (0, 0), (-1, -1), 9),
-        ("INNER_GRID", (0, 0), (-1, -1), 0.4, colors.white),
-        ("BACKGROUND", (0, 0), (-1, 0), ZEST_H_BG),
-    ]
-    for r in range(1, 5):
-        ts.append(
-            (
-                "BACKGROUND",
-                (0, r),
-                (-1, r),
-                ROW_ZEB_B if r % 2 else ROW_ZEB_A,
-            )
-        )
-    ts.append(
-        (
-            "LINEABOVE",
-            (0, 0),
-            (-1, 0),
-            1.0,
-            colors.black,
-        )
-    )  # top border
-    tz.setStyle(TableStyle(ts))
-    story.append(tz)
-    tot_row = Table(
-        [
-            [
-                Paragraph(f"<b>ŁĄCZNA KWOTA DO ZAPŁATY {TOTAL} PLN</b>", st["headerSmall"]),
-            ]
-        ],
-        colWidths=[175 * mm],
-    )
-    tot_row.setStyle(
+    zt = Table(zest, colWidths=[141 * mm, 44 * mm])
+    zt.setStyle(
         TableStyle(
             [
-                ("LEFTPADDING", (0, 0), (-1, -1), 3),
-                ("TOPPADDING", (0, 0), (-1, -1), 6),
-                ("LINEABOVE", (0, 0), (-1, 0), 1.0, colors.black),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
             ]
         )
     )
-    story.append(tot_row)
-
+    story.append(zt)
+    story.append(Spacer(1, 2 * mm))
+    story.append(Paragraph(f"ŁĄCZNA KWOTA DO ZAPŁATY {TOTAL} PLN", S["zest_tot"]))
     story.append(Spacer(1, 3 * mm))
     story.append(
         Paragraph(
             f"Wyznaczam termin zapłaty pełnej kwoty {TOTAL} PLN do dnia {TERM_PAY} "
             f"({DNI_PO} dni od daty niniejszego wezwania).",
-            st["normal"],
+            S["wyzn"],
         )
     )
     story.append(Spacer(1, 3 * mm))
-
-    # Dane do przelewu — tabela 2 kolumny
-    story.append(Paragraph("DANE DO PRZELEWU", st["headerSmall"]))
-    story.append(Spacer(1, 2 * mm))
-    przelew = [
-        [Paragraph("Nazwa odbiorcy", st["headerSmall"]), Paragraph("Omega Sp. z o.o.", st["headerSmall"])],
-        [Paragraph("Bank", st["headerSmall"]), Paragraph("BNP Paribas", st["headerSmall"])],
-        [Paragraph("Numer rachunku", st["headerSmall"]), Paragraph("PL 08 1600 1404 1779 0433 4000 0001", st["headerSmall"])],
-        [Paragraph("Tytułem", st["headerSmall"]), Paragraph(SYGN, st["headerSmall"])],
-        [Paragraph("Kwota", st["headerSmall"]), Paragraph(f"{TOTAL} PLN", st["headerSmall"])],
+    story.append(Paragraph("DANE DO PRZELEWU", S["dane_t"]))
+    prow = [
+        [Paragraph("Nazwa odbiorcy", S["pr9b"]), Paragraph("Omega Sp. z o.o.", S["pr9b"])],
+        [Paragraph("Bank", S["pr9b"]), Paragraph("BNP Paribas", S["pr9b"])],
+        [Paragraph("Numer rachunku", S["pr9b"]), Paragraph("PL 08 1600 1404 1779 0433 4000 0001", S["pr9b"])],
+        [Paragraph("Tytułem", S["pr9b"]), Paragraph(SYGN, S["pr9b"])],
+        [Paragraph("Kwota", S["pr9b"]), Paragraph(f"{TOTAL} PLN", S["pr9b"])],
     ]
-    tp = Table(przelew, colWidths=[55 * mm, 120 * mm])
-    tp.setStyle(
+    ptab = Table(prow, colWidths=[(A4[0] - 100) * 0.32, (A4[0] - 100) * 0.68])
+    ptab.setStyle(
         TableStyle(
             [
-                ("BACKGROUND", (0, 0), (-1, 0), ZEST_H_BG),
-                ("INNER_GRID", (0, 0), (-1, -1), 0.3, colors.black),
                 ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("FONTSIZE", (0, 0), (-1, -1), 9),
-                ("LEFTPADDING", (0, 0), (-1, -1), 4),
-                ("TOPPADDING", (0, 0), (-1, -1), 3),
+                ("INNER_GRID", (0, 0), (-1, -1), 0.2, LINE_GRAY),
+                ("BOX", (0, 0), (-1, -1), 0.4, colors.black),
+                ("TOPPADDING", (0, 0), (-1, -1), 2),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
             ]
         )
     )
-    story.append(tp)
-
+    story.append(ptab)
     story.append(Spacer(1, 4 * mm))
-    story.append(Paragraph("Z poważaniem,", st["normal"]))
-    story.append(Spacer(1, 2 * mm))
-    story.append(Paragraph("Paweł Klimankowicz — Prezes Zarządu", st["headerSmall"]))
-    story.append(Paragraph("OMEGA SP. Z O.O.", st["headerSmall"]))
+    story.append(Paragraph("Z poważaniem,", S["zpw"]))
+    story.append(Paragraph("Paweł Klimankowicz — Prezes Zarządu", S["dname"]))
+    story.append(Paragraph("OMEGA SP. Z O.O.", S["dname"]))
     story.append(Spacer(1, 3 * mm))
-
-    ryg_tekst = (
-        "<b>! RYGOR POSTĘPOWANIA SĄDOWEGO</b><br/><br/>"
-        "W przypadku bezskutecznego upływu wyznaczonego terminu, sprawa zostanie niezwłocznie skierowana na drogę postępowania "
-        "sądowego bez dodatkowego wezwania, co wiązać się będzie z obciążeniem Dłużnika kosztami procesu, w tym kosztami zastępstwa "
-        "procesowego, opłatami sądowymi oraz dalszymi odsetkami."
-    )
-    t_ryg = Table([[Paragraph(ryg_tekst, st["normal"])]], colWidths=[170 * mm])
-    t_ryg.setStyle(
-        TableStyle(
-            [
-                ("BACKGROUND", (0, 0), (-1, -1), RYG_TLO),
-                ("BOX", (0, 0), (-1, -1), 1.2, RYG_OBR),
-                ("LEFTPADDING", (0, 0), (-1, -1), 8),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-                ("TOPPADDING", (0, 0), (-1, -1), 8),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-            ]
+    story.append(Paragraph("! RYGOR POSTĘPOWANIA SĄDOWEGO", S["ryg_t"]))
+    story.append(
+        Paragraph(
+            "W przypadku bezskutecznego upływu wyznaczonego terminu, sprawa zostanie niezwłocznie skierowana na drogę postępowania "
+            "sądowego bez dodatkowego wezwania, co wiązać się będzie z obciążeniem Dłużnika kosztami procesu, w tym kosztami zastępstwa "
+            "procesowego, opłatami sądowymi oraz dalszymi odsetkami.",
+            S["ryg_b"],
         )
     )
-    story.append(t_ryg)
-
     doc.build(story)
 
 
@@ -469,20 +347,16 @@ def main() -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
     build_pdf(out)
     print(out)
-    for tmp in out.parent.glob("_*_p1.png"):
-        tmp.unlink(missing_ok=True)
-    for tmp in out.parent.glob("_*_p2.png"):
-        tmp.unlink(missing_ok=True)
-    case_dir = Path(
+    case = Path(
         "/Users/prometheus/Desktop/SPRAWY Z DŁUŻNIKAMI/wezwania do zapłaty wysłane/ADAM PIELASZEWSKI"
     )
-    if case_dir.is_dir():
-        dest = case_dir / "wezwanie_WZ-2026-APS001_Pielaszewski.pdf"
+    if case.is_dir():
+        d = case / "wezwanie_WZ-2026-APS001_Pielaszewski.pdf"
         try:
-            shutil.copy2(out, dest)
-            print("Skopiowano:", dest)
+            shutil.copy2(out, d)
+            print("Skopiowano:", d)
         except OSError as e:
-            print("Kopia do folderu sprawy pominięta (brak uprawnień do zapisu):", e)
+            print("Kopia do sprawy — pominięto:", e)
 
 
 if __name__ == "__main__":
