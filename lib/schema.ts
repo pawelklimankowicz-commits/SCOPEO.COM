@@ -9,10 +9,10 @@ export const registerSchema = z.object({
   organizationName: z.string().min(2),
   slug: z.string().min(2).regex(/^[a-z0-9-]+$/),
   acceptRegulations: z.literal(true, {
-    errorMap: () => ({ message: 'Akceptacja regulaminu jest wymagana.' }),
+    message: 'Akceptacja regulaminu jest wymagana.',
   }),
   acceptPrivacy: z.literal(true, {
-    errorMap: () => ({ message: 'Potwierdzenie polityki prywatnosci jest wymagane.' }),
+    message: 'Potwierdzenie polityki prywatnosci jest wymagane.',
   }),
 });
 export const onboardingSchema = z.object({

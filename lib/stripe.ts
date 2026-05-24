@@ -13,9 +13,23 @@ export function assertStripeConfigured() {
   }
 }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_missing', {
-  apiVersion: '2026-03-25.dahlia',
-  typescript: true,
+let _stripe: Stripe | undefined;
+
+export function getStripe(): Stripe {
+  assertStripeConfigured();
+  if (!_stripe) {
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: '2026-03-25.dahlia',
+      typescript: true,
+    });
+  }
+  return _stripe;
+}
+
+export const stripe: Stripe = new Proxy({} as Stripe, {
+  get(_, prop) {
+    return (getStripe() as unknown as Record<string | symbol, unknown>)[prop];
+  },
 });
 
 export const PLANS = {
