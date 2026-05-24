@@ -9,6 +9,18 @@ node_modules
 *.log
 .DS_Store
 .vercel
+tsconfig.tsbuildinfo
+supabase/.temp/
+
+# Wygenerowane raporty / pliki tymczasowe
+reports/
+*.mp4
+
+# Zrzuty ekranu, stray images
+Zrzut ekranu*
+*.png
+!public/**/*.png
+!app/**/*.png
 
 # Windykacja — dane osobowe (RODO)
 templates/windykacja-*
