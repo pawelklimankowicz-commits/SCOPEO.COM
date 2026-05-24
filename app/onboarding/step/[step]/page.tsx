@@ -17,7 +17,7 @@ export default async function OnboardingStepPage({
   const t = await getTenantRlsContext();
   return runWithTenantRls({ userId: t.userId, organizationId: t.organizationId }, async () => {
   const { session, organizationId, membership } = t;
-  const role = (session.user as any).role as string | undefined;
+  const role = session.user.role as string | undefined;
   if (role !== 'OWNER' && role !== 'ADMIN') {
     redirect('/dashboard');
   }

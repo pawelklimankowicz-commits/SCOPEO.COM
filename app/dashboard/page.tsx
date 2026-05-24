@@ -41,7 +41,7 @@ export default async function DashboardPage({
           Przeglad dashboardu
         </h1>
       </div>
-      {!(session.user as any).emailVerified && (
+      {!session.user.emailVerified && (
         <div
           style={{
             background: '#fef9c3',

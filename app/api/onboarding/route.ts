@@ -8,8 +8,8 @@ import { requireKsefCapacity } from '@/lib/billing-guard';
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  const orgId = (session.user as any).organizationId as string;
-  const role = (session.user as any).role as string | null | undefined;
+  const orgId = session.user.organizationId as string;
+  const role = session.user.role as string | null | undefined;
   if (role !== 'OWNER' && role !== 'ADMIN') {
     return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
   }

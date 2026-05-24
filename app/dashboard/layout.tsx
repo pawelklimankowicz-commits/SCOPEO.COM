@@ -14,7 +14,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const ctx = await getTenantRlsContext();
   return runWithTenantRls({ userId: ctx.userId, organizationId: ctx.organizationId }, async () => {
     const { session, membership } = ctx;
-    const role = (session.user as any).role as string;
+    const role = session.user.role as string;
     const organization = await prisma.organization.findUnique({
       where: { id: membership.organizationId },
       select: { onboardingCompletedAt: true },
@@ -64,7 +64,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             <WorkspaceSwitcher />
             <NotificationBell />
             <span style={{ color: '#64748b', fontSize: 12 }}>
-              {(session.user as any).email} · {role}
+              {session.user.email} · {role}
             </span>
             <LogoutButton />
           </div>

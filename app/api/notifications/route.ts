@@ -13,7 +13,7 @@ export async function GET() {
   if (!session?.user) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
-  const organizationId = (session.user as any).organizationId as string;
+  const organizationId = session.user.organizationId as string;
   const userId = session.user.id as string;
 
   const [notifications, unreadCount] = await Promise.all([
@@ -33,7 +33,7 @@ export async function PATCH(req: NextRequest) {
   if (!session?.user) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
-  const organizationId = (session.user as any).organizationId as string;
+  const organizationId = session.user.organizationId as string;
   const userId = session.user.id as string;
 
   try {
@@ -56,7 +56,7 @@ export async function DELETE(req: NextRequest) {
   if (!session?.user) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
-  const organizationId = (session.user as any).organizationId as string;
+  const organizationId = session.user.organizationId as string;
   const userId = session.user.id as string;
   const readOnly = req.nextUrl.searchParams.get('readOnly') === 'true';
   const limit = await checkRateLimit(`notif-delete:${userId}`, { windowMs: 60_000, maxRequests: 5 });

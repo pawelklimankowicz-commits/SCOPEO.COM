@@ -5,8 +5,8 @@ import { checkRateLimit } from '@/lib/security';
 export async function POST() {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  const organizationId = (session.user as any).organizationId as string;
-  const role = (session.user as any).role as string | null | undefined;
+  const organizationId = session.user.organizationId as string;
+  const role = session.user.role as string | null | undefined;
   if (role !== 'OWNER' && role !== 'ADMIN') {
     return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
   }

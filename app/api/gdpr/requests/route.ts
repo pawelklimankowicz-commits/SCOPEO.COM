@@ -19,8 +19,8 @@ function canManage(role?: string | null) {
 export async function GET() {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  const organizationId = (session.user as any).organizationId as string;
-  const role = (session.user as any).role as string | null | undefined;
+  const organizationId = session.user.organizationId as string;
+  const role = session.user.role as string | null | undefined;
   if (!canManage(role)) return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
 
   const requests = await prisma.gdprRequest.findMany({
@@ -34,9 +34,9 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  const organizationId = (session.user as any).organizationId as string;
+  const organizationId = session.user.organizationId as string;
   const userId = session.user.id as string;
-  const role = (session.user as any).role as string | null | undefined;
+  const role = session.user.role as string | null | undefined;
   const rateLimit = await checkRateLimit(
     `gdpr-request:organizationId:${organizationId}:userId:${userId}`,
     { windowMs: 60 * 60 * 1000, maxRequests: 5 }

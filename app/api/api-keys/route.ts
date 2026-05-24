@@ -18,9 +18,9 @@ function canManage(role?: string | null) {
 export async function GET() {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  const role = (session.user as any).role as string | undefined;
+  const role = session.user.role as string | undefined;
   if (!canManage(role)) return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
-  const organizationId = (session.user as any).organizationId as string;
+  const organizationId = session.user.organizationId as string;
   const subscription = await prisma.subscription.findUnique({
     where: { organizationId },
     select: { plan: true },
@@ -47,9 +47,9 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  const role = (session.user as any).role as string | undefined;
+  const role = session.user.role as string | undefined;
   if (!canManage(role)) return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
-  const organizationId = (session.user as any).organizationId as string;
+  const organizationId = session.user.organizationId as string;
   const subscription = await prisma.subscription.findUnique({
     where: { organizationId },
     select: { plan: true },

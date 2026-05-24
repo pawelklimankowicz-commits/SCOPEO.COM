@@ -25,9 +25,9 @@ export async function GET() {
       role: membership.role,
     })),
     activeOrganizationId:
-      ((session as any).activeOrganizationId as string | undefined) ??
-      ((session as any).organizationId as string | undefined) ??
-      (session.user as any).organizationId ??
+      (session.activeOrganizationId as string | undefined) ??
+      (session.organizationId as string | undefined) ??
+      session.user.organizationId ??
       null,
   });
 }

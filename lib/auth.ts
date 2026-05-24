@@ -99,35 +99,35 @@ export const authOptions: NextAuthOptions = {
           organizationId: m?.organizationId ?? null,
           organizationSlug: m?.organization.slug ?? null,
           role: m?.role ?? null,
-        } as any;
+        };
       });
     }
   })],
   callbacks: {
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.sub ?? '';
-        (session.user as any).organizationId = token.activeOrganizationId ?? token.organizationId ?? null;
-        (session.user as any).organizationSlug = token.organizationSlug ?? null;
-        (session.user as any).role = token.role;
-        (session.user as any).emailVerified = token.emailVerified;
-        (session.user as any).onboardingCompletedAt = token.onboardingCompletedAt ?? null;
-        (session.user as any).onboardingStep = Number(token.onboardingStep ?? 0);
-        (session.user as any).organizations = token.organizations ?? [];
-        (session.user as any).subscriptionStatus = token.subscriptionStatus ?? 'CANCELED';
+        session.user.id = token.sub ?? '';
+        session.user.organizationId = token.activeOrganizationId ?? token.organizationId ?? null;
+        session.user.organizationSlug = token.organizationSlug ?? null;
+        session.user.role = token.role;
+        session.user.emailVerified = token.emailVerified;
+        session.user.onboardingCompletedAt = token.onboardingCompletedAt ?? null;
+        session.user.onboardingStep = Number(token.onboardingStep ?? 0);
+        session.user.organizations = token.organizations ?? [];
+        session.user.subscriptionStatus = token.subscriptionStatus ?? 'CANCELED';
       }
-      (session as any).organizationId = token.activeOrganizationId ?? token.organizationId ?? null;
-      (session as any).organizations = token.organizations ?? [];
-      (session as any).activeOrganizationId = token.activeOrganizationId ?? token.organizationId ?? null;
-      (session as any).subscriptionStatus = token.subscriptionStatus ?? 'CANCELED';
+      session.organizationId = token.activeOrganizationId ?? token.organizationId ?? null;
+      session.organizations = token.organizations ?? [];
+      session.activeOrganizationId = token.activeOrganizationId ?? token.organizationId ?? null;
+      session.subscriptionStatus = token.subscriptionStatus ?? 'CANCELED';
       return session;
     },
     async jwt({ token, user, trigger, session }) {
       return runWithRlsBypass(async () => {
         if (user) {
-          token.organizationId = (user as any).organizationId;
-          token.organizationSlug = (user as any).organizationSlug;
-          token.role = (user as any).role;
+          token.organizationId = user.organizationId;
+          token.organizationSlug = user.organizationSlug;
+          token.role = user.role;
           const dbUser = await prisma.user.findUnique({
             where: { id: user.id },
             select: { emailVerified: true },
@@ -139,12 +139,12 @@ export const authOptions: NextAuthOptions = {
           Boolean(user) ||
           trigger === 'update' ||
           !Array.isArray(token.organizations) ||
-          (token.organizations as any[]).length === 0;
+          token.organizations!.length === 0;
         if (token.sub && shouldRefreshOrganizations) {
           const organizations = await loadUserOrganizations(String(token.sub));
           token.organizations = organizations;
           const requestedOrgId =
-            trigger === 'update' ? ((session as any)?.activeOrganizationId as string | undefined) : undefined;
+            trigger === 'update' ? (session.activeOrganizationId as string | undefined) : undefined;
           const activeOrganizationId = pickActiveOrganization(
             organizations,
             requestedOrgId ?? null,

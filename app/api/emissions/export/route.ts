@@ -231,7 +231,7 @@ export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   const ip = getClientIp(req.headers);
-  const organizationId = (session.user as any).organizationId as string;
+  const organizationId = session.user.organizationId as string;
   const rl = await checkRateLimit(`export:${organizationId}:${ip}`, {
     maxRequests: 20,
     windowMs: 60 * 1000,

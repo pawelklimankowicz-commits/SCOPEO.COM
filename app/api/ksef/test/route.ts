@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   if (!session?.user) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
-  const role = (session.user as any).role as string | undefined;
+  const role = session.user.role as string | undefined;
   if (role !== 'OWNER' && role !== 'ADMIN') {
     return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
   }

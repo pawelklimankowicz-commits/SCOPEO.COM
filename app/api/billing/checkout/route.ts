@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   assertStripeConfigured();
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  const role = (session.user as any).role as string | null | undefined;
+  const role = session.user.role as string | null | undefined;
   if (!canManage(role)) return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
 
   try {
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, redirect: '/kontakt' });
     }
 
-    const organizationId = (session.user as any).organizationId as string;
+    const organizationId = session.user.organizationId as string;
     const customerId = await getOrCreateStripeCustomer(organizationId);
     const subscription = await getSubscription(organizationId);
     const baseUrl = appBaseUrl(req);

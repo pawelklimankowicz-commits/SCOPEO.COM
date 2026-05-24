@@ -22,11 +22,11 @@ function canManageInvites(role?: string | null) {
 export async function GET() {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  const role = (session.user as any).role as string | null | undefined;
+  const role = session.user.role as string | null | undefined;
   if (!canManageInvites(role)) {
     return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
   }
-  const organizationId = (session.user as any).organizationId as string;
+  const organizationId = session.user.organizationId as string;
   await prisma.invitation.updateMany({
     where: {
       organizationId,
@@ -46,11 +46,11 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  const role = (session.user as any).role as string | null | undefined;
+  const role = session.user.role as string | null | undefined;
   if (!canManageInvites(role)) {
     return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
   }
-  const organizationId = (session.user as any).organizationId as string;
+  const organizationId = session.user.organizationId as string;
   const userId = session.user.id as string;
   const ip = getClientIp(req.headers);
   const limit = await checkRateLimit(`invites-create:${organizationId}:${userId}:${ip}`, {
@@ -107,11 +107,11 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  const role = (session.user as any).role as string | null | undefined;
+  const role = session.user.role as string | null | undefined;
   if (!canManageInvites(role)) {
     return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
   }
-  const organizationId = (session.user as any).organizationId as string;
+  const organizationId = session.user.organizationId as string;
   const body = await req.json();
   const parsed = updateInviteSchema.parse(body);
   const invite = await prisma.invitation.findFirst({

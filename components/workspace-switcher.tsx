@@ -18,13 +18,13 @@ export default function WorkspaceSwitcher() {
   const [error, setError] = useState('');
 
   const organizations = useMemo(
-    () => (((session as any)?.organizations || (session?.user as any)?.organizations || []) as OrganizationOption[]),
+    () => ((session?.organizations || session?.user?.organizations || []) as OrganizationOption[]),
     [session]
   );
   const activeOrganizationId =
-    ((session as any)?.activeOrganizationId as string | undefined) ||
-    ((session as any)?.organizationId as string | undefined) ||
-    ((session?.user as any)?.organizationId as string | undefined) ||
+    (session?.activeOrganizationId as string | undefined) ||
+    (session?.organizationId as string | undefined) ||
+    (session?.user?.organizationId as string | undefined) ||
     '';
 
   const active = organizations.find((org) => org.id === activeOrganizationId) || organizations[0];

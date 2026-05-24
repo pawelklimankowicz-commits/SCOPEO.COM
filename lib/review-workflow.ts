@@ -28,7 +28,7 @@ export function reviewActionFromStatus(nextStatus: ReviewStatus) {
   return 'COMMENTED';
 }
 
-export function buildDiff(before: any, after: any) {
+export function buildDiff(before: Record<string, unknown>, after: Record<string, unknown>) {
   const fields = ['status','categoryCode','factorId','comment','assigneeUserId'];
   const changes = fields.filter(f => (before?.[f] ?? null) !== (after?.[f] ?? null)).map(f => ({ field: f, before: before?.[f] ?? null, after: after?.[f] ?? null }));
   return { changed: changes.length > 0, changes };

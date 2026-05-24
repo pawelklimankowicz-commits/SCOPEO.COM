@@ -7,7 +7,7 @@ export default async function BillingRequiredPage() {
   const session = await auth();
   if (!session?.user) redirect('/login');
 
-  const organizationId = (session.user as any).organizationId as string;
+  const organizationId = session.user.organizationId as string;
   const sub = await getSubscription(organizationId);
   if (sub && (sub.status === 'ACTIVE' || isTrialActive(sub))) {
     redirect('/dashboard');

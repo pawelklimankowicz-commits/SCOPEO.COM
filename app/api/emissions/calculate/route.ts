@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   try {
-    const organizationId = (session.user as any).organizationId as string;
+    const organizationId = session.user.organizationId as string;
     const limit = await checkRateLimit(`emissions-calc:${organizationId}`, {
       windowMs: 60_000,
       maxRequests: 20,

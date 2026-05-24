@@ -12,7 +12,7 @@ import { applySupplierHintFeedback } from '@/lib/supplier-hints';
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  const organizationId = (session.user as any).organizationId as string;
+  const organizationId = session.user.organizationId as string;
   const subscription = await prisma.subscription.findUnique({
     where: { organizationId },
     select: { plan: true },
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     if (!line.mappingDecisionId || !line.mappingDecision) {
       return NextResponse.json({ ok: false, error: 'No mapping decision' }, { status: 404 });
     }
-    const actorRole = ((session.user as any).role || 'VIEWER') as any;
+    const actorRole = (session.user.role || 'VIEWER') as any;
     const before = { status: line.mappingDecision.status, categoryCode: line.overrideCategoryCode ?? line.categoryCode, factorId: line.overrideFactorId ?? line.emissionFactorId, comment: line.mappingDecision.reviewerComment, assigneeUserId: line.mappingDecision.currentAssigneeId };
     const after = { status: parsed.status, categoryCode: parsed.overrideCategoryCode ?? before.categoryCode, factorId: parsed.overrideFactorId ?? before.factorId, comment: parsed.comment ?? before.comment, assigneeUserId: parsed.assigneeUserId ?? before.assigneeUserId };
     ensureAllowedTransition({ currentStatus: before.status as any, nextStatus: after.status as any, actorRole, hasOverride: before.categoryCode !== after.categoryCode || before.factorId !== after.factorId });

@@ -6,9 +6,9 @@ import { buildAuditWhere, canAccessAudit, toAuditCsv } from '@/lib/audit-log';
 export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  const role = (session.user as any).role as string | undefined;
+  const role = session.user.role as string | undefined;
   if (!canAccessAudit(role)) return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
-  const organizationId = (session.user as any).organizationId as string;
+  const organizationId = session.user.organizationId as string;
 
   const limitRaw = Number(req.nextUrl.searchParams.get('limit') ?? '25');
   const limit = Math.max(1, Math.min(100, Number.isFinite(limitRaw) ? Math.floor(limitRaw) : 25));
