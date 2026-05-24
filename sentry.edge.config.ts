@@ -4,4 +4,5 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 0.1,
   environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV,
+  enabled: Boolean(process.env.SENTRY_DSN),
 });
