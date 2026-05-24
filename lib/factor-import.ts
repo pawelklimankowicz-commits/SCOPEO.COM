@@ -7,41 +7,34 @@ import { buildKobizeParsedFactors } from '@/lib/kobize-pl-factors';
 import { writeProcessingRecord } from '@/lib/privacy-register';
 import { createNotification } from '@/lib/notifications';
 
-/** Domyślne URL-e (UK Gov / EPA zmieniają pliki co roku — ustaw env, patrz README i .env.example). */
-const DEFAULT_UK_FLAT_XLSX_URL =
-  'https://assets.publishing.service.gov.uk/media/6846b6ea57f3515d9611f0dd/ghg-conversion-factors-2025-flat-format.xlsx';
-const DEFAULT_EPA_HUB_XLSX_URL =
-  'https://www.epa.gov/system/files/other-files/2025-01/ghg-emission-factors-hub-2025.xlsx';
+const KNOWN_UK_FLAT_XLSX_URLS: Record<number, string> = {
+  2025: 'https://assets.publishing.service.gov.uk/media/6846b6ea57f3515d9611f0dd/ghg-conversion-factors-2025-flat-format.xlsx',
+};
+const EPA_HUB_URL_TEMPLATE = (year: number) =>
+  `https://www.epa.gov/system/files/other-files/${year}-01/ghg-emission-factors-hub-${year}.xlsx`;
 
 export type FactorImportResolvedConfig = {
   ukDataYear: number;
   epaDataYear: number;
   overlayYear: number;
-  ukGhgColumn: string;
+  ukGhgColumn: string | null;
   ukFlatXlsxUrl: string;
   epaHubXlsxUrl: string;
 };
 
-/**
- * UK Gov i EPA publikują co roku nowe XLSX i zmieniają nagłówki kolumn (np. „GHG Conversion Factor YYYY”).
- * Ustaw zmienne FACTOR_IMPORT_* w środowisku po każdej aktualizacji źródeł (zwykle raz do roku).
- */
 export function resolveFactorImportConfig(): FactorImportResolvedConfig {
-  const overlayYear = Number(process.env.FACTOR_IMPORT_DATA_YEAR || '2025');
+  const currentYear = new Date().getFullYear();
+  const overlayYear = Number(process.env.FACTOR_IMPORT_DATA_YEAR || String(currentYear));
   const ukDataYear = Number(process.env.FACTOR_IMPORT_UK_DATA_YEAR || String(overlayYear));
   const epaDataYear = Number(process.env.FACTOR_IMPORT_EPA_DATA_YEAR || String(overlayYear));
-  const ukGhgColumn =
-    process.env.FACTOR_IMPORT_UK_GHG_COLUMN?.trim() || `GHG Conversion Factor ${ukDataYear}`;
-  const ukFlatXlsxUrl = process.env.FACTOR_IMPORT_UK_FLAT_XLSX_URL?.trim() || DEFAULT_UK_FLAT_XLSX_URL;
-  const epaHubXlsxUrl = process.env.FACTOR_IMPORT_EPA_HUB_XLSX_URL?.trim() || DEFAULT_EPA_HUB_XLSX_URL;
-  return {
-    ukDataYear,
-    epaDataYear,
-    overlayYear,
-    ukGhgColumn,
-    ukFlatXlsxUrl,
-    epaHubXlsxUrl,
-  };
+  const ukGhgColumn = process.env.FACTOR_IMPORT_UK_GHG_COLUMN?.trim() || null;
+  const ukFlatXlsxUrl =
+    process.env.FACTOR_IMPORT_UK_FLAT_XLSX_URL?.trim() ||
+    KNOWN_UK_FLAT_XLSX_URLS[ukDataYear] ||
+    KNOWN_UK_FLAT_XLSX_URLS[2025]!;
+  const epaHubXlsxUrl =
+    process.env.FACTOR_IMPORT_EPA_HUB_XLSX_URL?.trim() || EPA_HUB_URL_TEMPLATE(epaDataYear);
+  return { ukDataYear, epaDataYear, overlayYear, ukGhgColumn, ukFlatXlsxUrl, epaHubXlsxUrl };
 }
 
 export type EmissionFactorWithSource = EmissionFactor & { emissionSource: EmissionSource };
@@ -121,8 +114,31 @@ function ukCategoryCode(r: any) {
   return 'scope3_cat1_purchased_services';
 }
 
-export function parseUkRows(rows: any[][], opts: { ghgColumn: string; dataYear: number }) {
-  const { ghgColumn, dataYear } = opts;
+function detectGhgColumn(rows: any[][]): { column: string; year: number } | null {
+  const baseRequired = ['ID', 'Scope', 'Level 1', 'UOM'];
+  for (let i = 0; i < Math.min(rows.length, 80); i++) {
+    const row = rows[i].map(normalizeText);
+    if (!baseRequired.every((col) => row.includes(col))) continue;
+    const ghgCol = row.find((cell) => /^GHG Conversion Factor\s+\d{4}$/i.test(cell));
+    if (ghgCol) {
+      const yearMatch = ghgCol.match(/(\d{4})$/);
+      return { column: ghgCol, year: yearMatch ? Number(yearMatch[1]) : new Date().getFullYear() };
+    }
+  }
+  return null;
+}
+
+export function parseUkRows(rows: any[][], opts: { ghgColumn: string | null; dataYear: number }) {
+  let { ghgColumn, dataYear } = opts;
+  if (!ghgColumn) {
+    const detected = detectGhgColumn(rows);
+    if (detected) {
+      ghgColumn = detected.column;
+      dataYear = detected.year;
+    } else {
+      ghgColumn = `GHG Conversion Factor ${dataYear}`;
+    }
+  }
   const required = [
     'ID',
     'Scope',
@@ -227,6 +243,21 @@ async function fetchFactorWorkbook(url: string): Promise<Response> {
   }
 }
 
+async function fetchWithYearProbe(
+  primaryUrl: string,
+  probeUrls: string[]
+): Promise<{ response: Response; url: string }> {
+  const res = await fetchFactorWorkbook(primaryUrl);
+  if (res.ok) return { response: res, url: primaryUrl };
+  for (const url of probeUrls) {
+    try {
+      const probeRes = await fetchFactorWorkbook(url);
+      if (probeRes.ok) return { response: probeRes, url };
+    } catch {}
+  }
+  return { response: res, url: primaryUrl };
+}
+
 async function upsertSource(organizationId: string, source: any) {
   return prisma.emissionSource.upsert({ where: { organizationId_code_version: { organizationId, code: source.code, version: source.version } }, update: source, create: { organizationId, ...source } });
 }
@@ -293,30 +324,47 @@ async function persistFactors(organizationId: string, emissionSourceId: string, 
   return factors.length;
 }
 
-export async function importExternalFactors(organizationId: string, actorUserId?: string | null) {
-  const cfg = resolveFactorImportConfig();
-  const sources = {
+type SourceMeta = {
+  code: string;
+  name: string;
+  publisher: string;
+  sourceUrl: string;
+  methodology: string;
+  version: string;
+  validFromYear: number;
+  region: string;
+  notes: string;
+};
+
+type ParsedSource = {
+  meta: SourceMeta;
+  factors: ParsedFactor[];
+  issues: ValidationIssue[];
+};
+
+function buildSourceMetas(cfg: FactorImportResolvedConfig) {
+  return {
     uk: {
-      code:'UK_GOV_CONVERSION',
-      name:'UK Government Conversion Factors',
-      publisher:'UK Government',
+      code: 'UK_GOV_CONVERSION',
+      name: 'UK Government Conversion Factors',
+      publisher: 'UK Government',
       sourceUrl: cfg.ukFlatXlsxUrl,
-      methodology:'Government conversion factors for company reporting',
-      version:`${cfg.ukDataYear}-v1`,
+      methodology: 'Government conversion factors for company reporting',
+      version: `${cfg.ukDataYear}-v1`,
       validFromYear: cfg.ukDataYear,
-      region:'UK',
-      notes:'Parsed from flat file XLSX (URL/kolumna GHG z env — wymaga corocznej aktualizacji)',
+      region: 'UK',
+      notes: 'Parsed from flat file XLSX; GHG column auto-detected',
     },
     epa: {
-      code:'EPA_EF_HUB',
-      name:'EPA GHG Emission Factors Hub',
-      publisher:'US EPA',
+      code: 'EPA_EF_HUB',
+      name: 'EPA GHG Emission Factors Hub',
+      publisher: 'US EPA',
       sourceUrl: cfg.epaHubXlsxUrl,
-      methodology:'Organizational default emission factors',
+      methodology: 'Organizational default emission factors',
       version: String(cfg.epaDataYear),
       validFromYear: cfg.epaDataYear,
-      region:'US',
-      notes:'Parsed from workbook XLSX (URL z env — wymaga corocznej aktualizacji)',
+      region: 'US',
+      notes: 'Parsed from workbook XLSX; URL probed by year',
     },
     pl: {
       code: 'KOBIZE_PL',
@@ -324,56 +372,129 @@ export async function importExternalFactors(organizationId: string, actorUserId?
       publisher: 'Krajowy Ośrodek Bilansowania i Zarządzania Emisjami (KOBiZE)',
       sourceUrl: 'https://www.kobize.pl/pl/fileCategory/id/28/wskazniki-emisyjnosci',
       methodology:
-        'Wskaźniki emisyjności z publikacji KOBiZE (m.in. energia elektryczna); plik data/kobize-pl-factors.json — aktualizacja roczna',
+        'Wskaźniki emisyjności z publikacji KOBiZE; plik data/kobize-pl-factors.json',
       version: `${cfg.overlayYear}-kobize-v1`,
       validFromYear: cfg.overlayYear,
       region: 'PL',
-      notes:
-        'Domyślnie: prąd 0,597 kgCO2e/kWh (597 kg CO2/MWh u odbiorcy, rok sprawozdawczy 2023). Dopisz kolejne lata z plików PDF/XLSX na kobize.pl.',
+      notes: 'Dopisz kolejne lata z plików PDF/XLSX na kobize.pl.',
     },
   };
-  const results = [];
-  for (const item of [sources.uk, sources.epa]) {
-    const run = await prisma.factorImportRun.create({ data: { organizationId, actorUserId: actorUserId ?? null, sourceCode: item.code, sourceUrl: item.sourceUrl, status: 'STARTED', validationJson: [] as any } });
+}
+
+export async function fetchAndParseSources(): Promise<{
+  cfg: FactorImportResolvedConfig;
+  parsed: ParsedSource[];
+}> {
+  const cfg = resolveFactorImportConfig();
+  const metas = buildSourceMetas(cfg);
+  const parsed: ParsedSource[] = [];
+
+  for (const item of [metas.uk, metas.epa]) {
     try {
-      const res = await fetchFactorWorkbook(item.sourceUrl);
+      const probeUrls =
+        item.code === 'EPA_EF_HUB'
+          ? [cfg.epaDataYear - 1, cfg.epaDataYear - 2]
+              .map(EPA_HUB_URL_TEMPLATE)
+              .filter((u) => u !== item.sourceUrl)
+          : [];
+      const { response: res, url: resolvedUrl } = await fetchWithYearProbe(
+        item.sourceUrl,
+        probeUrls
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status} for ${resolvedUrl}`);
+      item.sourceUrl = resolvedUrl;
       const workbook = new ExcelJS.Workbook();
-      const workbookBytes = Buffer.from(await res.arrayBuffer());
-      await workbook.xlsx.load(workbookBytes as any);
-      const sheetNames = workbook.worksheets.map((sheet) => sheet.name);
+      await workbook.xlsx.load(Buffer.from(await res.arrayBuffer()) as any);
+      const sheetNames = workbook.worksheets.map((s) => s.name);
       const basics =
         item.code === 'UK_GOV_CONVERSION'
           ? validateWorkbookBasics(sheetNames, ['Front page', 'Factors by Category'])
           : validateWorkbookBasics(sheetNames, ['Emission Factors Hub']);
-      const targetSheetName =
+      const sheetName =
         item.code === 'UK_GOV_CONVERSION' ? 'Factors by Category' : 'Emission Factors Hub';
-      const worksheet = workbook.getWorksheet(targetSheetName);
-      if (!worksheet) {
-        throw new Error(`Missing sheet ${targetSheetName}`);
-      }
+      const worksheet = workbook.getWorksheet(sheetName);
+      if (!worksheet) throw new Error(`Missing sheet ${sheetName}`);
       const rows = worksheetToRows(worksheet);
-      const parsed =
+      const result =
         item.code === 'UK_GOV_CONVERSION'
           ? parseUkRows(rows, { ghgColumn: cfg.ukGhgColumn, dataYear: cfg.ukDataYear })
           : parseEpaRows(rows, cfg.epaDataYear);
-      const issues: ValidationIssue[] = [...basics, ...(parsed.issues as ValidationIssue[])];
-      await prisma.factorImportRun.update({ where: { id: run.id }, data: { status: issues.some(i => i.severity==='error') ? 'FAILED' : 'VALIDATED', validationJson: issues as any } });
-      if (issues.some(i => i.severity==='error')) { results.push({ source:item.code, ok:false, issues }); continue; }
-      const source = await upsertSource(organizationId, item);
-      const count = await persistFactors(organizationId, source.id, parsed.factors);
-      await prisma.factorImportRun.update({ where: { id: run.id }, data: { status:'IMPORTED', importedCount:count, validationJson: issues as any } });
-      results.push({ source:item.code, ok:true, importedCount:count, issues });
-    } catch (e:any) {
-      await prisma.factorImportRun.update({ where: { id: run.id }, data: { status:'FAILED', errorMessage:e?.message || 'Unknown error' } });
-      results.push({ source:item.code, ok:false, issues:[{ severity:'error', code:'IMPORT_EXCEPTION', message:e?.message || 'Unknown error' }] });
+      parsed.push({
+        meta: item,
+        factors: result.factors,
+        issues: [...basics, ...(result.issues as ValidationIssue[])],
+      });
+    } catch (e: any) {
+      parsed.push({
+        meta: item,
+        factors: [],
+        issues: [
+          { severity: 'error', code: 'FETCH_EXCEPTION', message: e?.message || 'Unknown error' },
+        ],
+      });
     }
   }
-  const plSource = await upsertSource(organizationId, sources.pl);
+
   const kobizeFactors = buildKobizeParsedFactors(cfg.overlayYear);
-  const kobizeCount = await persistFactors(organizationId, plSource.id, kobizeFactors as ParsedFactor[]);
-  results.push({ source: 'KOBIZE_PL', ok: true, importedCount: kobizeCount, issues: [] });
+  parsed.push({ meta: metas.pl, factors: kobizeFactors as ParsedFactor[], issues: [] });
+
+  return { cfg, parsed };
+}
+
+export async function importParsedFactorsForOrg(
+  organizationId: string,
+  parsed: ParsedSource[],
+  actorUserId?: string | null
+) {
+  const results = [];
+  for (const { meta, factors, issues } of parsed) {
+    const run = await prisma.factorImportRun.create({
+      data: {
+        organizationId,
+        actorUserId: actorUserId ?? null,
+        sourceCode: meta.code,
+        sourceUrl: meta.sourceUrl,
+        status: 'STARTED',
+        validationJson: [] as any,
+      },
+    });
+    try {
+      if (issues.some((i) => i.severity === 'error')) {
+        await prisma.factorImportRun.update({
+          where: { id: run.id },
+          data: { status: 'FAILED', validationJson: issues as any },
+        });
+        results.push({ source: meta.code, ok: false, issues });
+        continue;
+      }
+      const source = await upsertSource(organizationId, meta);
+      const count = await persistFactors(organizationId, source.id, factors);
+      await prisma.factorImportRun.update({
+        where: { id: run.id },
+        data: {
+          status: 'IMPORTED',
+          importedCount: count,
+          validationJson: issues as any,
+        },
+      });
+      results.push({ source: meta.code, ok: true, importedCount: count, issues });
+    } catch (e: any) {
+      await prisma.factorImportRun.update({
+        where: { id: run.id },
+        data: { status: 'FAILED', errorMessage: e?.message || 'Unknown error' },
+      });
+      results.push({
+        source: meta.code,
+        ok: false,
+        issues: [
+          { severity: 'error', code: 'IMPORT_EXCEPTION', message: e?.message || 'Unknown error' },
+        ],
+      });
+    }
+  }
+
   const importedCount = results.reduce(
-    (sum, item) => sum + (typeof item.importedCount === 'number' ? item.importedCount : 0),
+    (sum, r) => sum + (typeof r.importedCount === 'number' ? r.importedCount : 0),
     0
   );
   await writeProcessingRecord({
@@ -384,11 +505,11 @@ export async function importExternalFactors(organizationId: string, actorUserId?
     legalBasis: 'art. 6 ust. 1 lit. b RODO',
     payload: {
       importedCount,
-      sources: results.map((item) => ({
-        source: item.source,
-        ok: item.ok,
-        importedCount: typeof item.importedCount === 'number' ? item.importedCount : 0,
-        issueCount: Array.isArray(item.issues) ? item.issues.length : 0,
+      sources: results.map((r) => ({
+        source: r.source,
+        ok: r.ok,
+        importedCount: typeof r.importedCount === 'number' ? r.importedCount : 0,
+        issueCount: Array.isArray(r.issues) ? r.issues.length : 0,
       })),
     },
   });
@@ -401,6 +522,11 @@ export async function importExternalFactors(organizationId: string, actorUserId?
     link: '/dashboard/report',
   });
   return { results };
+}
+
+export async function importExternalFactors(organizationId: string, actorUserId?: string | null) {
+  const { parsed } = await fetchAndParseSources();
+  return importParsedFactorsForOrg(organizationId, parsed, actorUserId);
 }
 
 export async function resolveBestFactor(

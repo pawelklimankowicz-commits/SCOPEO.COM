@@ -8,11 +8,18 @@
     {
       "path": "/api/cron/expire-trials",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/factors-sync",
+      "schedule": "0 5 1 * *"
     }
   ],
   "functions": {
     "app/api/cron/ksef-worker/route.ts": {
       "maxDuration": 60
+    },
+    "app/api/cron/factors-sync/route.ts": {
+      "maxDuration": 120
     },
     "app/api/ksef/jobs/process/route.ts": {
       "maxDuration": 60
