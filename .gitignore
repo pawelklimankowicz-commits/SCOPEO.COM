@@ -9,3 +9,11 @@ node_modules
 *.log
 .DS_Store
 .vercel
+
+# Windykacja — dane osobowe (RODO)
+templates/windykacja-*
+templates/wezwanie_*
+reports/wezwanie_*
+scripts/fill_wezwanie*
+scripts/generate_wezwanie*
+scripts/patch_wezwania*
